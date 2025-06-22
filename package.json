@@ -2,7 +2,10 @@
   "name": "@the-codex/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "dev": "pnpm dlx nx run-many -t dev",
+    "lint": "pnpm dlx nx run-many -t lint"
+  },
   "private": true,
   "devDependencies": {
     "@eslint/compat": "^1.1.1",
