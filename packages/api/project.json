@@ -73,6 +73,12 @@
         "verbose": false,
         "debug": false
       }
+    },
+    "dev": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "fastapi dev packages/api/api/main.py"
+      }
     }
   },
   "tags": [],
