@@ -28,6 +28,9 @@ dependencies = [
     "psycopg[binary]>=3.2.9",
     "python-dotenv>=1.1.0",
     "sqlalchemy>=2.0.41",
+    "bcrypt>=4.2.1",
+    "pyjwt>=2.10.1",
+    "python-multipart>=0.0.20",
 ]
 
 [tool.hatch.build.targets.wheel]
