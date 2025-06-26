@@ -61,3 +61,23 @@ class Account(Base):
     )
 
     user: Mapped[Optional["User"]] = relationship("User", back_populates="accounts")
+
+    class Session(Base):
+        __tablename__ = "session"
+
+        id: Mapped[str] = mapped_column(Text, primary_key=True)
+        account_id: Mapped[Optional[str]] = mapped_column(
+            Text, ForeignKey("account.id", ondelete="CASCADE"), nullable=True
+        )
+        created_at: Mapped[datetime] = mapped_column(
+            TIMESTAMP, nullable=False, server_default=func.current_timestamp()
+        )
+        updated_at: Mapped[datetime] = mapped_column(
+            TIMESTAMP,
+            nullable=False,
+            server_default=func.current_timestamp(),
+            onupdate=func.current_timestamp(),
+        )
+        expires_at: Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, nullable=True)
+
+        account: Mapped[Optional["Account"]] = relationship("Account")
