@@ -1,126 +1,262 @@
-# TheCodex
+# The Codex
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A modern full-stack application built with **Next.js** (frontend) and **FastAPI** (backend), managed as a monorepo using **Nx**.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+## 🚀 Tech Stack
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+### Frontend (`packages/web`)
 
-## Finish your CI setup
+- **Next.js 15.2** - React framework with App Router
+- **React 19** - UI library
+- **TypeScript** - Type-safe JavaScript
+- **Tailwind CSS 4.1** - Utility-first CSS framework
+- **PostCSS & Autoprefixer** - CSS processing
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/wSYh4eRw4y)
+### Backend (`packages/api`)
 
-## Generate a library
+- **FastAPI** - Modern Python web framework
+- **SQLAlchemy** - SQL toolkit and ORM
+- **Alembic** - Database migration tool
+- **psycopg** - PostgreSQL adapter
+- **pgvector** - Vector similarity search
+- **Python 3.9+** - Programming language
 
-```sh
-npx nx g @nx/js:lib packages/pkg1 --publishable --importPath=@my-org/pkg1
-```
+### DevOps & Tooling
 
-## Run tasks
+- **Nx 21.2** - Build system and monorepo tools
+- **pnpm** - Fast, disk space efficient package manager
+- **Docker & Docker Compose** - Containerization
+- **Jest** - JavaScript testing framework
+- **pytest** - Python testing framework
+- **ESLint & Prettier** - Code linting and formatting
+- **Commitlint & Husky** - Git hooks and commit conventions
+- **TypeScript ESLint** - TypeScript-specific linting
 
-To build the library use:
-
-```sh
-npx nx build pkg1
-```
-
-To run any task with Nx use:
-
-```sh
-npx nx <target> <project-name>
-```
-
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
-
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Versioning and releasing
-
-To version and release the library use
+## 📁 Project Structure
 
 ```
-npx nx release
+the-codex/
+├── packages/
+│   ├── web/                    # Next.js frontend application
+│   │   ├── src/
+│   │   │   ├── app/           # App Router pages
+│   │   │   └── ...
+│   │   ├── public/            # Static assets
+│   │   └── package.json
+│   └── api/                   # FastAPI backend application
+│       ├── api/               # Source code
+│       │   ├── models/        # SQLAlchemy models
+│       │   ├── v1/           # API routes
+│       │   └── main.py       # FastAPI app entry point
+│       ├── alembic/          # Database migrations
+│       ├── tests/            # Test files
+│       └── pyproject.toml    # Python dependencies
+├── .github/                  # GitHub workflows (if added)
+├── compose.yml              # Docker Compose configuration
+├── nx.json                  # Nx workspace configuration
+├── package.json             # Root dependencies and scripts
+└── pnpm-workspace.yaml      # pnpm workspace configuration
 ```
 
-Pass `--dry-run` to see what would happen without actually releasing the library.
+## 🏗️ Getting Started
 
-[Learn more about Nx release &raquo;](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Prerequisites
 
-## Commit Message Format
+- **Node.js** (18.x or later)
+- **pnpm** (8.x or later)
+- **Python** (3.9 or later)
+- **uv** (Python package installer)
+- **Docker** & **Docker Compose** (optional, for containerized development)
 
-This project uses [Conventional Commits](https://www.conventionalcommits.org/) enforced by commitlint. All commit messages must follow this format:
+### Installation
 
-```
-<type>(<scope>): <subject>
+1. **Clone the repository**
 
-<body>
+   ```bash
+   git clone <repository-url>
+   cd the-codex
+   ```
 
-<footer>
-```
+2. **Install dependencies**
 
-### Type
+   ```bash
+   # Install Node.js dependencies
+   pnpm install
 
-Must be one of the following:
+   # Install Python dependencies
+   nx run api:install
+   # or manually:
+   cd packages/api && uv sync
+   ```
 
-- **feat**: A new feature
-- **fix**: A bug fix
-- **docs**: Documentation only changes
-- **style**: Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-- **refactor**: A code change that neither fixes a bug nor adds a feature
-- **perf**: A code change that improves performance
-- **test**: Adding missing tests or correcting existing tests
-- **build**: Changes that affect the build system or external dependencies
-- **ci**: Changes to our CI configuration files and scripts
-- **chore**: Other changes that don't modify src or test files
-- **revert**: Reverts a previous commit
+3. **Set up environment variables**
 
-### Examples
+   ```bash
+   # Copy environment template (when available)
+   cp .env.example .env
 
-```
-feat: add user authentication
-fix: resolve memory leak in data processing
-docs: update API documentation
-test: add unit tests for user service
-```
+   # Edit .env with your configuration
+   # Database URL, API keys, etc.
+   ```
 
-## Keep TypeScript project references up to date
+### Development
 
-Nx automatically updates TypeScript [project references](https://www.typescriptlang.org/docs/handbook/project-references.html) in `tsconfig.json` files to ensure they remain accurate based on your project dependencies (`import` or `require` statements). This sync is automatically done when running tasks such as `build` or `typecheck`, which require updated references to function correctly.
+#### Start All Services
 
-To manually trigger the process to sync the project graph dependencies information to the TypeScript project references, run the following command:
-
-```sh
-npx nx sync
-```
-
-You can enforce that the TypeScript project references are always in the correct state when running in CI by adding a step to your CI job configuration that runs the following command:
-
-```sh
-npx nx sync:check
+```bash
+# Start both frontend and backend in development mode
+pnpm dev
+# or
+nx run-many -t dev
 ```
 
-[Learn more about nx sync](https://nx.dev/reference/nx-commands#sync)
+#### Individual Services
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+**Frontend (Next.js)**
 
-## Install Nx Console
+```bash
+nx dev web
+# or
+cd packages/web && npm run dev
+```
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+**Backend (FastAPI)**
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+nx dev api
+# or
+cd packages/api && uv run fastapi dev api/main.py
+```
 
-## Useful links
+### Database Setup (API)
 
-Learn more:
+```bash
+# Run database migrations
+cd packages/api
+uv run alembic upgrade head
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/js?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+# Create a new migration (when needed)
+uv run alembic revision --autogenerate -m "description"
+```
 
-And join the Nx community:
+## 🧪 Testing
 
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Run All Tests
+
+```bash
+nx run-many -t test
+```
+
+### Individual Test Suites
+
+**Frontend Tests**
+
+```bash
+nx test web
+```
+
+**Backend Tests**
+
+```bash
+nx test api
+# or
+cd packages/api && uv run pytest
+```
+
+## 🔍 Code Quality
+
+### Linting
+
+```bash
+# Lint all projects
+pnpm lint
+# or
+nx run-many -t lint
+
+# Lint specific project
+nx lint web
+nx lint api
+```
+
+### Formatting
+
+```bash
+# Format backend code
+nx format api
+
+# Format frontend code (via ESLint)
+nx lint web --fix
+```
+
+## 🏗️ Building
+
+### Build All Projects
+
+```bash
+nx run-many -t build
+```
+
+### Individual Builds
+
+**Frontend**
+
+```bash
+nx build web
+```
+
+**Backend**
+
+```bash
+nx build api
+```
+
+## 🐳 Docker Development
+
+### Using Docker Compose
+
+```bash
+# Start all services with Docker
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+## 🤝 Contributing
+
+1. **Commit Convention**: This project uses [Conventional Commits](https://www.conventionalcommits.org/)
+
+   - `feat:` for new features
+   - `fix:` for bug fixes
+   - `docs:` for documentation
+   - `style:` for formatting
+   - `refactor:` for code refactoring
+   - `test:` for adding tests
+
+2. **Pre-commit Hooks**: Husky runs linting and formatting on commit
+
+3. **Development Workflow**:
+
+   ```bash
+   # Create feature branch
+   git checkout -b feature/your-feature
+
+   # Make changes and commit
+   git add .
+   git commit -m "feat: add new feature"
+
+   # Push and create PR
+   git push origin feature/your-feature
+   ```
+
+## 🔧 API Documentation
+
+When running the FastAPI backend, visit:
+
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
+
+**Built with ❤️**
