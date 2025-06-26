@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="0" skipped="0" tests="1" time="0.556" timestamp="2025-06-26T20:07:37.874795+07:00" hostname="Beam-2.local"><testcase classname="tests.test_basic" name="test_health_check" time="0.041" /></testsuite></testsuites>
