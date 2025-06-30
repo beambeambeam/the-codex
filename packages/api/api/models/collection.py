@@ -10,6 +10,7 @@ from sqlalchemy.sql import func
 from .base import Base
 
 if TYPE_CHECKING:
+    from .document import Document
     from .user import User
 
 
@@ -45,6 +46,9 @@ class Collection(Base):
     )
     relations: Mapped[list["CollectionRelation"]] = relationship(
         "CollectionRelation", back_populates="collection", cascade="all, delete-orphan"
+    )
+    documents: Mapped[list["Document"]] = relationship(
+        "Document", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:

@@ -30,6 +30,7 @@ class User(Base):
     created_collections = relationship(
         "Collection", foreign_keys="[Collection.created_by]", back_populates="creator"
     )
+    created_documents = relationship("Document", foreign_keys="[Document.created_by]")
 
     def __repr__(self) -> str:
         return (

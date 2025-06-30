@@ -1,7 +1,7 @@
 """Documents related models."""
 
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import JSON, TIMESTAMP, Boolean, ForeignKey, Integer, Text
@@ -9,6 +9,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .user import User
 
 
 class Document(Base):
@@ -49,6 +52,9 @@ class Document(Base):
         "DocumentRelation", back_populates="document", cascade="all, delete-orphan"
     )
 
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
+    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
+
 
 class Chunk(Base):
     __tablename__ = "chunk"
@@ -77,6 +83,9 @@ class Chunk(Base):
     )
 
     document = relationship("Document", back_populates="chunks")
+
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
+    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
 
 
 class DocumentChat(Base):
@@ -108,6 +117,9 @@ class DocumentChat(Base):
         "DocumentChatHistory", back_populates="chat", cascade="all, delete-orphan"
     )
 
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
+    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
+
 
 class DocumentChatHistory(Base):
     __tablename__ = "document_chat_history"
@@ -128,6 +140,8 @@ class DocumentChatHistory(Base):
     )
 
     chat = relationship("DocumentChat", back_populates="history")
+
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
 
 
 class DocumentRelation(Base):
@@ -162,6 +176,9 @@ class DocumentRelation(Base):
         "DocumentEdge", back_populates="relation", cascade="all, delete-orphan"
     )
 
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
+    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
+
 
 class DocumentNode(Base):
     __tablename__ = "document_node"
@@ -191,6 +208,9 @@ class DocumentNode(Base):
 
     relation = relationship("DocumentRelation", back_populates="nodes")
 
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
+    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
+
 
 class DocumentEdge(Base):
     __tablename__ = "document_edge"
@@ -218,3 +238,6 @@ class DocumentEdge(Base):
     )
 
     relation = relationship("DocumentRelation", back_populates="edges")
+
+    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
+    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
