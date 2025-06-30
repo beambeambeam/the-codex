@@ -60,11 +60,21 @@ class StorageService:
     # High-level user-scoped methods
     async def upload_file(self, user: User, file: UploadFile) -> dict:
         """Upload a file for a specific user."""
-        object_name = f"users/{user.id}/{file.filename}"
+        from uuid import uuid4
+
+        # Get file extension from original filename
+        file_extension = ""
+        if file.filename and "." in file.filename:
+            file_extension = "." + file.filename.split(".")[-1].lower()
+
+        # Generate UUID-based filename for storage
+        uuid_filename = str(uuid4()) + file_extension
+        object_name = f"users/{user.id}/{uuid_filename}"
+
         stored_path = await self.upload_file_to_storage(file, object_name)
         return {
             "message": "File uploaded successfully",
-            "filename": file.filename,
+            "filename": file.filename,  # Keep original filename for display
             "stored_path": stored_path,
             "content_type": file.content_type,
             "size": file.size,
