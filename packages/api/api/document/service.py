@@ -3,7 +3,7 @@
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..models.document import (
@@ -16,6 +16,7 @@ from ..models.document import (
     DocumentRelation,
 )
 from ..models.user import User
+from ..storage import minio_service
 from .schemas import (
     ChunkCreate,
     ChunkUpdate,
@@ -398,3 +399,24 @@ class DocumentService:
         """Check if user can view the document."""
         # For now, only creator can view. You might want to add more logic here
         return document.created_by == user.id
+
+    def upload_file_to_minio(
+        self, file: UploadFile, bucket_name: str, object_name: Optional[str] = None
+    ) -> str:
+        """Upload a file to MinIO."""
+        if not object_name:
+            object_name = file.filename
+
+        # Upload the file
+        minio_service.upload_file(bucket_name, object_name, file.file)
+
+        return f"File uploaded to MinIO: {object_name}"
+
+    def delete_file_from_minio(self, object_name: str, bucket_name: str) -> bool:
+        """Delete a file from MinIO."""
+        minio_service.delete_file(bucket_name, object_name)
+        return True
+
+    def get_file_url(self, object_name: str, bucket_name: str) -> str:
+        """Get the public URL of a file in MinIO."""
+        return minio_service.get_file_url(bucket_name, object_name)
