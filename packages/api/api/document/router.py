@@ -1,12 +1,13 @@
 """Document API routes."""
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
 from ..database import get_db
 from ..models.document import DocumentRelation
 from ..models.user import User
+from ..storage import minio_service
 from .dependencies import (
     get_document_chat_or_404,
     get_document_chat_with_modify_permission,
@@ -50,6 +51,52 @@ def create_document(
 ):
     """Create a new document."""
     return document_service.create_document(document_data, current_user)
+
+
+@router.post(
+    "/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED
+)
+async def upload_document(
+    collection_id: str,
+    current_user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+    *,
+    file: UploadFile,
+):
+    """Upload a document file and create a document record."""
+    try:
+        # Generate a unique filename with user and collection prefix
+        object_name = (
+            f"users/{current_user.id}/collections/{collection_id}/{file.filename}"
+        )
+
+        # Upload file to MinIO
+        stored_path = await minio_service.upload_file(file, object_name)
+
+        # Determine file type from filename
+        file_type = (
+            file.filename.split(".")[-1].lower()
+            if file.filename and "." in file.filename
+            else "unknown"
+        )
+
+        # Create document record
+        from .schemas import DocumentCreate
+
+        document_data = DocumentCreate(
+            file_name=file.filename or "uploaded_file",
+            source_file_path=stored_path,
+            file_type=file_type,
+            collection_id=collection_id,
+        )
+
+        return document_service.create_document(document_data, current_user)
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to upload document: {str(e)}",
+        ) from e
 
 
 @router.get("/", response_model=list[DocumentResponse])
