@@ -128,8 +128,10 @@ def get_collection_chat(
     history = collection_service.get_chat_history(chat.id, limit, offset)
 
     # Convert to response model
-    chat_response = CollectionChatWithHistory.from_orm(chat)
-    chat_response.history = [CollectionChatHistoryResponse.from_orm(h) for h in history]
+    chat_response = CollectionChatWithHistory.model_validate(chat)
+    chat_response.history = [
+        CollectionChatHistoryResponse.model_validate(h) for h in history
+    ]
 
     return chat_response
 
@@ -221,9 +223,13 @@ def list_collection_relations(
 
     return [
         CollectionRelationWithNodes(
-            **CollectionRelationResponse.from_orm(relation).dict(),
-            nodes=[CollectionNodeResponse.from_orm(node) for node in relation.nodes],
-            edges=[CollectionEdgeResponse.from_orm(edge) for edge in relation.edges],
+            **CollectionRelationResponse.model_validate(relation).model_dump(),
+            nodes=[
+                CollectionNodeResponse.model_validate(node) for node in relation.nodes
+            ],
+            edges=[
+                CollectionEdgeResponse.model_validate(edge) for edge in relation.edges
+            ],
         )
         for relation in relations
     ]
@@ -235,9 +241,9 @@ def get_collection_relation(
 ):
     """Get a collection relation with nodes and edges."""
     return CollectionRelationWithNodes(
-        **CollectionRelationResponse.from_orm(relation).dict(),
-        nodes=[CollectionNodeResponse.from_orm(node) for node in relation.nodes],
-        edges=[CollectionEdgeResponse.from_orm(edge) for edge in relation.edges],
+        **CollectionRelationResponse.model_validate(relation).model_dump(),
+        nodes=[CollectionNodeResponse.model_validate(node) for node in relation.nodes],
+        edges=[CollectionEdgeResponse.model_validate(edge) for edge in relation.edges],
     )
 
 
