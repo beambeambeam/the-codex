@@ -16,7 +16,7 @@ from ..models.document import (
     DocumentRelation,
 )
 from ..models.user import User
-from ..storage import minio_service
+from ..storage import storage_service
 from .schemas import (
     ChunkCreate,
     ChunkUpdate,
@@ -407,16 +407,16 @@ class DocumentService:
         if not object_name:
             object_name = file.filename
 
-        # Upload the file
-        minio_service.upload_file(bucket_name, object_name, file.file)
+        # Upload the file using storage service
+        storage_service.upload_file_from_fileobj(bucket_name, object_name, file.file)
 
         return f"File uploaded to MinIO: {object_name}"
 
     def delete_file_from_minio(self, object_name: str, bucket_name: str) -> bool:
         """Delete a file from MinIO."""
-        minio_service.delete_file(bucket_name, object_name)
+        storage_service.delete_file_from_storage(object_name, bucket_name)
         return True
 
     def get_file_url(self, object_name: str, bucket_name: str) -> str:
         """Get the public URL of a file in MinIO."""
-        return minio_service.get_file_url(bucket_name, object_name)
+        return storage_service.get_file_url_from_storage(object_name, bucket_name)

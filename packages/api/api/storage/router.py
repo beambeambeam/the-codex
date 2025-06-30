@@ -5,7 +5,7 @@ from fastapi.responses import Response
 
 from ..auth.dependencies import get_current_user
 from ..models.user import User
-from .service import storage_service
+from . import storage_service
 
 router = APIRouter(prefix="/files", tags=["files"])
 

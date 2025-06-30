@@ -7,7 +7,7 @@ from ..auth.dependencies import get_current_user
 from ..database import get_db
 from ..models.document import DocumentRelation
 from ..models.user import User
-from ..storage import minio_service
+from ..storage import storage_service
 from .dependencies import (
     get_document_chat_or_404,
     get_document_chat_with_modify_permission,
@@ -71,7 +71,7 @@ async def upload_document(
         )
 
         # Upload file to MinIO
-        stored_path = await minio_service.upload_file(file, object_name)
+        stored_path = await storage_service.upload_file_to_storage(file, object_name)
 
         # Determine file type from filename
         file_type = (
