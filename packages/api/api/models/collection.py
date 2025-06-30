@@ -36,12 +36,15 @@ class Collection(Base):
     )
 
     creator: Mapped[Optional["User"]] = relationship(
-        "User", foreign_keys=[created_by], back_populates="collections"
+        "User", foreign_keys=[created_by], back_populates="created_collections"
     )
     updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
 
     chats: Mapped[list["CollectionChat"]] = relationship(
         "CollectionChat", back_populates="collection", cascade="all, delete-orphan"
+    )
+    relations: Mapped[list["CollectionRelation"]] = relationship(
+        "CollectionRelation", back_populates="collection", cascade="all, delete-orphan"
     )
 
     def __repr__(self) -> str:
