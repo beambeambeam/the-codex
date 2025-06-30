@@ -1,13 +1,16 @@
 """User model."""
 
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import TIMESTAMP, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .collection import Collection
 
 
 class User(Base):
@@ -27,6 +30,9 @@ class User(Base):
     )
 
     accounts: Mapped[list["Account"]] = relationship("Account", back_populates="user")
+    collections: Mapped[list["Collection"]] = relationship(
+        "Collection", back_populates="user"
+    )
 
     def __repr__(self) -> str:
         return (
