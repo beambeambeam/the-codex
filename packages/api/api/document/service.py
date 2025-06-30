@@ -40,7 +40,7 @@ class DocumentService:
 
     # Document CRUD operations
     def create_document(self, document_data: DocumentCreate, user: User) -> Document:
-        """Create a new document."""
+        """Create a new document from uploaded file data."""
         document = Document(
             id=str(uuid4()),
             file_name=document_data.file_name,

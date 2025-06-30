@@ -43,16 +43,6 @@ from .service import DocumentService
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
-@router.post("/", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED)
-def create_document(
-    document_data: DocumentCreate,
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-):
-    """Create a new document."""
-    return document_service.create_document(document_data, current_user)
-
-
 @router.post(
     "/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED
 )
@@ -89,8 +79,6 @@ async def upload_document(
         )
 
         # Create document record with original filename for display
-        from .schemas import DocumentCreate
-
         document_data = DocumentCreate(
             file_name=file.filename or "uploaded_file",
             source_file_path=stored_path,
