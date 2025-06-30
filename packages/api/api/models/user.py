@@ -27,6 +27,9 @@ class User(Base):
     )
 
     accounts: Mapped[list["Account"]] = relationship("Account", back_populates="user")
+    created_collections = relationship(
+        "Collection", foreign_keys="[Collection.created_by]", back_populates="creator"
+    )
 
     def __repr__(self) -> str:
         return (
