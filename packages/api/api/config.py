@@ -19,6 +19,26 @@ class Settings:
     MINIO_SECURE: bool = os.getenv("MINIO_SECURE", "false").lower() == "true"
     MINIO_BUCKET_NAME: str = os.getenv("MINIO_BUCKET_NAME", "documents")
 
+    @property
+    def MINIO_POLICY(self):
+        return {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": "*"},
+                    "Action": ["s3:GetBucketLocation", "s3:ListBucket"],
+                    "Resource": f"arn:aws:s3:::{self.MINIO_BUCKET_NAME}",
+                },
+                {
+                    "Effect": "Allow",
+                    "Principal": {"AWS": "*"},
+                    "Action": "s3:GetObject",
+                    "Resource": f"arn:aws:s3:::{self.MINIO_BUCKET_NAME}/*",
+                },
+            ],
+        }
+
     # Security settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "SECRET_KEY_IN_PRODUCTION")
 

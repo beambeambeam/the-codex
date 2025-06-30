@@ -1,6 +1,7 @@
 """Service for file storage operations using MinIO."""
 
 import io
+import json
 from typing import Optional
 
 from fastapi import HTTPException, UploadFile, status
@@ -30,6 +31,7 @@ class StorageService:
                 secret_key=self.settings.MINIO_SECRET_KEY,
                 secure=self.settings.MINIO_SECURE,
             )
+
         return self._client
 
     def ensure_bucket_exists(self, bucket_name: Optional[str] = None) -> None:
@@ -40,6 +42,15 @@ class StorageService:
         try:
             if not self.client.bucket_exists(bucket_name):
                 self.client.make_bucket(bucket_name)
+
+                # Set bucket policy for read-only access
+                try:
+                    policy_json = json.dumps(self.settings.MINIO_POLICY)
+                    self.client.set_bucket_policy(bucket_name, policy_json)
+                    print(f"Success: Read-only policy set for bucket '{bucket_name}'.")
+                except Exception as e:
+                    print(f"Error: {e}")
+
         except S3Error as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
