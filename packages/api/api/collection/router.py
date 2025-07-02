@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
 from ..database import get_db
+from ..document.dependencies import get_document_service
+from ..document.schemas import DocumentResponse
+from ..document.service import DocumentService
 from ..models.collection import CollectionRelation
 from ..models.user import User
 from .dependencies import (
@@ -91,6 +94,15 @@ def delete_collection(
 ):
     """Delete a collection."""
     collection_service.delete_collection(collection.id, current_user)
+
+
+@router.get("/{collection_id}/documents", response_model=list[DocumentResponse])
+def list_collection_documents(
+    collection=Depends(get_collection_or_404),
+    document_service: DocumentService = Depends(get_document_service),
+):
+    """List all documents in a collection."""
+    return document_service.get_collection_documents(collection.id)
 
 
 # Collection Chat routes

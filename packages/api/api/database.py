@@ -1,19 +1,17 @@
 """Database configuration and dependencies."""
 
-import os
 from collections.abc import Generator
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-# Database URL from environment
-DATABASE_URL = (
-    f"postgresql+psycopg://{os.getenv('POSTGRES_USER', 'root_admin')}:"
-    f"{os.getenv('POSTGRES_PASSWORD', 'root_admin')}@localhost:3002/postgres"
-)
+from .config import get_settings
+
+# Get settings
+settings = get_settings()
 
 # Create engine
-engine = create_engine(DATABASE_URL)
+engine = create_engine(settings.DATABASE_URL)
 
 # Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

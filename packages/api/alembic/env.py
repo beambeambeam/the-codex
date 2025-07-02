@@ -1,7 +1,9 @@
 import os
 from logging.config import fileConfig
 
+import pgvector
 from sqlalchemy import engine_from_config, pool
+from sqlalchemy.engine import Connection
 
 from alembic import context
 from api.models.base import Base
@@ -57,6 +59,21 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+def do_run_migrations(connection: Connection) -> None:
+    """Configure connection and run migrations with pgvector support."""
+    # Need to hack the "vector" type into postgres dialect schema types.
+    # Otherwise, `alembic check` does not recognize the type
+    connection.dialect.ischema_names["vector"] = pgvector.sqlalchemy.Vector
+
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
@@ -71,10 +88,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
-
-        with context.begin_transaction():
-            context.run_migrations()
+        do_run_migrations(connection)
 
 
 if context.is_offline_mode():
