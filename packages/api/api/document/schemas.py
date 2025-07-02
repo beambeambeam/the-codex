@@ -32,12 +32,11 @@ class DocumentUpdate(BaseModel):
     )
     source_file_path: Optional[str] = Field(None, description="Source file path")
     file_type: Optional[str] = Field(None, description="File type")
-    knowledge_graph: Optional[dict] = Field(None, description="Knowledge graph data")
     is_vectorized: Optional[bool] = Field(
         None, description="Whether document is vectorized"
     )
     is_graph_extracted: Optional[bool] = Field(
-        None, description="Whether graph is extracted"
+        None, description="Whether knowledge graph is extracted"
     )
 
 
@@ -46,7 +45,6 @@ class DocumentResponse(DocumentBase):
 
     id: str
     collection_id: str
-    knowledge_graph: Optional[dict]
     is_vectorized: bool
     is_graph_extracted: bool
     created_at: datetime

@@ -102,12 +102,8 @@ class DocumentService:
             document.source_file_path = update_data.source_file_path
         if update_data.file_type is not None:
             document.file_type = update_data.file_type
-        if update_data.knowledge_graph is not None:
-            document.knowledge_graph = update_data.knowledge_graph
         if update_data.is_vectorized is not None:
             document.is_vectorized = update_data.is_vectorized
-        if update_data.is_graph_extracted is not None:
-            document.is_graph_extracted = update_data.is_graph_extracted
 
         document.updated_by = user.id
 

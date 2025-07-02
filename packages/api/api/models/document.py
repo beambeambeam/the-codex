@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import JSON, TIMESTAMP, Boolean, ForeignKey, Integer, Text
+from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -24,7 +24,6 @@ class Document(Base):
     file_name: Mapped[str] = mapped_column(Text)
     source_file_path: Mapped[str] = mapped_column(Text)
     file_type: Mapped[str] = mapped_column(Text)
-    knowledge_graph: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     is_vectorized: Mapped[bool] = mapped_column(Boolean, default=False)
     is_graph_extracted: Mapped[bool] = mapped_column(Boolean, default=False)
     created_by: Mapped[Optional[str]] = mapped_column(
