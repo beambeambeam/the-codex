@@ -1,5 +1,6 @@
 import { UserIcon } from "lucide-react";
 
+import HomeSidebarSearchbox from "@/app/(protected)/home/_components/sidebar/search";
 import SettingButton from "@/components/button/settings";
 import { ToggleThemeButton } from "@/components/button/toggle-theme";
 import { Logo } from "@/components/icon";
@@ -37,6 +38,9 @@ function HomeSidebar() {
               </div>
             </CardContent>
           </Card>
+        </SidebarGroup>
+        <SidebarGroup>
+          <HomeSidebarSearchbox />
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex-row items-end justify-end">
