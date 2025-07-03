@@ -1,3 +1,5 @@
+import { ThemeProvider } from '@/provider/themes';
+import { BreakpointIndicator } from '@/components/breakpoint-indicator';
 import './global.css';
 
 export const metadata = {
@@ -12,7 +14,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="min-h-screen w-full antialiased bg-background h-full">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          themes={['light', 'dark']}
+        >
+          {children}
+          <BreakpointIndicator />
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
