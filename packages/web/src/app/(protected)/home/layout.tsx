@@ -1,5 +1,9 @@
 import HomeSidebar from '@/app/(protected)/home/_components/sidebar';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from '@/components/ui/sidebar';
 
 export default function HomeLayout({
   children,
@@ -9,10 +13,12 @@ export default function HomeLayout({
   return (
     <SidebarProvider>
       <HomeSidebar />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
+      <SidebarInset>
+        <main className="flex shrink-0 items-center p-2 gap-2 justify-start">
+          <SidebarTrigger />
+          {children}
+        </main>
+      </SidebarInset>
     </SidebarProvider>
   );
 }
