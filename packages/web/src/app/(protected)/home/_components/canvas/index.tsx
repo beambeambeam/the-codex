@@ -12,13 +12,26 @@ import {
   type OnConnect,
 } from "@xyflow/react";
 
-import CustomNode from "./node";
+import CenterNode from "@/app/(protected)/home/_components/canvas/center-node";
+import CustomNode from "@/app/(protected)/home/_components/canvas/node";
 
 const nodeTypes = {
   customNode: CustomNode,
+  centerNode: CenterNode,
 };
 
 const initialNodes: Node[] = [
+  {
+    id: "center",
+    type: "centerNode",
+    position: { x: 300, y: 150 },
+    data: {
+      name: "John Doe",
+      initials: "JD",
+      title: "Product Manager",
+      imageUrl: "https://github.com/shadcn.png", // Mock avatar image
+    },
+  },
   {
     id: "1",
     type: "customNode",
@@ -42,7 +55,7 @@ const initialNodes: Node[] = [
   {
     id: "3",
     type: "customNode",
-    position: { x: 400, y: 150 },
+    position: { x: 500, y: 150 },
     data: {
       header: "Advanced Features",
       paragraph:
@@ -51,7 +64,11 @@ const initialNodes: Node[] = [
   },
 ];
 
-const initialEdges: Edge[] = [{ id: "e1-2", source: "1", target: "2" }];
+const initialEdges: Edge[] = [
+  { id: "e1-center", source: "1", target: "center" },
+  { id: "ecenter-2", source: "center", target: "2" },
+  { id: "ecenter-3", source: "center", target: "3" },
+];
 
 function HomeCanvas() {
   const [nodes, , onNodesChange] = useNodesState(initialNodes);
