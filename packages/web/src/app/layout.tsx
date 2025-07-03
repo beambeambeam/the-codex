@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@/provider/themes';
 import './global.css';
 
 export const metadata = {
@@ -13,7 +14,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen w-full antialiased bg-background h-full">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          themes={['light', 'dark']}
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
