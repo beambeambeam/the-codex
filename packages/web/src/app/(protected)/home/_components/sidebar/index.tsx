@@ -1,3 +1,4 @@
+import SettingButton from '@/components/button/settings';
 import { ToggleThemeButton } from '@/components/button/toggle-theme';
 import { Logo } from '@/components/icon';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -37,8 +38,9 @@ function HomeSidebar() {
           </Card>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="justify-end items-end">
+      <SidebarFooter className="justify-end items-end flex-row">
         <ToggleThemeButton />
+        <SettingButton />
       </SidebarFooter>
     </Sidebar>
   );
