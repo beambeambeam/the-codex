@@ -3,7 +3,6 @@
 import { useCallback } from "react";
 import {
   addEdge,
-  Background,
   Controls,
   ReactFlow,
   useEdgesState,
@@ -13,16 +12,42 @@ import {
   type OnConnect,
 } from "@xyflow/react";
 
+import CustomNode from "./node";
+
+const nodeTypes = {
+  customNode: CustomNode,
+};
+
 const initialNodes: Node[] = [
   {
     id: "1",
-    position: { x: 0, y: 0 },
-    data: { label: "1" },
+    type: "customNode",
+    position: { x: 100, y: 50 },
+    data: {
+      header: "Getting Started",
+      paragraph:
+        "This is your first custom node with a header and paragraph. You can drag it around and connect it to other nodes.",
+    },
   },
   {
     id: "2",
-    position: { x: 0, y: 100 },
-    data: { label: "2" },
+    type: "customNode",
+    position: { x: 100, y: 250 },
+    data: {
+      header: "Next Steps",
+      paragraph:
+        "Here's another node to demonstrate connections. Try connecting these nodes together using the handles.",
+    },
+  },
+  {
+    id: "3",
+    type: "customNode",
+    position: { x: 400, y: 150 },
+    data: {
+      header: "Advanced Features",
+      paragraph:
+        "This node shows the default styling. You can customize the appearance and add more functionality as needed.",
+    },
   },
 ];
 
@@ -45,9 +70,10 @@ function HomeCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        nodeTypes={nodeTypes}
+        fitView
       >
         <Controls />
-        <Background gap={12} size={1} />
       </ReactFlow>
     </div>
   );
