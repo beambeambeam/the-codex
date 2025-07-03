@@ -1,9 +1,9 @@
-import HomeSidebar from '@/app/(protected)/home/_components/sidebar';
+import HomeSidebar from "@/app/(protected)/home/_components/sidebar";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
 export default function HomeLayout({
   children,

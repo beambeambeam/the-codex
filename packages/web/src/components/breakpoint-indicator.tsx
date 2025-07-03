@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 export function BreakpointIndicator() {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === "production") {
     return null;
   }
 

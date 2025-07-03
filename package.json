@@ -15,6 +15,7 @@
     "@eslint/compat": "^1.1.1",
     "@eslint/eslintrc": "^2.1.1",
     "@eslint/js": "^9.8.0",
+    "@ianvs/prettier-plugin-sort-imports": "^4.4.2",
     "@next/eslint-plugin-next": "^15.2.4",
     "@nx/eslint": "21.2.1",
     "@nx/eslint-plugin": "21.2.1",

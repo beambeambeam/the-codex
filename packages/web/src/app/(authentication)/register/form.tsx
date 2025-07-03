@@ -1,8 +1,11 @@
-import { useState, useMemo, useId } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useId, useMemo, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CheckIcon, EyeIcon, EyeOffIcon, XIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
+import { Button } from "@/components/ui/button";
+import { CardContent, CardFooter } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -10,24 +13,20 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { CardContent, CardFooter } from '@/components/ui/card';
-import { FormProps } from '@/types';
-
-import { CheckIcon, EyeIcon, EyeOffIcon, XIcon } from 'lucide-react';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { FormProps } from "@/types";
 
 const registerFormSchema = z
   .object({
-    username: z.string().min(1, 'Username is required'),
-    email: z.string().email('Please enter a valid email address'),
-    password: z.string().min(8, 'Password must be at least 8 characters'),
-    confirmPassword: z.string().min(1, 'Please confirm your password'),
+    username: z.string().min(1, "Username is required"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ['confirmPassword'],
+    path: ["confirmPassword"],
   });
 
 type RegisterFormSchemaType = z.infer<typeof registerFormSchema>;
@@ -49,14 +48,14 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
     setIsConfirmPasswordVisible((prevState) => !prevState);
 
   // Watch password field for strength indicator
-  const password = form.watch('password') || '';
+  const password = form.watch("password") || "";
 
   const checkStrength = (pass: string) => {
     const requirements = [
-      { regex: /.{8,}/, text: 'At least 8 characters' },
-      { regex: /[0-9]/, text: 'At least 1 number' },
-      { regex: /[a-z]/, text: 'At least 1 lowercase letter' },
-      { regex: /[A-Z]/, text: 'At least 1 uppercase letter' },
+      { regex: /.{8,}/, text: "At least 8 characters" },
+      { regex: /[0-9]/, text: "At least 1 number" },
+      { regex: /[a-z]/, text: "At least 1 lowercase letter" },
+      { regex: /[A-Z]/, text: "At least 1 uppercase letter" },
     ];
 
     return requirements.map((req) => ({
@@ -72,18 +71,18 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
   }, [strength]);
 
   const getStrengthColor = (score: number) => {
-    if (score === 0) return 'bg-border';
-    if (score <= 1) return 'bg-red-500';
-    if (score <= 2) return 'bg-orange-500';
-    if (score === 3) return 'bg-amber-500';
-    return 'bg-emerald-500';
+    if (score === 0) return "bg-border";
+    if (score <= 1) return "bg-red-500";
+    if (score <= 2) return "bg-orange-500";
+    if (score === 3) return "bg-amber-500";
+    return "bg-emerald-500";
   };
 
   const getStrengthText = (score: number) => {
-    if (score === 0) return 'Enter a password';
-    if (score <= 2) return 'Weak password';
-    if (score === 3) return 'Medium password';
-    return 'Strong password';
+    if (score === 0) return "Enter a password";
+    if (score <= 2) return "Weak password";
+    if (score === 3) return "Medium password";
+    return "Strong password";
   };
 
   return (
@@ -137,7 +136,7 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                       id="password"
                       placeholder="••••••••"
                       {...field}
-                      type={isPasswordVisible ? 'text' : 'password'}
+                      type={isPasswordVisible ? "text" : "password"}
                       aria-describedby={`${passwordId}-description`}
                       className="pe-9"
                     />
@@ -146,7 +145,7 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                       className="text-muted-foreground/80 hover:text-foreground focus-visible:border-ring focus-visible:ring-ring/50 absolute inset-y-0 end-0 flex h-full w-9 items-center justify-center rounded-e-md transition-[color,box-shadow] outline-none focus:z-10 focus-visible:ring-[3px] disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50"
                       onClick={togglePasswordVisibility}
                       aria-label={
-                        isPasswordVisible ? 'Hide password' : 'Show password'
+                        isPasswordVisible ? "Hide password" : "Show password"
                       }
                       aria-pressed={isPasswordVisible}
                       aria-controls="password"
@@ -210,15 +209,15 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                           <span
                             className={`text-xs ${
                               req.met
-                                ? 'text-emerald-600'
-                                : 'text-muted-foreground'
+                                ? "text-emerald-600"
+                                : "text-muted-foreground"
                             }`}
                           >
                             {req.text}
                             <span className="sr-only">
                               {req.met
-                                ? ' - Requirement met'
-                                : ' - Requirement not met'}
+                                ? " - Requirement met"
+                                : " - Requirement not met"}
                             </span>
                           </span>
                         </li>
@@ -245,7 +244,7 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                       id="confirmPassword"
                       placeholder="••••••••"
                       {...field}
-                      type={isConfirmPasswordVisible ? 'text' : 'password'}
+                      type={isConfirmPasswordVisible ? "text" : "password"}
                     />
                     <button
                       type="button"
@@ -253,8 +252,8 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                       onClick={toggleConfirmPasswordVisibility}
                       aria-label={
                         isConfirmPasswordVisible
-                          ? 'Hide confirm password'
-                          : 'Show confirm password'
+                          ? "Hide confirm password"
+                          : "Show confirm password"
                       }
                       aria-pressed={isConfirmPasswordVisible}
                       aria-controls="confirmPassword"

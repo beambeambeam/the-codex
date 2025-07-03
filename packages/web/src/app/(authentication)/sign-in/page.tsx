@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
+import SignInForm from "@/app/(authentication)/sign-in/form";
+import { Logo } from "@/components/icon";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import SignInForm from '@/app/(authentication)/sign-in/form';
-import { Logo } from '@/components/icon';
+} from "@/components/ui/card";
 
 function SignInPage() {
   return (
@@ -31,19 +31,19 @@ function SignInPage() {
           </CardHeader>
           <SignInForm
             defaultValues={{
-              username: '',
-              password: '',
+              username: "",
+              password: "",
             }}
             onSubmit={function (values: {
               username: string;
               password: string;
             }): void {
-              throw new Error('Function not implemented.');
+              throw new Error("Function not implemented.");
             }}
           />
         </Card>
         <p className="text-accent-foreground/60">
-          Don’t have an account?{' '}
+          Don’t have an account?{" "}
           <Link href="/register">
             <b>Sign up!</b>
           </Link>

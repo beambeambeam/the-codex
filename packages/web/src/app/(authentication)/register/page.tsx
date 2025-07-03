@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
+import RegisterForm from "@/app/(authentication)/register/form";
+import { Logo } from "@/components/icon";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import RegisterForm from '@/app/(authentication)/register/form';
-import { Logo } from '@/components/icon';
+} from "@/components/ui/card";
 
 function RegisterPage() {
   return (
@@ -33,10 +33,10 @@ function RegisterPage() {
           </CardHeader>
           <RegisterForm
             defaultValues={{
-              username: '',
-              email: '',
-              password: '',
-              confirmPassword: '',
+              username: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
             }}
             onSubmit={function (values: {
               username: string;
@@ -44,12 +44,12 @@ function RegisterPage() {
               password: string;
               confirmPassword: string;
             }): void {
-              throw new Error('Function not implemented.');
+              throw new Error("Function not implemented.");
             }}
           />
         </Card>
         <p className="text-accent-foreground/60">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link href="/sign-in">
             <b>Sign in!</b>
           </Link>

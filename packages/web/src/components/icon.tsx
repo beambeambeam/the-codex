@@ -1,17 +1,18 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import { useTheme } from 'next-themes';
-import { cn } from '@/lib/utils';
-import { ComponentProps, forwardRef } from 'react';
+import { ComponentProps, forwardRef } from "react";
+import Image from "next/image";
+import { useTheme } from "next-themes";
 
-interface LogoProps extends Omit<ComponentProps<typeof Image>, 'src' | 'alt'> {
+import { cn } from "@/lib/utils";
+
+interface LogoProps extends Omit<ComponentProps<typeof Image>, "src" | "alt"> {
   className?: string;
   size?: number;
   alt?: string;
-  'aria-label'?: string;
-  'aria-describedby'?: string;
-  'aria-hidden'?: boolean;
+  "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-hidden"?: boolean;
   role?: string;
   title?: string;
 }
@@ -21,11 +22,11 @@ export const Icon = forwardRef<HTMLImageElement, LogoProps>(
     {
       className,
       size = 32,
-      alt = 'The Codex Icon',
-      'aria-label': ariaLabel,
-      'aria-describedby': ariaDescribedby,
-      'aria-hidden': ariaHidden = false,
-      role = 'img',
+      alt = "The Codex Icon",
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedby,
+      "aria-hidden": ariaHidden = false,
+      role = "img",
       title,
       ...props
     },
@@ -38,7 +39,7 @@ export const Icon = forwardRef<HTMLImageElement, LogoProps>(
         alt={alt}
         width={size}
         height={size}
-        className={cn('shrink-0 select-none', className)}
+        className={cn("shrink-0 select-none", className)}
         aria-label={ariaLabel || alt}
         aria-describedby={ariaDescribedby}
         aria-hidden={ariaHidden}
@@ -51,7 +52,7 @@ export const Icon = forwardRef<HTMLImageElement, LogoProps>(
   },
 );
 
-Icon.displayName = 'Icon';
+Icon.displayName = "Icon";
 
 // Logo component - switches between light and dark versions based on theme
 export const Logo = forwardRef<HTMLImageElement, LogoProps>(
@@ -59,11 +60,11 @@ export const Logo = forwardRef<HTMLImageElement, LogoProps>(
     {
       className,
       size = 120,
-      alt = 'The Codex Logo',
-      'aria-label': ariaLabel,
-      'aria-describedby': ariaDescribedby,
-      'aria-hidden': ariaHidden = false,
-      role = 'img',
+      alt = "The Codex Logo",
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedby,
+      "aria-hidden": ariaHidden = false,
+      role = "img",
       title,
       ...props
     },
@@ -73,11 +74,11 @@ export const Logo = forwardRef<HTMLImageElement, LogoProps>(
 
     // Determine which logo to show based on resolved theme
     const logoSrc =
-      resolvedTheme === 'dark'
-        ? '/static/logo/logo-white.svg'
-        : '/static/logo/logo-dark.svg';
+      resolvedTheme === "dark"
+        ? "/static/logo/logo-white.svg"
+        : "/static/logo/logo-dark.svg";
 
-    const themeAwareAlt = `${alt} (${resolvedTheme || 'system'} theme)`;
+    const themeAwareAlt = `${alt} (${resolvedTheme || "system"} theme)`;
 
     return (
       <Image
@@ -86,7 +87,7 @@ export const Logo = forwardRef<HTMLImageElement, LogoProps>(
         alt={alt}
         width={size}
         height={size}
-        className={cn('shrink-0 select-none', className)}
+        className={cn("shrink-0 select-none", className)}
         aria-label={ariaLabel || themeAwareAlt}
         aria-describedby={ariaDescribedby}
         aria-hidden={ariaHidden}
@@ -99,18 +100,18 @@ export const Logo = forwardRef<HTMLImageElement, LogoProps>(
   },
 );
 
-Logo.displayName = 'Logo';
+Logo.displayName = "Logo";
 
 export const LogoDark = forwardRef<HTMLImageElement, LogoProps>(
   (
     {
       className,
       size = 120,
-      alt = 'The Codex Logo',
-      'aria-label': ariaLabel,
-      'aria-describedby': ariaDescribedby,
-      'aria-hidden': ariaHidden = false,
-      role = 'img',
+      alt = "The Codex Logo",
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedby,
+      "aria-hidden": ariaHidden = false,
+      role = "img",
       title,
       ...props
     },
@@ -125,7 +126,7 @@ export const LogoDark = forwardRef<HTMLImageElement, LogoProps>(
         alt={alt}
         width={size}
         height={size}
-        className={cn('shrink-0 select-none', className)}
+        className={cn("shrink-0 select-none", className)}
         aria-label={ariaLabel || darkAlt}
         aria-describedby={ariaDescribedby}
         aria-hidden={ariaHidden}
@@ -138,18 +139,18 @@ export const LogoDark = forwardRef<HTMLImageElement, LogoProps>(
   },
 );
 
-LogoDark.displayName = 'LogoDark';
+LogoDark.displayName = "LogoDark";
 
 export const LogoWhite = forwardRef<HTMLImageElement, LogoProps>(
   (
     {
       className,
       size = 120,
-      alt = 'The Codex Logo',
-      'aria-label': ariaLabel,
-      'aria-describedby': ariaDescribedby,
-      'aria-hidden': ariaHidden = false,
-      role = 'img',
+      alt = "The Codex Logo",
+      "aria-label": ariaLabel,
+      "aria-describedby": ariaDescribedby,
+      "aria-hidden": ariaHidden = false,
+      role = "img",
       title,
       ...props
     },
@@ -164,7 +165,7 @@ export const LogoWhite = forwardRef<HTMLImageElement, LogoProps>(
         alt={alt}
         width={size}
         height={size}
-        className={cn('shrink-0 select-none', className)}
+        className={cn("shrink-0 select-none", className)}
         aria-label={ariaLabel || whiteAlt}
         aria-describedby={ariaDescribedby}
         aria-hidden={ariaHidden}
@@ -177,18 +178,18 @@ export const LogoWhite = forwardRef<HTMLImageElement, LogoProps>(
   },
 );
 
-LogoWhite.displayName = 'LogoWhite';
+LogoWhite.displayName = "LogoWhite";
 
 export const LogoCompact = forwardRef<
   HTMLDivElement,
   {
     className?: string;
     iconSize?: number;
-    textSize?: 'sm' | 'base' | 'lg';
-    orientation?: 'horizontal' | 'vertical';
-    'aria-label'?: string;
-    'aria-describedby'?: string;
-    'aria-hidden'?: boolean;
+    textSize?: "sm" | "base" | "lg";
+    orientation?: "horizontal" | "vertical";
+    "aria-label"?: string;
+    "aria-describedby"?: string;
+    "aria-hidden"?: boolean;
     role?: string;
     tabIndex?: number;
     onClick?: () => void;
@@ -199,12 +200,12 @@ export const LogoCompact = forwardRef<
     {
       className,
       iconSize = 24,
-      textSize = 'base',
-      orientation = 'horizontal',
-      'aria-label': ariaLabel = 'The Codex - Navigate to homepage',
-      'aria-describedby': ariaDescribedby,
-      'aria-hidden': ariaHidden = false,
-      role = 'banner',
+      textSize = "base",
+      orientation = "horizontal",
+      "aria-label": ariaLabel = "The Codex - Navigate to homepage",
+      "aria-describedby": ariaDescribedby,
+      "aria-hidden": ariaHidden = false,
+      role = "banner",
       tabIndex,
       onClick,
       onKeyDown,
@@ -213,14 +214,14 @@ export const LogoCompact = forwardRef<
     ref,
   ) => {
     const textSizeClasses = {
-      sm: 'text-sm',
-      base: 'text-base',
-      lg: 'text-lg',
+      sm: "text-sm",
+      base: "text-base",
+      lg: "text-lg",
     };
 
     const orientationClasses = {
-      horizontal: 'flex-row items-center gap-2',
-      vertical: 'flex-col items-center gap-1',
+      horizontal: "flex-row items-center gap-2",
+      vertical: "flex-col items-center gap-1",
     };
 
     const isInteractive = onClick || onKeyDown;
@@ -228,7 +229,7 @@ export const LogoCompact = forwardRef<
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (onKeyDown) {
         onKeyDown(e);
-      } else if (onClick && (e.key === 'Enter' || e.key === ' ')) {
+      } else if (onClick && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
         onClick();
       }
@@ -238,10 +239,10 @@ export const LogoCompact = forwardRef<
       <div
         ref={ref}
         className={cn(
-          'inline-flex font-semibold select-none',
+          "inline-flex font-semibold select-none",
           orientationClasses[orientation],
           isInteractive &&
-            'focus:ring-ring cursor-pointer rounded-sm focus:ring-2 focus:ring-offset-2 focus:outline-none',
+            "focus:ring-ring cursor-pointer rounded-sm focus:ring-2 focus:ring-offset-2 focus:outline-none",
           className,
         )}
         aria-label={ariaLabel}
@@ -255,7 +256,7 @@ export const LogoCompact = forwardRef<
       >
         <Icon size={iconSize} aria-hidden={true} role="presentation" />
         <span
-          className={cn('text-foreground', textSizeClasses[textSize])}
+          className={cn("text-foreground", textSizeClasses[textSize])}
           aria-hidden={ariaHidden}
         >
           The Codex
@@ -265,4 +266,4 @@ export const LogoCompact = forwardRef<
   },
 );
 
-LogoCompact.displayName = 'LogoCompact';
+LogoCompact.displayName = "LogoCompact";

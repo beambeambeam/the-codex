@@ -1,8 +1,10 @@
-import SettingButton from '@/components/button/settings';
-import { ToggleThemeButton } from '@/components/button/toggle-theme';
-import { Logo } from '@/components/icon';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { UserIcon } from "lucide-react";
+
+import SettingButton from "@/components/button/settings";
+import { ToggleThemeButton } from "@/components/button/toggle-theme";
+import { Logo } from "@/components/icon";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Sidebar,
   SidebarContent,
@@ -10,8 +12,7 @@ import {
   SidebarGroup,
   SidebarHeader,
   SidebarSeparator,
-} from '@/components/ui/sidebar';
-import { UserIcon } from 'lucide-react';
+} from "@/components/ui/sidebar";
 
 function HomeSidebar() {
   return (

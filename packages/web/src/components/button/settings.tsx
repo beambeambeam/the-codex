@@ -1,11 +1,12 @@
-import { Button } from '@/components/ui/button';
+import { LogOutIcon, Settings2Icon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { LogOutIcon, Settings2Icon } from 'lucide-react';
+} from "@/components/ui/dropdown-menu";
 
 function SettingButton() {
   return (
