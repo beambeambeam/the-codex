@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
+import { Button } from "@/components/ui/button";
+import { CardContent, CardFooter } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -10,17 +13,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { CardContent, CardFooter } from '@/components/ui/card';
-import { FormProps } from '@/types';
-
-import { EyeIcon, EyeOffIcon } from 'lucide-react';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { FormProps } from "@/types";
 
 const signInFormSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type SignInFormSchemaType = z.infer<typeof signInFormSchema>;
@@ -68,13 +67,13 @@ function SignInForm(props: FormProps<SignInFormSchemaType>) {
                       id="password"
                       placeholder="••••••••"
                       {...field}
-                      type={isVisible ? 'text' : 'password'}
+                      type={isVisible ? "text" : "password"}
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-2 flex items-center text-sm text-muted-foreground"
+                      className="text-muted-foreground absolute inset-y-0 right-2 flex items-center text-sm"
                       onClick={toggleVisibility}
-                      aria-label={isVisible ? 'Hide password' : 'Show password'}
+                      aria-label={isVisible ? "Hide password" : "Show password"}
                       aria-pressed={isVisible}
                       aria-controls="password"
                     >
@@ -91,7 +90,7 @@ function SignInForm(props: FormProps<SignInFormSchemaType>) {
             )}
           />
         </CardContent>
-        <CardFooter className="pt-5 w-full flex items-center justify-center">
+        <CardFooter className="flex w-full items-center justify-center pt-5">
           <Button type="submit">Submit</Button>
         </CardFooter>
       </form>

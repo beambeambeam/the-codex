@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
+import Link from "next/link";
 
+import RegisterForm from "@/app/(authentication)/register/form";
+import { Logo } from "@/components/icon";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import RegisterForm from '@/app/(authentication)/register/form';
-import { Logo } from '@/components/icon';
+} from "@/components/ui/card";
 
 function RegisterPage() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 h-screen">
-      <div className="hidden lg:flex items-center justify-center h-full flex-col">
+    <div className="grid h-screen grid-cols-1 lg:grid-cols-2">
+      <div className="hidden h-full flex-col items-center justify-center lg:flex">
         <div>
           <Logo size={250} />
           <h1 className="text-3xl">Your&apos;s Agentic Ai Librarians</h1>
         </div>
       </div>
-      <div className="flex items-center justify-center h-full flex-col gap-2.5">
+      <div className="flex h-full flex-col items-center justify-center gap-2.5">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="text-2xl">
@@ -33,10 +33,10 @@ function RegisterPage() {
           </CardHeader>
           <RegisterForm
             defaultValues={{
-              username: '',
-              email: '',
-              password: '',
-              confirmPassword: '',
+              username: "",
+              email: "",
+              password: "",
+              confirmPassword: "",
             }}
             onSubmit={function (values: {
               username: string;
@@ -44,12 +44,12 @@ function RegisterPage() {
               password: string;
               confirmPassword: string;
             }): void {
-              throw new Error('Function not implemented.');
+              throw new Error("Function not implemented.");
             }}
           />
         </Card>
         <p className="text-accent-foreground/60">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Link href="/sign-in">
             <b>Sign in!</b>
           </Link>
