@@ -9,13 +9,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import RegisterForm from '@/app/(authentication)/register/form';
+import { Logo } from '@/components/icon';
 
 function RegisterPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 h-screen">
       <div className="hidden lg:flex items-center justify-center h-full flex-col">
         <div>
-          <h1 className="text-3xl font-bold">The Codex</h1>
+          <Logo size={250} />
           <h1 className="text-3xl">Your&apos;s Agentic Ai Librarians</h1>
         </div>
       </div>
