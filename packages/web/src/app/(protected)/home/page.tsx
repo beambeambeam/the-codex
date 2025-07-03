@@ -7,7 +7,17 @@ function HomePage() {
         <h1>What are you</h1>
         <h1>interest in today?</h1>
       </div>
-      <HomeCanvas />
+      <HomeCanvas
+        nodes={[
+          {
+            data: {
+              header: "",
+              paragraph: "",
+              href: "",
+            },
+          },
+        ]}
+      />
     </div>
   );
 }

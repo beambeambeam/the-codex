@@ -20,60 +20,71 @@ const nodeTypes = {
   centerNode: CenterNode,
 };
 
-const initialNodes: Node[] = [
-  {
-    id: "center",
-    type: "centerNode",
-    position: { x: 1000, y: 500 },
-    data: {
-      title: "User",
-      imageUrl: "",
-    },
-  },
-  {
-    id: "1",
-    type: "customNode",
-    position: { x: -500, y: 50 },
-    data: {
-      header: "🩻 LLM Medical Fine tune",
-      paragraph:
-        "This Library is about Medical LLM fine-tuning refers to the process of adapting a large language model (LLM)—like GPT, LLaMA, or BERT—for specialized use in medical and healthcare-related tasks.",
-      href: "/home",
-    },
-  },
-  {
-    id: "2",
-    type: "customNode",
-    position: { x: 100, y: 250 },
-    data: {
-      header: "VLM Technical Report",
-      paragraph:
-        "This library is all about list of Technical Report of how-well VLM do in current task (OCR, Context and more)",
-      href: "/home",
-    },
-  },
-  {
-    id: "3",
-    type: "customNode",
-    position: { x: 500, y: 150 },
-    data: {
-      header: "LLM Carbon Footprint",
-      paragraph:
-        "This Library contain a data about How much each LLM consume the data for carbon.",
-      href: "/home",
-    },
-  },
-];
+const generateCircularPositions = (
+  centerX: number,
+  centerY: number,
+  radius: number,
+  count: number,
+) => {
+  const positions = [];
+  for (let i = 0; i < count; i++) {
+    const angle = (i * 2 * Math.PI) / count;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    positions.push({ x, y });
+  }
+  return positions;
+};
 
-const initialEdges: Edge[] = [
-  { id: "e1-center", source: "1", target: "center" },
-  { id: "ecenter-2", source: "center", target: "2" },
-  { id: "ecenter-3", source: "center", target: "3" },
-];
+const centerPosition = { x: 500, y: 300 };
+const radius = 500;
 
-function HomeCanvas() {
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+interface HomeCanvasProps {
+  nodes: {
+    data: {
+      header: string;
+      paragraph: string;
+      href: string;
+    };
+  }[];
+}
+
+function HomeCanvas(props: HomeCanvasProps) {
+  const nodePositions = generateCircularPositions(
+    centerPosition.x,
+    centerPosition.y,
+    radius,
+    props.nodes.length,
+  );
+
+  const propsNodes = props.nodes.map((node, index) => ({
+    id: String(index + 1),
+    type: "customNode",
+    position: nodePositions[index] || { x: 0, y: 0 },
+    data: node.data,
+  }));
+
+  const dynamicNodes: Node[] = [
+    {
+      id: "center",
+      type: "centerNode",
+      position: centerPosition,
+      data: {
+        title: "User",
+        imageUrl: "",
+      },
+    },
+    ...propsNodes,
+  ];
+
+  const dynamicEdges: Edge[] = propsNodes.map((node) => ({
+    id: `e${node.id}-center`,
+    source: node.id,
+    target: "center",
+  }));
+
+  const [nodes, , onNodesChange] = useNodesState(dynamicNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(dynamicEdges);
 
   const onConnect: OnConnect = useCallback(
     (params) => setEdges((eds) => addEdge(params, eds)),

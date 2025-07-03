@@ -40,11 +40,11 @@ function CustomNode({ data, className }: CustomNodeProps) {
 
       <div className="flex flex-col items-start justify-start gap-1.5 p-4">
         <h3 className="text-foreground text-2xl leading-tight font-bold">
-          {header}
+          {header !== "" ? header : "No Header"}
         </h3>
         <p className="text-muted-foreground text-xs">Ai Summarize 📝</p>
         <p className="text-foreground text-start text-sm leading-relaxed">
-          {paragraph}
+          {paragraph !== "" ? paragraph : "No Content"}
         </p>
       </div>
     </div>
