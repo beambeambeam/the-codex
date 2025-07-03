@@ -23,7 +23,7 @@ function HomeSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <Card className="py-5">
-            <CardContent className="flex-row flex gap-2 px-6 items-center">
+            <CardContent className="flex flex-row items-center gap-2 px-6">
               <Avatar>
                 <AvatarImage src="" />
                 <AvatarFallback>
@@ -38,7 +38,7 @@ function HomeSidebar() {
           </Card>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="justify-end items-end flex-row">
+      <SidebarFooter className="flex-row items-end justify-end">
         <ToggleThemeButton />
         <SettingButton />
       </SidebarFooter>

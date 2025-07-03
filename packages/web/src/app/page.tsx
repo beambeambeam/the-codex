@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 export default function Index() {
   return (
-    <div className="w-screen h-screen flex justify-center items-center flex-col gap-y-10">
+    <div className="flex h-screen w-screen flex-col items-center justify-center gap-y-10">
       <Logo size={400} />
       <Link href="/sign-in">
         <Button>Let&apos;s get start!</Button>

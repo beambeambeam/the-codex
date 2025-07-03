@@ -173,7 +173,7 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                     >
                       <div
                         className={`h-full ${getStrengthColor(
-                          strengthScore
+                          strengthScore,
                         )} transition-all duration-500 ease-out`}
                         style={{ width: `${(strengthScore / 4) * 100}%` }}
                       ></div>
@@ -249,7 +249,7 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-2 flex items-center text-sm text-muted-foreground"
+                      className="text-muted-foreground absolute inset-y-0 right-2 flex items-center text-sm"
                       onClick={toggleConfirmPasswordVisibility}
                       aria-label={
                         isConfirmPasswordVisible
@@ -272,7 +272,7 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
             )}
           />
         </CardContent>
-        <CardFooter className="pt-5 w-full flex items-center justify-center">
+        <CardFooter className="flex w-full items-center justify-center pt-5">
           <Button type="submit">Create Account</Button>
         </CardFooter>
       </form>

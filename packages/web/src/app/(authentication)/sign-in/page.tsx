@@ -13,14 +13,14 @@ import { Logo } from '@/components/icon';
 
 function SignInPage() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 h-screen">
-      <div className="hidden lg:flex items-center justify-center h-full flex-col">
+    <div className="grid h-screen grid-cols-1 lg:grid-cols-2">
+      <div className="hidden h-full flex-col items-center justify-center lg:flex">
         <div>
           <Logo size={250} />
           <h1 className="text-3xl">Your’s Agentic Ai Librarians</h1>
         </div>
       </div>
-      <div className="flex items-center justify-center h-full flex-col gap-2.5">
+      <div className="flex h-full flex-col items-center justify-center gap-2.5">
         <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle className="text-2xl">🤗 Welcome back.</CardTitle>

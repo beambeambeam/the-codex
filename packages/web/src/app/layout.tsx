@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen w-full antialiased bg-background h-full">
+      <body className="bg-background h-full min-h-screen w-full antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

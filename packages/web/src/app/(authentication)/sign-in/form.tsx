@@ -72,7 +72,7 @@ function SignInForm(props: FormProps<SignInFormSchemaType>) {
                     />
                     <button
                       type="button"
-                      className="absolute inset-y-0 right-2 flex items-center text-sm text-muted-foreground"
+                      className="text-muted-foreground absolute inset-y-0 right-2 flex items-center text-sm"
                       onClick={toggleVisibility}
                       aria-label={isVisible ? 'Hide password' : 'Show password'}
                       aria-pressed={isVisible}
@@ -91,7 +91,7 @@ function SignInForm(props: FormProps<SignInFormSchemaType>) {
             )}
           />
         </CardContent>
-        <CardFooter className="pt-5 w-full flex items-center justify-center">
+        <CardFooter className="flex w-full items-center justify-center pt-5">
           <Button type="submit">Submit</Button>
         </CardFooter>
       </form>

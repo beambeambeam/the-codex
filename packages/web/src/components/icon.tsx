@@ -29,7 +29,7 @@ export const Icon = forwardRef<HTMLImageElement, LogoProps>(
       title,
       ...props
     },
-    ref
+    ref,
   ) => {
     return (
       <Image
@@ -48,7 +48,7 @@ export const Icon = forwardRef<HTMLImageElement, LogoProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Icon.displayName = 'Icon';
@@ -67,7 +67,7 @@ export const Logo = forwardRef<HTMLImageElement, LogoProps>(
       title,
       ...props
     },
-    ref
+    ref,
   ) => {
     const { resolvedTheme } = useTheme();
 
@@ -96,7 +96,7 @@ export const Logo = forwardRef<HTMLImageElement, LogoProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 Logo.displayName = 'Logo';
@@ -114,7 +114,7 @@ export const LogoDark = forwardRef<HTMLImageElement, LogoProps>(
       title,
       ...props
     },
-    ref
+    ref,
   ) => {
     const darkAlt = `${alt} (dark version)`;
 
@@ -135,7 +135,7 @@ export const LogoDark = forwardRef<HTMLImageElement, LogoProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 LogoDark.displayName = 'LogoDark';
@@ -153,7 +153,7 @@ export const LogoWhite = forwardRef<HTMLImageElement, LogoProps>(
       title,
       ...props
     },
-    ref
+    ref,
   ) => {
     const whiteAlt = `${alt} (white version)`;
 
@@ -174,7 +174,7 @@ export const LogoWhite = forwardRef<HTMLImageElement, LogoProps>(
         {...props}
       />
     );
-  }
+  },
 );
 
 LogoWhite.displayName = 'LogoWhite';
@@ -210,7 +210,7 @@ export const LogoCompact = forwardRef<
       onKeyDown,
       ...props
     },
-    ref
+    ref,
   ) => {
     const textSizeClasses = {
       sm: 'text-sm',
@@ -241,14 +241,14 @@ export const LogoCompact = forwardRef<
           'inline-flex font-semibold select-none',
           orientationClasses[orientation],
           isInteractive &&
-            'cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-sm',
-          className
+            'focus:ring-ring cursor-pointer rounded-sm focus:ring-2 focus:ring-offset-2 focus:outline-none',
+          className,
         )}
         aria-label={ariaLabel}
         aria-describedby={ariaDescribedby}
         aria-hidden={ariaHidden}
         role={role}
-        tabIndex={isInteractive ? tabIndex ?? 0 : tabIndex}
+        tabIndex={isInteractive ? (tabIndex ?? 0) : tabIndex}
         onClick={onClick}
         onKeyDown={handleKeyDown}
         {...props}
@@ -262,7 +262,7 @@ export const LogoCompact = forwardRef<
         </span>
       </div>
     );
-  }
+  },
 );
 
 LogoCompact.displayName = 'LogoCompact';
