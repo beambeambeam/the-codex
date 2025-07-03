@@ -24,22 +24,21 @@ const initialNodes: Node[] = [
   {
     id: "center",
     type: "centerNode",
-    position: { x: 300, y: 150 },
+    position: { x: 1000, y: 500 },
     data: {
-      name: "John Doe",
-      initials: "JD",
-      title: "Product Manager",
-      imageUrl: "https://github.com/shadcn.png", // Mock avatar image
+      title: "User",
+      imageUrl: "",
     },
   },
   {
     id: "1",
     type: "customNode",
-    position: { x: 100, y: 50 },
+    position: { x: -500, y: 50 },
     data: {
-      header: "Getting Started",
+      header: "🩻 LLM Medical Fine tune",
       paragraph:
-        "This is your first custom node with a header and paragraph. You can drag it around and connect it to other nodes.",
+        "This Library is about Medical LLM fine-tuning refers to the process of adapting a large language model (LLM)—like GPT, LLaMA, or BERT—for specialized use in medical and healthcare-related tasks.",
+      href: "/home",
     },
   },
   {
@@ -47,9 +46,10 @@ const initialNodes: Node[] = [
     type: "customNode",
     position: { x: 100, y: 250 },
     data: {
-      header: "Next Steps",
+      header: "VLM Technical Report",
       paragraph:
-        "Here's another node to demonstrate connections. Try connecting these nodes together using the handles.",
+        "This library is all about list of Technical Report of how-well VLM do in current task (OCR, Context and more)",
+      href: "/home",
     },
   },
   {
@@ -57,9 +57,10 @@ const initialNodes: Node[] = [
     type: "customNode",
     position: { x: 500, y: 150 },
     data: {
-      header: "Advanced Features",
+      header: "LLM Carbon Footprint",
       paragraph:
-        "This node shows the default styling. You can customize the appearance and add more functionality as needed.",
+        "This Library contain a data about How much each LLM consume the data for carbon.",
+      href: "/home",
     },
   },
 ];
@@ -88,6 +89,7 @@ function HomeCanvas() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        defaultEdgeOptions={{ type: "straight" }}
         fitView
       >
         <Controls />
