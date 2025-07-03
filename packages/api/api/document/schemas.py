@@ -67,7 +67,14 @@ class ChunkBase(BaseModel):
 class ChunkCreate(ChunkBase):
     """Schema for creating a chunk."""
 
+    embedding: list[float] = Field(..., description="Embedding vector for the chunk")
     document_id: str = Field(..., description="Document ID this chunk belongs to")
+
+
+class ChunkSearched(ChunkCreate):
+    """Schema for searched chunks."""
+
+    distance: float = Field(..., description="Distance score for similarity search")
 
 
 class ChunkUpdate(BaseModel):

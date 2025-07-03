@@ -7,7 +7,7 @@ from ..auth.dependencies import get_current_user
 from ..database import get_db
 from ..models.document import Document, DocumentChat, DocumentRelation
 from ..models.user import User
-from .service import DocumentService
+from .service import DocumentServiceSearch as DocumentService
 
 
 def get_document_service(db: Session = Depends(get_db)) -> DocumentService:

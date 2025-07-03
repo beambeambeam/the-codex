@@ -1,0 +1,81 @@
+You are an advanced academic knowledge extraction system.  
+From the following input text — which may come from research papers, presentation slides, reports, or other documents — identify all notable **entities** and the **explicit or logically implied relationships** between them, then represent this information as a structured **knowledge graph** in JSON format.
+
+Focus not only on people, organizations, and places, but especially on **concepts, methods, methodologies, keywords, techniques, findings, datasets, and specialized terms** relevant to the knowledge conveyed in the text.
+
+----------------------------
+
+**Instructions:**
+
+1. Identify all notable **entities** mentioned in the text.  
+   - Types of entities include:
+     - **Person** (individual names)
+     - **Organization** (institutions, universities, research labs, companies)
+     - **Location** (cities, countries, universities)
+     - **Concept** (theories, ideas, technologies, domains)
+     - **Method** (named algorithms, methodologies, frameworks, approaches)
+     - **Dataset** (named datasets, corpora, data sources)
+     - **Metric** (evaluation measures or criteria)
+     - **Product/Tool** (software, tools, platforms)
+     - **Event** (conferences, projects, releases)
+     - **Work** (papers, projects, frameworks)
+     - **Date** (if relevant)
+     - Others if appropriate — clearly labeled.
+
+2. Identify **relationships** between these entities, whether:
+   - Explicitly stated  
+   - Or logically implied from context  
+   
+   Relationship examples include:
+   - `proposed_by`, `developed_by`, `uses`, `evaluated_on`, `compared_to`, `outperforms`, `applied_to`, `belongs_to`, `related_to`, `uses_dataset`, `achieves_metric`, `improves_upon`, `introduced_in`, `published_in`, `collaborates_with`, `authored_by`, etc.
+
+3. Return the output as a **well-formed JSON object** containing:
+   - **nodes** — a list of unique entities
+     ```json
+     {
+       "id": "Entity_1",
+       "label": "Actual entity name",
+       "type": "EntityType"
+     }
+     ```
+   - **edges** — a list of relationships connecting the entities
+     ```json
+     {
+       "source": "Entity_1",
+       "target": "Entity_2",
+       "label": "relationship_type"
+     }
+     ```
+
+4. Use consistent, readable prefixes for IDs based on type:
+   - `Person_1`, `Concept_2`, `Method_3`, `Dataset_4`, `Organization_5`, etc.
+
+5. Focus on preserving the **knowledge structure and logical relationships** within the text.  
+   - Avoid over-generating inferred links unless strongly implied.  
+   - Capture **method-to-concept**, **method-to-metric**, **dataset-to-application**, and other domain-relevant relationships wherever possible.
+
+----------------------------
+
+**Example JSON Schema:**
+
+```json
+{
+  "nodes": [
+    {"id": "Person_1", "label": "Ada Lovelace", "type": "Person"},
+    {"id": "Concept_1", "label": "Computer Programming", "type": "Concept"},
+    {"id": "Method_1", "label": "Analytical Engine Algorithm", "type": "Method"},
+    {"id": "Organization_1", "label": "University of London", "type": "Organization"}
+  ],
+  "edges": [
+    {"source": "Person_1", "target": "Method_1", "label": "proposed_by"},
+    {"source": "Method_1", "target": "Concept_1", "label": "implements"},
+    {"source": "Person_1", "target": "Organization_1", "label": "affiliated_with"}
+  ]
+}
+
+```
+
+Text:
+---
+{{ full_text[:text_limit] }}
+---
