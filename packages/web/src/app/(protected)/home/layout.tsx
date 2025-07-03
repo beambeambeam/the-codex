@@ -14,7 +14,7 @@ export default function HomeLayout({
     <SidebarProvider>
       <HomeSidebar />
       <SidebarInset>
-        <main className="flex shrink-0 items-center justify-start gap-2 p-2">
+        <main className="flex h-full shrink-0 items-start justify-start gap-2 p-3">
           <SidebarTrigger />
           {children}
         </main>
