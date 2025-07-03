@@ -1,4 +1,5 @@
 import { ThemeProvider } from '@/provider/themes';
+import { BreakpointIndicator } from '@/components/breakpoint-indicator';
 import './global.css';
 
 export const metadata = {
@@ -22,6 +23,7 @@ export default function RootLayout({
           themes={['light', 'dark']}
         >
           {children}
+          <BreakpointIndicator />
         </ThemeProvider>
       </body>
     </html>
