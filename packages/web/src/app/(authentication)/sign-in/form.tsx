@@ -14,6 +14,9 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardFooter } from '@/components/ui/card';
+import { FormProps } from '@/types';
+
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
 
 const signInFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -22,22 +25,15 @@ const signInFormSchema = z.object({
 
 type SignInFormSchemaType = z.infer<typeof signInFormSchema>;
 
-interface SignInFormProps {
-  defaultValues: SignInFormSchemaType;
-  onSubmit: (values: SignInFormSchemaType) => void;
-}
-
-function SignInForm(props: SignInFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
-
+function SignInForm(props: FormProps<SignInFormSchemaType>) {
   const form = useForm<SignInFormSchemaType>({
     resolver: zodResolver(signInFormSchema),
     defaultValues: props.defaultValues,
   });
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  const toggleVisibility = () => setIsVisible((prevState) => !prevState);
 
   return (
     <Form {...form}>
@@ -70,16 +66,23 @@ function SignInForm(props: SignInFormProps) {
                   <div className="relative">
                     <Input
                       id="password"
-                      type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
                       {...field}
+                      type={isVisible ? 'text' : 'password'}
                     />
                     <button
                       type="button"
-                      onClick={toggleShowPassword}
                       className="absolute inset-y-0 right-2 flex items-center text-sm text-muted-foreground"
+                      onClick={toggleVisibility}
+                      aria-label={isVisible ? 'Hide password' : 'Show password'}
+                      aria-pressed={isVisible}
+                      aria-controls="password"
                     >
-                      {showPassword ? 'Hide' : 'Show'}
+                      {isVisible ? (
+                        <EyeOffIcon size={16} aria-hidden="true" />
+                      ) : (
+                        <EyeIcon size={16} aria-hidden="true" />
+                      )}
                     </button>
                   </div>
                 </FormControl>
