@@ -1,5 +1,6 @@
 import { UserIcon } from "lucide-react";
 
+import HomeSidebarRecents from "@/app/(protected)/home/_components/sidebar/recents";
 import HomeSidebarSearchbox from "@/app/(protected)/home/_components/sidebar/search";
 import SettingButton from "@/components/button/settings";
 import { ToggleThemeButton } from "@/components/button/toggle-theme";
@@ -41,6 +42,17 @@ function HomeSidebar() {
         </SidebarGroup>
         <SidebarGroup>
           <HomeSidebarSearchbox />
+        </SidebarGroup>
+        <SidebarGroup>
+          <HomeSidebarRecents
+            links={[
+              {
+                title: "VLM Technical Report",
+                href: "home",
+                starred: true,
+              },
+            ]}
+          />
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex-row items-end justify-end">
