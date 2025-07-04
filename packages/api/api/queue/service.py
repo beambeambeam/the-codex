@@ -14,7 +14,6 @@ class QueueType(str, Enum):
 
     DOCUMENT_PROCESSING = "document_processing"
     CHAT_NOTIFICATIONS = "chat_notifications"
-    EMAIL_NOTIFICATIONS = "email_notifications"
     SYSTEM_EVENTS = "system_events"
 
 
@@ -106,30 +105,6 @@ class QueueService:
             f"Published chat notification for user {user_id} "
             f"in collection {collection_id}"
         )
-
-    def publish_email_notification(
-        self,
-        recipient_email: str,
-        subject: str,
-        body: str,
-        template: Optional[str] = None,
-    ) -> None:
-        """Publish an email notification."""
-        message = {
-            "recipient_email": recipient_email,
-            "subject": subject,
-            "body": body,
-            "template": template,
-        }
-
-        with self.client:
-            self.client.publish_message(
-                exchange="notifications",
-                routing_key=QueueType.EMAIL_NOTIFICATIONS.value,
-                message=message,
-            )
-
-        logger.info(f"Published email notification to {recipient_email}")
 
     def publish_system_event(
         self,
