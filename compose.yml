@@ -1,4 +1,4 @@
-name: 'the-codex'
+name: "the-codex"
 
 services:
   pg-db:
@@ -6,7 +6,7 @@ services:
     container_name: pg-db
     restart: always
     ports:
-      - '3002:5432'
+      - "3002:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -23,24 +23,45 @@ services:
     restart: always
     command: server /data --console-address ":9001"
     ports:
-      - '9000:9000' # S3 API
-      - '9001:9001' # admin console
+      - "9000:9000" # S3 API
+      - "9001:9001" # admin console
     environment:
       - MINIO_ROOT_USER=${MINIO_ROOT_USER}
       - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
     volumes:
       - minio-data:/data
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 5s
       timeout: 20s
       retries: 20
     networks:
       - default
 
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: rabbitmq
+    restart: always
+    ports:
+      - "5672:5672" # AMQP port
+      - "15672:15672" # Management UI port
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - default
+
 volumes:
   pgdb-data:
   minio-data:
+  rabbitmq-data:
 
 networks:
   default:
