@@ -82,6 +82,7 @@ the-codex/
 - **Database**: localhost:3002 (PostgreSQL)
 - **MinIO Console**: http://localhost:9001 (Object Storage Admin)
 - **MinIO API**: http://localhost:9000 (S3-compatible API)
+- **RabbitMQ Management**: http://localhost:15672 (Message Queue Admin)
 
 ## Environment Setup
 
