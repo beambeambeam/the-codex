@@ -13,6 +13,7 @@ class QueueType(str, Enum):
     """Predefined queue types."""
 
     DOCUMENT_PROCESSING = "document_processing"
+    COLLECTION_PROCESSING = "collection_processing"
     CHAT_NOTIFICATIONS = "chat_notifications"
     SYSTEM_EVENTS = "system_events"
 
@@ -75,6 +76,30 @@ class QueueService:
         logger.info(
             f"Published document processing task for {document_id} "
             f"in collection {collection_id}"
+        )
+
+    def publish_collection_processing_task(
+        self,
+        collection_id: str,
+        task_type: str,
+        metadata: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Publish a collection processing task."""
+        message = {
+            "collection_id": collection_id,
+            "task_type": task_type,
+            "metadata": metadata or {},
+        }
+
+        with self.client:
+            self.client.publish_message(
+                exchange="processing",
+                routing_key=QueueType.COLLECTION_PROCESSING.value,
+                message=message,
+            )
+
+        logger.info(
+            f"Published collection processing task for collection {collection_id}"
         )
 
     def publish_chat_notification(
