@@ -26,6 +26,11 @@ class QueueService:
         self.client = QueueClient()
         self._initialized_queues: set[str] = set()
 
+        try:
+            self.initialize_default_queues()
+        except Exception as e:
+            logger.warning(f"Failed to auto-initialize queues on startup: {e}")
+
     def initialize_default_queues(self) -> None:
         """Initialize all default queues and exchanges."""
         with self.client:
