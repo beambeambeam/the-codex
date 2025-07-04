@@ -54,12 +54,14 @@ class QueueService:
     def publish_document_processing_task(
         self,
         document_id: str,
+        collection_id: str,
         task_type: str,
         metadata: Optional[dict[str, Any]] = None,
     ) -> None:
         """Publish a document processing task."""
         message = {
             "document_id": document_id,
+            "collection_id": collection_id,
             "task_type": task_type,
             "metadata": metadata or {},
         }
@@ -71,12 +73,16 @@ class QueueService:
                 message=message,
             )
 
-        logger.info(f"Published document processing task for {document_id}")
+        logger.info(
+            f"Published document processing task for {document_id} "
+            f"in collection {collection_id}"
+        )
 
     def publish_chat_notification(
         self,
         user_id: str,
         chat_id: str,
+        collection_id: str,
         message_content: str,
         notification_type: str = "new_message",
     ) -> None:
@@ -84,6 +90,7 @@ class QueueService:
         message = {
             "user_id": user_id,
             "chat_id": chat_id,
+            "collection_id": collection_id,
             "message_content": message_content,
             "notification_type": notification_type,
         }
@@ -95,7 +102,10 @@ class QueueService:
                 message=message,
             )
 
-        logger.info(f"Published chat notification for user {user_id}")
+        logger.info(
+            f"Published chat notification for user {user_id} "
+            f"in collection {collection_id}"
+        )
 
     def publish_email_notification(
         self,
