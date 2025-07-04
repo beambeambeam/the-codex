@@ -1,11 +1,16 @@
 """Queue management router."""
 
+import logging
+import time
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
 from ..auth import get_current_user
 from ..models.user import User
 from .service import QueueService, QueueType, get_queue_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/queue", tags=["queue"])
 
@@ -108,15 +113,114 @@ def publish_message(
 ):
     """Publish a message to a queue (for testing/admin purposes)."""
     try:
+        # Add some metadata to the message
+        enhanced_message = {
+            **request.message,
+            "_published_by": str(current_user.id),
+            "_published_at": int(time.time()),
+            "_queue_type": request.queue_type.value,
+        }
+
         # Use the client directly for custom messages
         with queue_service.client:
             queue_service.client.publish_to_queue(
-                queue_name=request.queue_type.value, message=request.message
+                queue_name=request.queue_type.value, message=enhanced_message
             )
 
-        return {"message": f"Message published to {request.queue_type.value}"}
+        logger.info(
+            f"Message published to {request.queue_type.value} by "
+            f"user {current_user.id}: {enhanced_message}"
+        )
+
+        return {
+            "message": f"Message published to {request.queue_type.value}",
+            "queue_type": request.queue_type.value,
+            "published_message": enhanced_message,
+        }
     except Exception as e:
+        logger.error(f"Failed to publish message: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to publish message: {str(e)}",
+        ) from e
+
+
+@router.get("/debug/{queue_type}")
+def debug_queue_info(
+    queue_type: QueueType,
+    current_user: User = Depends(get_current_user),
+    queue_service: QueueService = Depends(get_queue_service),
+):
+    """Debug endpoint to check queue information (admin only)."""
+    try:
+        # Check if queue is initialized
+        is_initialized = queue_type.value in queue_service._initialized_queues
+
+        return {
+            "queue_type": queue_type.value,
+            "is_initialized": is_initialized,
+            "note": "Use /queue/peek/{queue_type} to see a message without consuming it",
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to debug queue: {str(e)}",
+        ) from e
+
+
+@router.get("/peek/{queue_type}")
+def peek_queue_message(
+    queue_type: QueueType,
+    current_user: User = Depends(get_current_user),
+    queue_service: QueueService = Depends(get_queue_service),
+):
+    """Peek at a message in the queue (consumes one message for testing)."""
+    try:
+        message = queue_service.get_queue_message(queue_type)
+
+        return {
+            "queue_type": queue_type.value,
+            "has_message": message is not None,
+            "message": message,
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to peek queue: {str(e)}",
+        ) from e
+
+
+@router.post("/test-publish/{queue_type}")
+def test_publish_message(
+    queue_type: QueueType,
+    message: str = "Test message from API",
+    current_user: User = Depends(get_current_user),
+    queue_service: QueueService = Depends(get_queue_service),
+):
+    """Quick test endpoint to publish a simple message."""
+    try:
+        test_message = {
+            "type": "test",
+            "content": message,
+            "user_id": str(current_user.id),
+            "timestamp": int(time.time()),
+        }
+
+        with queue_service.client:
+            queue_service.client.publish_to_queue(
+                queue_name=queue_type.value, message=test_message
+            )
+
+        logger.info(f"Test message published to {queue_type.value}")
+
+        return {
+            "success": True,
+            "message": f"Test message published to {queue_type.value}",
+            "published_data": test_message,
+        }
+    except Exception as e:
+        logger.error(f"Failed to publish test message: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to publish test message: {str(e)}",
         ) from e

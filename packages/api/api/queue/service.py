@@ -177,8 +177,17 @@ class QueueService:
         """Get a single message from a queue (polling)."""
         queue_name = queue_type.value
 
-        with self.client:
-            return self.client.get_message(queue_name)
+        try:
+            with self.client:
+                message = self.client.get_message(queue_name)
+                if message:
+                    logger.info(f"Retrieved message from queue {queue_name}: {message}")
+                else:
+                    logger.debug(f"No messages in queue {queue_name}")
+                return message
+        except Exception as e:
+            logger.error(f"Error getting message from queue {queue_name}: {e}")
+            return None
 
     def purge_queue(self, queue_type: QueueType) -> int:
         """Purge all messages from a queue."""
