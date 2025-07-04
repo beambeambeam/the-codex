@@ -76,8 +76,12 @@ def extract_chunks_from_pdf(
     """Extract and chunk text from a PDF file."""
     try:
         if isinstance(file_input, str):
+            # File path
             doc = fitz.open(file_input)
         elif isinstance(file_input, bytes):
+            # Validate that bytes content is not empty
+            if not file_input:
+                raise ValueError("PDF bytes content is empty")
             doc = fitz.open(stream=file_input, filetype="pdf")
         else:
             raise TypeError("file_input must be a string (path) or bytes.")
@@ -85,14 +89,15 @@ def extract_chunks_from_pdf(
         print(f"Error opening PDF {file_name}: {e}")
         return []
 
-    full_text = ""
-    for page_num in range(len(doc)):
-        page = doc.load_page(page_num)
-        page_text = page.get_text()
-        if page_text:
-            full_text += page_text + "\n"
-
-    doc.close()
+    try:
+        full_text = ""
+        for page_num in range(len(doc)):
+            page = doc.load_page(page_num)
+            page_text = page.get_text()
+            if page_text:
+                full_text += page_text + "\n"
+    finally:
+        doc.close()
 
     if not full_text.strip():
         print(f"No text extracted from {file_name}")
@@ -116,6 +121,9 @@ def extract_chunks_from_text_file(
             with open(file_input, encoding="utf-8", errors="ignore") as file:
                 content = file.read()
         elif isinstance(file_input, bytes):
+            # Validate that bytes content is not empty
+            if not file_input:
+                raise ValueError("Text file bytes content is empty")
             content = file_input.decode("utf-8", errors="ignore")
         else:
             raise TypeError("file_input must be a string (path) or bytes.")

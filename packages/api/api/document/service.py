@@ -20,8 +20,8 @@ from ..models.user import User
 from ..storage import storage_service
 from .schemas import (
     ChunkCreate,
-    ChunkUpdate,
     ChunkSearched,
+    ChunkUpdate,
     DocumentChatCreate,
     DocumentChatHistoryCreate,
     DocumentChatUpdate,
@@ -98,14 +98,9 @@ class DocumentService:
             )
 
         # Update fields if provided
-        if update_data.file_name is not None:
-            document.file_name = update_data.file_name
-        if update_data.source_file_path is not None:
-            document.source_file_path = update_data.source_file_path
-        if update_data.file_type is not None:
-            document.file_type = update_data.file_type
-        if update_data.is_vectorized is not None:
-            document.is_vectorized = update_data.is_vectorized
+        update_fields = update_data.model_dump(exclude_unset=True)
+        for field, value in update_fields.items():
+            setattr(document, field, value)
 
         document.updated_by = user.id
 

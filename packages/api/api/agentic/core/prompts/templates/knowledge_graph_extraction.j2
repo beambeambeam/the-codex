@@ -34,8 +34,11 @@ Focus not only on people, organizations, and places, but especially on **concept
      ```json
      {
        "id": "Entity_1",
-       "label": "Actual entity name",
-       "type": "EntityType"
+       "title": "Entity Title",
+       "description": "A brief description of the entity, if available",
+       "type": "entity_type",
+       "label": "Entity Alias"
+
      }
      ```
    - **edges** — a list of relationships connecting the entities
@@ -61,15 +64,125 @@ Focus not only on people, organizations, and places, but especially on **concept
 ```json
 {
   "nodes": [
-    {"id": "Person_1", "label": "Ada Lovelace", "type": "Person"},
-    {"id": "Concept_1", "label": "Computer Programming", "type": "Concept"},
-    {"id": "Method_1", "label": "Analytical Engine Algorithm", "type": "Method"},
-    {"id": "Organization_1", "label": "University of London", "type": "Organization"}
+    {
+      "id": "Person_1",
+      "title": "Augusta Ada King, Countess of Lovelace",
+      "description": "English mathematician and writer, considered the first computer programmer.",
+      "type": "Person",
+      "label": "Ada Lovelace"
+    },
+    {
+      "id": "Person_2",
+      "title": "Charles Babbage",
+      "description": "English mathematician and mechanical engineer, designer of the Analytical Engine.",
+      "type": "Person",
+      "label": "Charles Babbage"
+    },
+    {
+      "id": "Person_3",
+      "title": "Luigi Federico Menabrea",
+      "description": "Italian engineer and later Prime Minister of Italy; author of early paper on the Analytical Engine.",
+      "type": "Person",
+      "label": "Luigi Federico Menabrea"
+    },
+    {
+      "id": "Organization_1",
+      "title": "Analytical Engine",
+      "description": "Mechanical general-purpose computer designed by Charles Babbage.",
+      "type": "Concept",
+      "label": "Analytical Engine"
+    },
+    {
+      "id": "Method_1",
+      "title": "Note G Algorithm",
+      "description": "Algorithm for computing Bernoulli numbers, possibly first computer program.",
+      "type": "Method",
+      "label": "Note G"
+    },
+    {
+      "id": "Dataset_1",
+      "title": "Bernoulli numbers",
+      "description": "Sequence of rational numbers important in number theory and analysis.",
+      "type": "Dataset",
+      "label": "Bernoulli numbers"
+    },
+    {
+      "id": "Work_1",
+      "title": "Translation and Notes on Menabrea's paper",
+      "description": "Ada Lovelace’s annotated translation of Menabrea's 1842 article on the Analytical Engine.",
+      "type": "Work",
+      "label": "Lovelace’s Notes (1843)"
+    },
+    {
+      "id": "Organization_2",
+      "title": "Ada (programming language)",
+      "description": "Programming language named in honor of Ada Lovelace, standardized by U.S. DoD.",
+      "type": "Product/Tool",
+      "label": "Ada (language)"
+    },
+    {
+      "id": "Event_1",
+      "title": "Ada Lovelace Day",
+      "description": "Annual event held on second Tuesday of October to celebrate women in STEM.",
+      "type": "Event",
+      "label": "Ada Lovelace Day"
+    }
   ],
   "edges": [
-    {"source": "Person_1", "target": "Method_1", "label": "proposed_by"},
-    {"source": "Method_1", "target": "Concept_1", "label": "implements"},
-    {"source": "Person_1", "target": "Organization_1", "label": "affiliated_with"}
+    {
+      "id": "Edge_1",
+      "label": "collaborated_with",
+      "source": "Person_1",
+      "target": "Person_2"
+    },
+    {
+      "id": "Edge_2",
+      "label": "designed_by",
+      "source": "Organization_1",
+      "target": "Person_2"
+    },
+    {
+      "id": "Edge_3",
+      "label": "translated_and_annotated",
+      "source": "Person_1",
+      "target": "Work_1"
+    },
+    {
+      "id": "Edge_4",
+      "label": "authored",
+      "source": "Person_3",
+      "target": "Work_1"
+    },
+    {
+      "id": "Edge_5",
+      "label": "introduced_method",
+      "source": "Person_1",
+      "target": "Method_1"
+    },
+    {
+      "id": "Edge_6",
+      "label": "calculates",
+      "source": "Method_1",
+      "target": "Dataset_1"
+    },
+    {
+      "id": "Edge_7",
+      "label": "uses",
+      "source": "Work_1",
+      "target": "Organization_1"
+    },
+    {
+      "id": "Edge_8",
+      "label": "named_after",
+      "source": "Organization_2",
+      "target": "Person_1"
+    },
+    {
+      "id": "Edge_9",
+      "label": "commemorates",
+      "source": "Event_1",
+      "target": "Person_1"
+    }
   ]
 }
 

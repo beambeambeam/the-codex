@@ -1,15 +1,18 @@
 # TO RUN
 # uv run python -m src.agentic.utils.graph_visualization --doc-id 1
 
+import argparse
+from typing import Any
+
 import dash
 import dash_cytoscape as cyto
-from dash import html, dcc
-from dash.dependencies import Input, Output, State
-import argparse
-from typing import List, Dict, Any, Optional
+from dash import dcc, html
+from dash.dependencies import Input, Output
+
+from ....database import get_db
+from ...dependencies import get_document_service
 
 # Assuming db_utils and its functions are in the same directory or accessible
-from .db_utils import get_db, get_knowledge_graph_by_document_id
 
 # --- Default Stylesheet ---
 default_stylesheet = [
@@ -57,8 +60,8 @@ default_stylesheet = [
 
 
 def convert_graph_to_cytoscape_format(
-    graph_data: Dict[str, List[Dict[str, Any]]],
-) -> List[Dict[str, Any]]:
+    graph_data: dict[str, list[dict[str, Any]]],
+) -> list[dict[str, Any]]:
     """
     Converts a graph from {"nodes": [...], "edges": [...]} format to
     a flat list of elements for Dash Cytoscape.
@@ -73,7 +76,7 @@ def convert_graph_to_cytoscape_format(
     return elements
 
 
-def create_cytoscape_app(elements: List[Dict[str, Any]], doc_id: int):
+def create_cytoscape_app(elements: list[dict[str, Any]], doc_id: int):
     """
     Creates and returns a Dash app for visualizing the knowledge graph.
     """
@@ -166,10 +169,10 @@ if __name__ == "__main__":
     db_session = next(get_db())
     try:
         # Fetch the knowledge graph from the database in {"nodes": [], "edges": []} format
-        kg_dict = get_knowledge_graph_by_document_id(db_session, args.doc_id)
+        kg_dict = get_document_service(db=db_session).get_knowledge_graph_by_document_id
 
         if kg_dict is None:
-            print(f"Could not retrieve knowledge graph. The document may not exist.")
+            print("Could not retrieve knowledge graph. The document may not exist.")
         elif not kg_dict.get("nodes") and not kg_dict.get("edges"):
             print(
                 f"Document {args.doc_id} exists but has no knowledge graph data to display."

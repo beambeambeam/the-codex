@@ -27,7 +27,7 @@ class ChunkMetadata(BaseModel):
     token_count: Optional[int] = Field(
         None, description="Number of tokens in the chunk"
     )
-    level: Optional[str] = Field(None, description="Chunking level or type")
+    level: Optional[int] = Field(None, description="Chunking level or type")
     # Optional field for page number if applicable
     page_number: Optional[int] = Field(
         None, description="Page number of the chunk in the original document"

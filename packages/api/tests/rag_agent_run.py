@@ -1,9 +1,9 @@
-from api.agentic.rag_agent import rag_agent
-from api.agentic.core.dependencies import (
+from api.agentic.dependencies import (
     get_document_service,
     get_knowledge_graph_extractor,
     get_text_embedder,
 )
+from api.agentic.rag_agent import rag_agent
 from api.database import get_db
 
 

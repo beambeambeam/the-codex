@@ -1,9 +1,8 @@
 from typing import Any, Optional
 
-from ..document.service import DocumentServiceSearch as DocumentService
 from ..document.schemas import ChunkSearched
-from .core import DocumentIngestor, KnowledgeGraphExtractor, TextEmbedder, call_llm
-from .core.dependencies import get_text_embedder
+from ..document.service import DocumentServiceSearch as DocumentService
+from .core import TextEmbedder, call_llm
 from .pocketflow_custom import Node
 from .schemas import ChatMessage, SharedStore
 

@@ -1,11 +1,14 @@
 import json
+from collections.abc import Awaitable
 from typing import Any, Callable
+
+from .schemas import DocumentEdgeBase, DocumentNodeBase, ExtractedGraph
 
 
 class KnowledgeGraphExtractor:
     def __init__(
         self,
-        llm_caller: Callable[[str], str],
+        llm_caller: Callable[[str], Awaitable[str]],
         prompt_renderer: Callable[[str, int], str],
         text_limit: int = 15000,
     ):
@@ -13,10 +16,39 @@ class KnowledgeGraphExtractor:
         self.prompt_renderer = prompt_renderer
         self.text_limit = text_limit
 
-    def extract(self, full_text: str) -> dict[str, list[dict[str, Any]]]:
+    def _convert_to_kg_node(self, node: dict[str, Any]) -> DocumentNodeBase:
+        """Convert a node dictionary to DocumentNodeBase."""
+        return DocumentNodeBase.model_validate(node)
+
+    def _convert_to_kg_edge(self, edge: dict[str, Any]) -> DocumentEdgeBase:
+        """Convert an edge dictionary to DocumentEdgeBase."""
+        return DocumentEdgeBase.model_validate(edge)
+
+    def _convert_to_kg_data(
+        self, kg_data: dict[str, list[dict[str, Any]]]
+    ) -> ExtractedGraph:
+        """Convert KG data to DocumentNodeBase and DocumentEdgeBase."""
+        nodes: list[DocumentNodeBase] = [
+            self._convert_to_kg_node(node) for node in kg_data.get("nodes", [])
+        ]
+        edges: list[DocumentEdgeBase] = [
+            self._convert_to_kg_edge(edge) for edge in kg_data.get("edges", [])
+        ]
+        return ExtractedGraph(
+            nodes=nodes,
+            edges=edges,
+        )
+
+    async def extract(self, full_text: str) -> ExtractedGraph:
+        """Extract knowledge graph from the provided text.
+        Returns a dictionary with 'nodes' and 'edges' keys.
+        If extraction fails, returns an empty graph with empty nodes and edges.
+        """
+        empty_kg = ExtractedGraph(nodes=[], edges=[])
+
         if not full_text:
             print("KnowledgeGraphExtractor: No text provided for KG extraction.")
-            return {"nodes": [], "edges": []}
+            return empty_kg
 
         prompt = self.prompt_renderer(full_text=full_text, text_limit=self.text_limit)
         print(
@@ -25,14 +57,15 @@ class KnowledgeGraphExtractor:
 
         try:
             # Call the LLM with the rendered prompt
-            response_text = self.llm_caller(prompt)
+            response_text = await self.llm_caller(prompt)
 
             # Extract and check format
             json_str = self._extract_json_string(response_text)
-            kg_data = self._validate_and_parse_json(json_str)
+            validated_kg_dict = self._validate_and_parse_json(json_str)
+            kg_data = self._convert_to_kg_data(validated_kg_dict)
 
             print(
-                f"KnowledgeGraphExtractor: Extracted KG with {len(kg_data.get('nodes', []))} nodes and {len(kg_data.get('edges', []))} edges."
+                f"KnowledgeGraphExtractor: Extracted KG with {len(kg_data.nodes)} nodes and {len(kg_data.edges)} edges."
             )
             return kg_data
 
@@ -40,11 +73,11 @@ class KnowledgeGraphExtractor:
             print(
                 f"KnowledgeGraphExtractor: JSON decode error: {e}. Response: {response_text[:500]}"
             )
-            return {"nodes": [], "edges": []}
+            return empty_kg
 
         except Exception as e:
             print(f"KnowledgeGraphExtractor: Error during KG extraction: {e}")
-            return {"nodes": [], "edges": []}
+            return empty_kg
 
     def _extract_json_string(self, response_text: str) -> str:
         """Extract JSON code block from LLM response."""
@@ -70,7 +103,7 @@ class KnowledgeGraphExtractor:
                 )
                 return {"nodes": [], "edges": []}
 
-        print(f"KnowledgeGraphExtractor: Parsing JSON content: {json_str[:200]}...")
+        print(f"KnowledgeGraphExtractor: Parsing JSON content: {json_str[:1000]}...")
         kg_data = json.loads(json_str)
 
         # Validate structure

@@ -2,11 +2,10 @@ from fastapi import Depends
 
 from ..document.service import DocumentServiceSearch as DocumentService
 from .core import (
-    DocumentIngestor,
     KnowledgeGraphExtractor,
     TextEmbedder,
 )
-from .core.dependencies import (
+from .dependencies import (
     get_document_service,
     get_knowledge_graph_extractor,
     get_text_embedder,

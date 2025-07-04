@@ -39,7 +39,8 @@ class Flow(BasePocketFlow):
         if start and not hasattr(start, "node_name"):
             warnings.warn(
                 f"Start node {start.__class__.__name__} in Flow {self.name} "
-                "is not a CustomNode or CustomBatchNode. Node name tracking might not work as expected for it."
+                "is not a CustomNode or CustomBatchNode. Node name tracking might not work as expected for it.",
+                stacklevel=2,
             )
 
     def _orch(self, shared: ShareStoreBase, params=None):
@@ -48,7 +49,7 @@ class Flow(BasePocketFlow):
         last_action = None
 
         if not curr:
-            warnings.warn(f"Flow '{self.name}' has no start node.")
+            warnings.warn(f"Flow '{self.name}' has no start node.", stacklevel=2)
             return None
 
         while curr:
@@ -63,7 +64,8 @@ class Flow(BasePocketFlow):
             if not hasattr(curr, "name"):
                 warnings.warn(
                     f"Node {curr.__class__.__name__} in Flow {self.name} "
-                    "does not have a 'name' attribute. Using class name."
+                    "does not have a 'name' attribute. Using class name.",
+                    stacklevel=2,
                 )
 
             last_action = curr._run(shared)

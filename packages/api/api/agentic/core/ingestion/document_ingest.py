@@ -1,11 +1,18 @@
 import os
-from typing import Any, Optional, Union
+from typing import Union
 
-from ....document.schemas import ChunkCreate, DocumentCreate
+from ....document.schemas import (
+    ChunkCreate,
+    DocumentCreate,
+    DocumentEdgeCreate,
+    DocumentNodeCreate,
+    DocumentRelationCreate,
+    DocumentUpdate,
+)
 from ....document.service import DocumentService
 from ....models import Document, User
 from ..embedding.embedding import TextEmbedder
-from ..graph.graph_extract import KnowledgeGraphExtractor
+from ..graph.graph_extract import ExtractedGraph, KnowledgeGraphExtractor
 from .ingest_methods import (
     clean_extracted_text,
     extract_chunks_from_pdf,
@@ -42,7 +49,6 @@ class DocumentIngestor:
 
     def __init__(
         self,
-        user: User,
         document_service: DocumentService,
         text_embedder: TextEmbedder,
         kg_extractor: KnowledgeGraphExtractor,
@@ -54,9 +60,6 @@ class DocumentIngestor:
         """
         self.chunk_size: int = chunk_size
         self.min_characters_per_chunk: int = min_characters_per_chunk
-
-        # user session
-        self.user: User = user
 
         # services
         self.document_service: DocumentService = document_service
@@ -111,6 +114,7 @@ class DocumentIngestor:
             file_extension = os.path.splitext(input_file)[1] or ".txt"
             return FileInput(
                 content=input_file,
+                file_name=os.path.basename(input_file),
                 name=input_file,
                 type=self.detect_file_type(file_extension, input_file),
                 is_path=True,
@@ -147,12 +151,17 @@ class DocumentIngestor:
                 if file_input.is_path:
                     doc = fitz.open(file_input.content)
                 else:
+                    # Validate that content is not empty before opening
+                    if not file_input.content:
+                        raise ValueError("PDF content is empty")
                     doc = fitz.open(stream=file_input.content, filetype="pdf")
 
                 full_text = ""
-                for page in doc:
-                    full_text += page.get_text("text") + "\n"
-                doc.close()
+                try:
+                    for page in doc:
+                        full_text += page.get_text("text") + "\n"
+                finally:
+                    doc.close()
 
                 return clean_extracted_text(full_text.strip())
 
@@ -163,6 +172,9 @@ class DocumentIngestor:
                     ) as f:
                         raw_text = f.read().strip()
                 else:
+                    # Validate that content is not empty
+                    if not file_input.content:
+                        raise ValueError("Text file content is empty")
                     raw_text = file_input.content.decode(
                         "utf-8", errors="ignore"
                     ).strip()
@@ -180,6 +192,9 @@ class DocumentIngestor:
                     ) as f:
                         raw_text = f.read().strip()
                 else:
+                    # Validate that content is not empty
+                    if not file_input.content:
+                        raise ValueError("Fallback text content is empty")
                     raw_text = file_input.content.decode(
                         "utf-8", errors="ignore"
                     ).strip()
@@ -237,9 +252,7 @@ class DocumentIngestor:
         )
         return embedded_chunks
 
-    def extract_knowledge_graph(
-        self, file_input: FileInput
-    ) -> Optional[dict[str, Any]]:
+    async def extract_knowledge_graph(self, file_input: FileInput) -> ExtractedGraph:
         """Extract knowledge graph from file content."""
         full_text = self.extract_full_text(file_input)
         if not full_text:
@@ -248,10 +261,10 @@ class DocumentIngestor:
             )
             return None
 
-        kg = self.kg_extractor.extract(full_text=full_text)
-        if kg and (kg.get("nodes") or kg.get("edges")):
-            node_count = len(kg.get("nodes", []))
-            edge_count = len(kg.get("edges", []))
+        kg = await self.kg_extractor.extract(full_text=full_text)
+        if kg and (kg.nodes or kg.edges):
+            node_count = len(kg.nodes)
+            edge_count = len(kg.edges)
             print(
                 f"Knowledge graph extracted from {file_input.name}: {node_count} nodes, {edge_count} edges"
             )
@@ -260,10 +273,33 @@ class DocumentIngestor:
         print(f"No knowledge graph extracted from {file_input.name}")
         return None
 
-    def ingest_file(
+
+class DocumentIngestorService(DocumentIngestor):
+    """Service class to handle document ingestion operations."""
+
+    def __init__(
+        self,
+        document_service,
+        text_embedder,
+        kg_extractor,
+        chunk_size=512,
+        min_characters_per_chunk=24,
+    ):
+        super().__init__(
+            document_service,
+            text_embedder,
+            kg_extractor,
+            chunk_size,
+            min_characters_per_chunk,
+        )
+
+    async def ingest_file(
         self,
         input_file: Union[str, FileInput],
+        save_path: str,
         collection_id: str,
+        graph_extract: bool,
+        user: User,
     ) -> Document:
         """
         Ingest a single file: extract text, generate knowledge graph, chunk, embed, and store.
@@ -288,10 +324,10 @@ class DocumentIngestor:
             document_data=DocumentCreate(
                 file_name=file_input.name,
                 file_type=file_input.type,
-                source_file_path=file_input.content if file_input.is_path else None,
+                source_file_path=save_path,
                 collection_id=collection_id,
             ),
-            user=self.user,
+            user=user,
         )
 
         if not document:
@@ -301,13 +337,50 @@ class DocumentIngestor:
 
         print(f"Created document record ID {document.id} for {file_input.name}")
 
-        # Extract knowledge graph if not already done
-        if not document.is_graph_extracted:
-            kg = self.extract_knowledge_graph(file_input)
+        # Extract knowledge graph if not already done (Optional)
+        if not document.is_graph_extracted and graph_extract:
+            kg = await self.extract_knowledge_graph(file_input)
+
             if kg:
                 # update_document_with_graph(db_session, document.id, kg)
-                raise NotImplementedError
-                print(f"Knowledge graph saved for document ID {document.id}")
+                relation = self.document_service.create_document_relation(
+                    relation_data=DocumentRelationCreate(
+                        title=file_input.name,
+                        description="Knowledge graph extracted from file",
+                        document_id=document.id,
+                    ),
+                    user=user,
+                )
+
+                if relation:
+                    # Create nodes and edges from the knowledge graph
+                    for node in kg.nodes:
+                        node_data = DocumentNodeCreate(
+                            title=node.title,
+                            description=node.description,
+                            type=node.type,
+                            label=node.label,
+                            document_relation_id=relation.id,
+                        )
+                        self.document_service.create_document_node(
+                            node_data=node_data, user=user
+                        )
+                    for edge in kg.edges:
+                        edge_data = DocumentEdgeCreate(
+                            label=edge.label,
+                            source=edge.source,
+                            target=edge.target,
+                            document_relation_id=relation.id,
+                        )
+                        self.document_service.create_document_edge(
+                            edge_data=edge_data, user=user
+                        )
+
+                    document = self.document_service.update_document(
+                        document_id=document.id,
+                        update_data=DocumentUpdate(is_graph_extracted=True),
+                        user=user,
+                    )
 
         # Extract and store vector chunks if not already done
         if not document.is_vectorized:
@@ -318,42 +391,14 @@ class DocumentIngestor:
                 for chunk in embedded_chunks:
                     self.document_service.create_chunk(
                         chunk_data=chunk,
-                        user=self.user,
+                        user=user,
                     )
-                    print(f"Vector chunks saved for document ID {document.id}")
+
+                document = self.document_service.update_document(
+                    document_id=document.id,
+                    update_data=DocumentUpdate(is_vectorized=True),
+                    user=user,
+                )
 
         print(f"Finished processing {file_input.name}")
         return document
-
-    def ingest_multiple_files(
-        self,
-        db_session: Any,
-        input_files: list[Union[str, tuple[str, bytes], dict[str, Any]]],
-        collection_id: str,
-        user_id: str,
-    ) -> list[Document]:
-        """
-        Ingest multiple files into the database.
-
-        Args:
-            db_session: Database session
-            input_files: List of files in various formats
-            collection_id: Collection UUID string
-            user_id: User ID string
-
-        Returns:
-            List[Document]: List of created document records
-        """
-        documents = []
-        for input_file in input_files:
-            try:
-                document = self.ingest_file(
-                    db_session, input_file, collection_id, user_id
-                )
-                documents.append(document)
-            except Exception as e:
-                print(f"Error ingesting file {input_file}: {e}")
-                # Continue with other files rather than failing entirely
-
-        print(f"Successfully ingested {len(documents)}/{len(input_files)} files")
-        return documents
