@@ -29,7 +29,6 @@ async def upload_and_ingest_documents(
     Ingest documents into the system.
     This endpoint allows users to upload documents for processing and storage.
     """
-    from uuid import uuid4
 
     file_name = file_name or input_file.filename
 
@@ -41,19 +40,8 @@ async def upload_and_ingest_documents(
         if not file_content:
             raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
-        file_extension = ""
-        if input_file.filename and "." in input_file.filename:
-            file_extension = "." + input_file.filename.split(".")[-1].lower()
-
-        uuid_filename = str(uuid4()) + file_extension
-
-        object_name = (
-            f"users/{current_user.id}/collections/{collection_id}/{uuid_filename}"
-        )
-
         stored_path = await storage_service.upload_file_to_storage(
             file=input_file,
-            object_name=object_name,
         )
 
         formatted_input = FileInput(

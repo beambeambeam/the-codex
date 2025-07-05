@@ -14,7 +14,6 @@ from ....models import Document, User
 from ..embedding.embedding import TextEmbedder
 from ..graph.graph_extract import ExtractedGraph, KnowledgeGraphExtractor
 from .ingest_methods import (
-    clean_extracted_text,
     extract_chunks_from_pdf,
     extract_chunks_from_text_file,
 )
@@ -163,7 +162,7 @@ class DocumentIngestor:
                 finally:
                     doc.close()
 
-                return clean_extracted_text(full_text.strip())
+                return full_text.strip()
 
             elif file_input.type in text_extensions:
                 if file_input.is_path:
@@ -179,7 +178,7 @@ class DocumentIngestor:
                         "utf-8", errors="ignore"
                     ).strip()
                 # Sanitize text file content
-                return clean_extracted_text(raw_text)
+                return raw_text
 
             else:
                 # Fallback: try to read as text
@@ -199,7 +198,7 @@ class DocumentIngestor:
                         "utf-8", errors="ignore"
                     ).strip()
                 # Sanitize fallback text
-                return clean_extracted_text(raw_text)
+                return raw_text
 
         except Exception as e:
             print(f"Error extracting text from {file_input.name}: {e}")
@@ -212,11 +211,16 @@ class DocumentIngestor:
         # Parse and chunk the file
         if file_input.type == ".pdf":
             chunks = extract_chunks_from_pdf(
-                file_input.content, file_name=file_input.name
+                file_input.content,
+                file_name=file_input.name,
+                # embedding_model=self.text_embedder.model,
             )
         else:
             chunks = extract_chunks_from_text_file(
-                file_input.content, file_name=file_input.name, file_type=file_input.type
+                file_input.content,
+                file_name=file_input.name,
+                file_type=file_input.type,
+                # embedding_model=self.text_embedder.model,
             )
 
         if not chunks:
@@ -293,6 +297,83 @@ class DocumentIngestorService(DocumentIngestor):
             min_characters_per_chunk,
         )
 
+    async def extract_and_store_knowledge_graph(
+        self,
+        file_input: FileInput,
+        document_id: str,
+        user: User,
+    ) -> Document:
+        """Extract and store knowledge graph from file input into the document system."""
+        # Extract knowledge graph from file input
+        kg = await self.extract_knowledge_graph(file_input)
+        if not kg:
+            print(f"No knowledge graph extracted from {file_input.name}")
+            return None
+
+        # Store the knowledge graph in the document system
+        document = await self.store_knowledge_graph(
+            file_input=file_input,
+            kg=kg,
+            document_id=document_id,
+            user=user,
+        )
+
+        if not document:
+            print(f"Failed to store knowledge graph for {file_input.name}")
+
+        return document
+
+    async def store_knowledge_graph(
+        self,
+        file_input: FileInput,
+        kg: ExtractedGraph,
+        document_id: str,
+        user: User,
+    ) -> Document:
+        """Store the knowledge graph extracted from a file into the document system."""
+
+        # update_document_with_graph(db_session, document.id, kg)
+        relation = self.document_service.create_document_relation(
+            relation_data=DocumentRelationCreate(
+                title=file_input.name,
+                description="Knowledge graph extracted from file",
+                document_id=document_id,
+            ),
+            user=user,
+        )
+
+        if relation:
+            # Create nodes and edges from the knowledge graph
+            for node in kg.nodes:
+                node_data = DocumentNodeCreate(
+                    title=node.title,
+                    description=node.description,
+                    type=node.type,
+                    label=node.label,
+                    document_relation_id=relation.id,
+                )
+                self.document_service.create_document_node(
+                    node_data=node_data, user=user
+                )
+            for edge in kg.edges:
+                edge_data = DocumentEdgeCreate(
+                    label=edge.label,
+                    source=edge.source,
+                    target=edge.target,
+                    document_relation_id=relation.id,
+                )
+                self.document_service.create_document_edge(
+                    edge_data=edge_data, user=user
+                )
+
+            document = self.document_service.update_document(
+                document_id=document_id,
+                update_data=DocumentUpdate(is_graph_extracted=True),
+                user=user,
+            )
+
+        return document
+
     async def ingest_file(
         self,
         input_file: Union[str, FileInput],
@@ -339,48 +420,13 @@ class DocumentIngestorService(DocumentIngestor):
 
         # Extract knowledge graph if not already done (Optional)
         if not document.is_graph_extracted and graph_extract:
-            kg = await self.extract_knowledge_graph(file_input)
-
-            if kg:
-                # update_document_with_graph(db_session, document.id, kg)
-                relation = self.document_service.create_document_relation(
-                    relation_data=DocumentRelationCreate(
-                        title=file_input.name,
-                        description="Knowledge graph extracted from file",
-                        document_id=document.id,
-                    ),
-                    user=user,
-                )
-
-                if relation:
-                    # Create nodes and edges from the knowledge graph
-                    for node in kg.nodes:
-                        node_data = DocumentNodeCreate(
-                            title=node.title,
-                            description=node.description,
-                            type=node.type,
-                            label=node.label,
-                            document_relation_id=relation.id,
-                        )
-                        self.document_service.create_document_node(
-                            node_data=node_data, user=user
-                        )
-                    for edge in kg.edges:
-                        edge_data = DocumentEdgeCreate(
-                            label=edge.label,
-                            source=edge.source,
-                            target=edge.target,
-                            document_relation_id=relation.id,
-                        )
-                        self.document_service.create_document_edge(
-                            edge_data=edge_data, user=user
-                        )
-
-                    document = self.document_service.update_document(
-                        document_id=document.id,
-                        update_data=DocumentUpdate(is_graph_extracted=True),
-                        user=user,
-                    )
+            document = await self.extract_and_store_knowledge_graph(
+                file_input=file_input,
+                document_id=document.id,
+                user=user,
+            )
+            if not document:
+                print(f"Failed to extract knowledge graph for {file_input.name}")
 
         # Extract and store vector chunks if not already done
         if not document.is_vectorized:
