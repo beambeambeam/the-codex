@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
 from ..database import get_db
-from ..models.document import DocumentRelation
+from ..models.document import Document, DocumentChat, DocumentRelation
 from ..models.user import User
 from ..storage import storage_service
 from .dependencies import (
@@ -106,7 +106,7 @@ def list_user_documents(
 
 @router.get("/{document_id}", response_model=DocumentDetailResponse)
 def get_document(
-    document=Depends(get_document_or_404),
+    document: Document = Depends(get_document_or_404),
     document_service: DocumentService = Depends(get_document_service),
 ):
     """Get a document with all details."""
@@ -116,7 +116,7 @@ def get_document(
 @router.put("/{document_id}", response_model=DocumentResponse)
 def update_document(
     update_data: DocumentUpdate,
-    document=Depends(get_document_with_modify_permission),
+    document: Document = Depends(get_document_with_modify_permission),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
@@ -126,11 +126,13 @@ def update_document(
 
 @router.delete("/{document_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_document(
-    document=Depends(get_document_with_modify_permission),
+    document: Document = Depends(get_document_with_modify_permission),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
     """Delete a document."""
+    # Delete the document file from storage
+    storage_service.delete_file_from_storage(document.source_file_path)
     document_service.delete_document(document.id, current_user)
 
 
@@ -142,7 +144,7 @@ def delete_document(
 )
 def create_chunk(
     chunk_data: ChunkCreate,
-    document=Depends(get_document_or_404),
+    document: Document = Depends(get_document_or_404),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
@@ -154,7 +156,7 @@ def create_chunk(
 
 @router.get("/{document_id}/chunks", response_model=list[ChunkResponse])
 def list_document_chunks(
-    document=Depends(get_document_or_404),
+    document: Document = Depends(get_document_or_404),
     document_service: DocumentService = Depends(get_document_service),
 ):
     """List all chunks for a document."""
@@ -176,7 +178,7 @@ def create_document_chat(
 
 @router.get("/{document_id}/chats", response_model=list[DocumentChatResponse])
 def list_document_chats(
-    document=Depends(get_document_or_404),
+    document: Document = Depends(get_document_or_404),
     document_service: DocumentService = Depends(get_document_service),
 ):
     """List all chats for a document."""
@@ -185,7 +187,7 @@ def list_document_chats(
 
 @router.get("/chats/{chat_id}", response_model=DocumentChatWithHistory)
 def get_document_chat(
-    chat=Depends(get_document_chat_or_404),
+    chat: DocumentChat = Depends(get_document_chat_or_404),
     document_service: DocumentService = Depends(get_document_service),
     limit: int = Query(
         100, ge=1, le=1000, description="Number of history items to return"
@@ -207,7 +209,7 @@ def get_document_chat(
 @router.put("/chats/{chat_id}", response_model=DocumentChatResponse)
 def update_document_chat(
     update_data: DocumentChatUpdate,
-    chat=Depends(get_document_chat_with_modify_permission),
+    chat: DocumentChat = Depends(get_document_chat_with_modify_permission),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
@@ -217,7 +219,7 @@ def update_document_chat(
 
 @router.delete("/chats/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_document_chat(
-    chat=Depends(get_document_chat_with_modify_permission),
+    chat: DocumentChat = Depends(get_document_chat_with_modify_permission),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
@@ -233,7 +235,7 @@ def delete_document_chat(
 )
 def add_chat_history(
     history_data: DocumentChatHistoryCreate,
-    chat=Depends(get_document_chat_or_404),
+    chat: DocumentChat = Depends(get_document_chat_or_404),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
@@ -247,7 +249,7 @@ def add_chat_history(
     "/chats/{chat_id}/history", response_model=list[DocumentChatHistoryResponse]
 )
 def get_chat_history(
-    chat=Depends(get_document_chat_or_404),
+    chat: DocumentChat = Depends(get_document_chat_or_404),
     document_service: DocumentService = Depends(get_document_service),
     limit: int = Query(100, ge=1, le=1000, description="Number of messages"),
     offset: int = Query(0, ge=0, description="Number of messages to skip"),
@@ -271,9 +273,36 @@ def create_document_relation(
     return document_service.create_document_relation(relation_data, current_user)
 
 
+@router.get("/graph", response_model=DocumentRelationResponse)
+def create_document_graph(
+    document_id: str,
+    nodes: list[DocumentNodeCreate],
+    edges: list[DocumentEdgeCreate],
+    current_user: User = Depends(get_current_user),
+) -> DocumentRelation:
+    """Create a document relation with nodes and edges."""
+    # Create the relation
+    relation = create_document_relation(
+        DocumentRelationCreate(
+            document_id=document_id,
+            title="Graph Relation",
+            description="Automatically created relation for graph",
+        ),
+    )
+    # Create nodes
+    for node_data in nodes:
+        create_document_node(node_data=node_data, user=current_user)
+
+    # Create edges
+    for edge_data in edges:
+        create_document_edge(edge_data=edge_data, user=current_user)
+
+    return relation
+
+
 @router.get("/{document_id}/relations", response_model=list[DocumentRelationWithNodes])
 def list_document_relations(
-    document=Depends(get_document_or_404),
+    document: Document = Depends(get_document_or_404),
     db: Session = Depends(get_db),
 ):
     """List all relations for a document with nodes and edges."""
@@ -303,7 +332,7 @@ def list_document_relations(
 
 @router.get("/relations/{relation_id}", response_model=DocumentRelationWithNodes)
 def get_document_relation(
-    relation=Depends(get_document_relation_or_404),
+    relation: DocumentRelation = Depends(get_document_relation_or_404),
 ):
     """Get a document relation with nodes and edges."""
     return DocumentRelationWithNodes(
@@ -321,7 +350,7 @@ def get_document_relation(
 )
 def create_document_node(
     node_data: DocumentNodeCreate,
-    relation=Depends(get_document_relation_with_modify_permission),
+    relation: DocumentRelation = Depends(get_document_relation_with_modify_permission),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):
@@ -339,7 +368,7 @@ def create_document_node(
 )
 def create_document_edge(
     edge_data: DocumentEdgeCreate,
-    relation=Depends(get_document_relation_with_modify_permission),
+    relation: DocumentRelation = Depends(get_document_relation_with_modify_permission),
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
 ):

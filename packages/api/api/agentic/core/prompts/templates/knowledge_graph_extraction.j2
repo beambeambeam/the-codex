@@ -1,0 +1,194 @@
+You are an advanced academic knowledge extraction system.  
+From the following input text — which may come from research papers, presentation slides, reports, or other documents — identify all notable **entities** and the **explicit or logically implied relationships** between them, then represent this information as a structured **knowledge graph** in JSON format.
+
+Focus not only on people, organizations, and places, but especially on **concepts, methods, methodologies, keywords, techniques, findings, datasets, and specialized terms** relevant to the knowledge conveyed in the text.
+
+----------------------------
+
+**Instructions:**
+
+1. Identify all notable **entities** mentioned in the text.  
+   - Types of entities include:
+     - **Person** (individual names)
+     - **Organization** (institutions, universities, research labs, companies)
+     - **Location** (cities, countries, universities)
+     - **Concept** (theories, ideas, technologies, domains)
+     - **Method** (named algorithms, methodologies, frameworks, approaches)
+     - **Dataset** (named datasets, corpora, data sources)
+     - **Metric** (evaluation measures or criteria)
+     - **Product/Tool** (software, tools, platforms)
+     - **Event** (conferences, projects, releases)
+     - **Work** (papers, projects, frameworks)
+     - **Date** (if relevant)
+     - Others if appropriate — clearly labeled.
+
+2. Identify **relationships** between these entities, whether:
+   - Explicitly stated  
+   - Or logically implied from context  
+   
+   Relationship examples include:
+   - `proposed_by`, `developed_by`, `uses`, `evaluated_on`, `compared_to`, `outperforms`, `applied_to`, `belongs_to`, `related_to`, `uses_dataset`, `achieves_metric`, `improves_upon`, `introduced_in`, `published_in`, `collaborates_with`, `authored_by`, etc.
+
+3. Return the output as a **well-formed JSON object** containing:
+   - **nodes** — a list of unique entities
+     ```json
+     {
+       "id": "Entity_1",
+       "title": "Entity Title",
+       "description": "A brief description of the entity, if available",
+       "type": "entity_type",
+       "label": "Entity Alias"
+
+     }
+     ```
+   - **edges** — a list of relationships connecting the entities
+     ```json
+     {
+       "source": "Entity_1",
+       "target": "Entity_2",
+       "label": "relationship_type"
+     }
+     ```
+
+4. Use consistent, readable prefixes for IDs based on type:
+   - `Person_1`, `Concept_2`, `Method_3`, `Dataset_4`, `Organization_5`, etc.
+
+5. Focus on preserving the **knowledge structure and logical relationships** within the text.  
+   - Avoid over-generating inferred links unless strongly implied.  
+   - Capture **method-to-concept**, **method-to-metric**, **dataset-to-application**, and other domain-relevant relationships wherever possible.
+
+----------------------------
+
+**Example JSON Schema:**
+
+```json
+{
+  "nodes": [
+    {
+      "id": "Person_1",
+      "title": "Augusta Ada King, Countess of Lovelace",
+      "description": "English mathematician and writer, considered the first computer programmer.",
+      "type": "Person",
+      "label": "Ada Lovelace"
+    },
+    {
+      "id": "Person_2",
+      "title": "Charles Babbage",
+      "description": "English mathematician and mechanical engineer, designer of the Analytical Engine.",
+      "type": "Person",
+      "label": "Charles Babbage"
+    },
+    {
+      "id": "Person_3",
+      "title": "Luigi Federico Menabrea",
+      "description": "Italian engineer and later Prime Minister of Italy; author of early paper on the Analytical Engine.",
+      "type": "Person",
+      "label": "Luigi Federico Menabrea"
+    },
+    {
+      "id": "Organization_1",
+      "title": "Analytical Engine",
+      "description": "Mechanical general-purpose computer designed by Charles Babbage.",
+      "type": "Concept",
+      "label": "Analytical Engine"
+    },
+    {
+      "id": "Method_1",
+      "title": "Note G Algorithm",
+      "description": "Algorithm for computing Bernoulli numbers, possibly first computer program.",
+      "type": "Method",
+      "label": "Note G"
+    },
+    {
+      "id": "Dataset_1",
+      "title": "Bernoulli numbers",
+      "description": "Sequence of rational numbers important in number theory and analysis.",
+      "type": "Dataset",
+      "label": "Bernoulli numbers"
+    },
+    {
+      "id": "Work_1",
+      "title": "Translation and Notes on Menabrea's paper",
+      "description": "Ada Lovelace’s annotated translation of Menabrea's 1842 article on the Analytical Engine.",
+      "type": "Work",
+      "label": "Lovelace’s Notes (1843)"
+    },
+    {
+      "id": "Organization_2",
+      "title": "Ada (programming language)",
+      "description": "Programming language named in honor of Ada Lovelace, standardized by U.S. DoD.",
+      "type": "Product/Tool",
+      "label": "Ada (language)"
+    },
+    {
+      "id": "Event_1",
+      "title": "Ada Lovelace Day",
+      "description": "Annual event held on second Tuesday of October to celebrate women in STEM.",
+      "type": "Event",
+      "label": "Ada Lovelace Day"
+    }
+  ],
+  "edges": [
+    {
+      "id": "Edge_1",
+      "label": "collaborated_with",
+      "source": "Person_1",
+      "target": "Person_2"
+    },
+    {
+      "id": "Edge_2",
+      "label": "designed_by",
+      "source": "Organization_1",
+      "target": "Person_2"
+    },
+    {
+      "id": "Edge_3",
+      "label": "translated_and_annotated",
+      "source": "Person_1",
+      "target": "Work_1"
+    },
+    {
+      "id": "Edge_4",
+      "label": "authored",
+      "source": "Person_3",
+      "target": "Work_1"
+    },
+    {
+      "id": "Edge_5",
+      "label": "introduced_method",
+      "source": "Person_1",
+      "target": "Method_1"
+    },
+    {
+      "id": "Edge_6",
+      "label": "calculates",
+      "source": "Method_1",
+      "target": "Dataset_1"
+    },
+    {
+      "id": "Edge_7",
+      "label": "uses",
+      "source": "Work_1",
+      "target": "Organization_1"
+    },
+    {
+      "id": "Edge_8",
+      "label": "named_after",
+      "source": "Organization_2",
+      "target": "Person_1"
+    },
+    {
+      "id": "Edge_9",
+      "label": "commemorates",
+      "source": "Event_1",
+      "target": "Person_1"
+    }
+  ]
+}
+
+```
+
+Text:
+---
+{{ full_text[:text_limit] }}
+---

@@ -4,6 +4,7 @@ from typing import Optional
 from uuid import uuid4
 
 from fastapi import HTTPException, UploadFile, status
+from sqlalchemy import text
 from sqlalchemy.orm import Session, joinedload
 
 from ..models.document import (
@@ -19,6 +20,7 @@ from ..models.user import User
 from ..storage import storage_service
 from .schemas import (
     ChunkCreate,
+    ChunkSearched,
     ChunkUpdate,
     DocumentChatCreate,
     DocumentChatHistoryCreate,
@@ -96,14 +98,9 @@ class DocumentService:
             )
 
         # Update fields if provided
-        if update_data.file_name is not None:
-            document.file_name = update_data.file_name
-        if update_data.source_file_path is not None:
-            document.source_file_path = update_data.source_file_path
-        if update_data.file_type is not None:
-            document.file_type = update_data.file_type
-        if update_data.is_vectorized is not None:
-            document.is_vectorized = update_data.is_vectorized
+        update_fields = update_data.model_dump(exclude_unset=True)
+        for field, value in update_fields.items():
+            setattr(document, field, value)
 
         document.updated_by = user.id
 
@@ -150,6 +147,7 @@ class DocumentService:
             id=str(uuid4()),
             document_id=chunk_data.document_id,
             chunk_text=chunk_data.chunk_text,
+            embedding=chunk_data.embedding,
             page_number=chunk_data.page_number,
             end_char=chunk_data.end_char,
             created_by=user.id,
@@ -416,3 +414,39 @@ class DocumentService:
     def get_file_url(self, object_name: str, bucket_name: str) -> str:
         """Get the public URL of a file in MinIO."""
         return storage_service.get_file_url_from_storage(object_name, bucket_name)
+
+
+class DocumentServiceSearch(DocumentService):
+    """Service for searching documents and related entities."""
+
+    def __init__(self, db: Session):
+        super().__init__(db)
+
+    def search_chunks(
+        self, collection_id: str, query_embedding: list[float], top_k: int = 5
+    ) -> list[ChunkSearched]:
+        retrieved_docs = []
+
+        results: list[tuple[Chunk, float]] = (
+            self.db.query(
+                Chunk,
+                Chunk.embedding.l2_distance(query_embedding).label("distance"),
+            )
+            .join(Document, Chunk.document_id == Document.id)
+            .filter(Document.collection_id == collection_id)
+            .order_by(text("distance ASC"))
+            .limit(top_k)
+            .all()
+        )
+
+        for chunk, distance in results:
+            retrieved_docs.append(
+                ChunkSearched(
+                    chunk_text=chunk.chunk_text,
+                    embedding=chunk.embedding,
+                    document_id=chunk.document_id,
+                    distance=float(distance),
+                )
+            )
+
+        return retrieved_docs
