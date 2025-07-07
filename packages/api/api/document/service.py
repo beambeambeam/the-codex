@@ -159,7 +159,9 @@ class DocumentService:
         self.db.refresh(chunk)
         return chunk
 
-    def get_document_chunks(self, document_id: str) -> list[Chunk]:
+    def get_document_chunks(
+        self, document_id: str, embedding: bool = False
+    ) -> list[Chunk]:
         """Get all chunks for a document."""
         return (
             self.db.query(Chunk)

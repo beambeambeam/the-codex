@@ -2,11 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
 from ..document.schemas import DocumentResponse
 from ..storage import storage_service
+from .core.clustering.schemas import (
+    ClusteringResult,
+)  # TODO: This is for quick use future will be use with database
 from .core.ingestion.schemas import FileInput
 from .dependencies import (
+    DocumentClusteringService,
     DocumentIngestorService,
     User,
     get_current_user,
+    get_document_clustering_service,
     get_document_ingestor,
 )
 
@@ -14,7 +19,10 @@ router = APIRouter(prefix="/agentic", tags=["agentic"])
 
 
 @router.post(
-    "/ingest", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED
+    "/ingest",
+    response_model=DocumentResponse,
+    tags=["agentic"],
+    status_code=status.HTTP_201_CREATED,
 )
 async def upload_and_ingest_documents(
     collection_id: str,
@@ -69,3 +77,32 @@ async def upload_and_ingest_documents(
         raise HTTPException(
             status_code=500, detail=f"Error processing file: {str(e)}"
         ) from e
+
+
+@router.post(
+    "/cluster_topic",
+    response_model=ClusteringResult,
+    tags=["agentic"],
+    status_code=status.HTTP_200_OK,
+)
+def cluster_documents(
+    collection_id: str,
+    cluster_title_top_n_topics: int = 5,
+    cluster_title_top_n_words: int = 10,
+    document_clustering_service: DocumentClusteringService = Depends(
+        get_document_clustering_service
+    ),
+):
+    """
+    Clusters document chunks in a collection and generates descriptive topic titles.
+
+    Parameters:
+    - collection_id: The ID of the collection to process.
+    - cluster_title_top_n_topics: The number of top contributing topics to use for generating a cluster title.
+    - cluster_title_top_n_words: The number of keywords to extract from each contributing topic.
+    """
+    return document_clustering_service.cluster_documents(
+        collection_id=collection_id,
+        cluster_title_top_n_topics=cluster_title_top_n_topics,
+        cluster_title_top_n_words=cluster_title_top_n_words,
+    )

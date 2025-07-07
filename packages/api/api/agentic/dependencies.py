@@ -5,6 +5,7 @@ from ..document.dependencies import get_document_service
 from ..document.service import DocumentService
 from ..models.user import User
 from .core import (
+    DocumentClusteringService,
     DocumentIngestorService,
     KnowledgeGraphExtractor,
     TextEmbedder,
@@ -56,4 +57,15 @@ def get_document_ingestor(
         document_service=document_service,
         text_embedder=text_embedder,
         kg_extractor=graph_extractor,
+    )
+
+
+def get_document_clustering_service(
+    document_service: DocumentService = Depends(get_document_service),
+) -> DocumentClusteringService:
+    """
+    Returns an instance of DocumentClusteringService with the necessary dependencies.
+    """
+    return DocumentClusteringService(
+        document_service=document_service,
     )

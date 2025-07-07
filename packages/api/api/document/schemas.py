@@ -92,6 +92,7 @@ class ChunkResponse(ChunkBase):
 
     id: str
     document_id: str
+    embedding: list[float] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
     created_by: Optional[str]

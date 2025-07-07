@@ -4,8 +4,11 @@ import fitz  # PyMuPDF
 from chonkie import (
     LateChunk,
     LateChunker,
+    Model2VecEmbeddings,
     RecursiveChunk,
     RecursiveChunker,
+    SemanticChunk,
+    SemanticChunker,
     SentenceTransformerEmbeddings,
 )
 
@@ -26,13 +29,15 @@ def _chunk_text(
     chunk_size: int = 512,
     min_characters_per_chunk: int = 24,
     page_number: Optional[int] = None,
-    embedding_model: Optional[Union[str, SentenceTransformerEmbeddings]] = None,
+    embedding_model: Optional[
+        Union[str, SentenceTransformerEmbeddings, Model2VecEmbeddings]
+    ] = None,
 ) -> list[DocumentChunk]:
     """Create chunks from text using consistent chunking logic."""
     if not text.strip():
         return []
 
-    document_chunks: list[LateChunk] | list[RecursiveChunk]
+    document_chunks: list[LateChunk] | list[RecursiveChunk] | list[SemanticChunk]
 
     if embedding_model:
         chunker = LateChunker(
