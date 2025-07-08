@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from ..document.schemas import ChunkSearched
+from ..document.schemas import ChunkSearchResponse
 from .pocketflow_custom import ShareStoreBase
 
 
@@ -19,11 +19,11 @@ class SharedStore(ShareStoreBase):
     input_file_paths: list[str] = Field(
         default_factory=list, description="List of file paths to be indexed"
     )
-    parsed_chunks_for_embedding: list[ChunkSearched] = Field(
+    parsed_chunks_for_embedding: list[ChunkSearchResponse] = Field(
         default_factory=list,
         description="List of parsed document chunks ready for embedding",
     )
-    processed_chunks: list[ChunkSearched] = Field(
+    processed_chunks: list[ChunkSearchResponse] = Field(
         default_factory=list,
         description="List of processed document chunks with embeddings",
     )
@@ -35,7 +35,7 @@ class SharedStore(ShareStoreBase):
     query_embedding: list[float] = Field(
         None, description="Embedding vector of the user's question"
     )
-    retrieved_contexts: list[ChunkSearched] = Field(
+    retrieved_contexts: list[ChunkSearchResponse] = Field(
         default_factory=list,
         description="List of retrieved document chunks based on the query embedding",
     )

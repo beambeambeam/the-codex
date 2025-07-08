@@ -46,6 +46,10 @@ dependencies = [
   # Logging and Monitoring
   "loguru>=0.7.3",
   # Machine Learning
+  "bertopic>=0.17.0",
+  "umap-learn>=0.5.9.post2",
+  "numpy>=1.26.4",
+  "numba>=0.56.4"
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -67,17 +71,13 @@ dev = [
 visualization = ["dash>=2.17.1", "dash-cytoscape>=0.3.0"]
 
 notebook = [
-    "bertopic>=0.17.0",
     "datamapplot>=0.6.3",
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.7",
     "matplotlib>=3.9.4",
     "nbformat>=4.2.0",
-    "numba>=0.56.4",
-    "numpy>=1.26.4",
     "pandas>=2.3.0",
     "scikit-learn>=1.6.1",
-    "umap-learn>=0.5.9.post2",
 ]
 
 [build-system]

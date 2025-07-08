@@ -61,7 +61,11 @@ class ChunkBase(BaseModel):
 
     chunk_text: str = Field(..., min_length=1, description="Chunk text content")
     page_number: Optional[int] = Field(None, description="Page number")
+    start_char: Optional[int] = Field(None, description="Start character position")
     end_char: Optional[int] = Field(None, description="End character position")
+    token_count: Optional[int] = Field(
+        None, description="Number of tokens in the chunk"
+    )
 
 
 class ChunkCreate(ChunkBase):
@@ -69,12 +73,6 @@ class ChunkCreate(ChunkBase):
 
     embedding: list[float] = Field(..., description="Embedding vector for the chunk")
     document_id: str = Field(..., description="Document ID this chunk belongs to")
-
-
-class ChunkSearched(ChunkCreate):
-    """Schema for searched chunks."""
-
-    distance: float = Field(..., description="Distance score for similarity search")
 
 
 class ChunkUpdate(BaseModel):
@@ -100,6 +98,20 @@ class ChunkResponse(ChunkBase):
 
     class Config:
         from_attributes = True
+
+
+class ChunkSearchResponse(ChunkResponse):
+    """Schema for searched chunks."""
+
+    distance: float = Field(..., description="Distance score for similarity search")
+
+
+class DocumentSearchResponse(DocumentResponse):
+    """Schema for searched documents."""
+
+    chunk: list[ChunkSearchResponse] = Field(
+        default_factory=list, description="List of chunks with search results"
+    )
 
 
 class DocumentChatBase(BaseModel):

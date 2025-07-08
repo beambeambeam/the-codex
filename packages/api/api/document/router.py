@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
 from sqlalchemy.orm import Session, joinedload
 
+from ..agentic.dependencies import TextEmbedder, get_text_embedder
 from ..auth.dependencies import get_current_user
 from ..database import get_db
 from ..models.document import Document, DocumentChat, DocumentRelation
@@ -20,6 +21,7 @@ from .dependencies import (
 from .schemas import (
     ChunkCreate,
     ChunkResponse,
+    ChunkSearchResponse,
     DocumentChatCreate,
     DocumentChatHistoryCreate,
     DocumentChatHistoryResponse,
@@ -36,9 +38,10 @@ from .schemas import (
     DocumentRelationResponse,
     DocumentRelationWithNodes,
     DocumentResponse,
+    DocumentSearchResponse,
     DocumentUpdate,
 )
-from .service import DocumentService
+from .service import DocumentServiceSearch as DocumentService
 
 router = APIRouter(prefix="/documents", tags=["documents"])
 
@@ -163,6 +166,87 @@ def list_document_chunks(
     return document_service.get_document_chunks(document.id)
 
 
+# Search Documents Chunks
+@router.post(
+    "/{document_id}/chunks/search",
+    tags=["search"],
+    response_model=list[ChunkSearchResponse],
+    status_code=status.HTTP_200_OK,
+)
+def search_document_chunks(
+    document: Document = Depends(get_document_or_404),
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for chunks",
+    ),
+    text_embedder: TextEmbedder = Depends(get_text_embedder),
+    document_service: DocumentService = Depends(get_document_service),
+) -> list[ChunkSearchResponse]:
+    """Search for chunks in a document."""
+    # Convert query to embedding
+    query_embedding = text_embedder.get_embedding(query)
+
+    # Search chunks using the embedding
+    return document_service.search_collection_chunks(
+        collection_id=document.collection_id, query_embedding=query_embedding, top_k=5
+    )
+
+
+# Search Collection Chunks
+@router.post(
+    "/collection/{collection_id}/chunks/search",
+    tags=["search"],
+    response_model=list[ChunkSearchResponse],
+    status_code=status.HTTP_200_OK,
+)
+def search_collection_chunks(
+    collection_id: str,
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for chunks",
+    ),
+    text_embedder: TextEmbedder = Depends(get_text_embedder),
+    document_service: DocumentService = Depends(get_document_service),
+) -> list[ChunkSearchResponse]:
+    """Search for chunks in a collection."""
+    # Convert query to embedding
+    query_embedding = text_embedder.get_embedding(query)
+
+    # Search chunks using the embedding
+    return document_service.search_collection_chunks(
+        collection_id=collection_id, query_embedding=query_embedding, top_k=5
+    )
+
+
+# Search Collection Documents
+@router.post(
+    "/collection/{collection_id}/documents/search",
+    tags=["search"],
+    response_model=list[DocumentSearchResponse],
+    status_code=status.HTTP_200_OK,
+)
+def search_collection_documents(
+    collection_id: str,
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for documents",
+    ),
+    text_embedder: TextEmbedder = Depends(get_text_embedder),
+    document_service: DocumentService = Depends(get_document_service),
+) -> DocumentSearchResponse:
+    """Search for documents in a collection."""
+    # Convert query to embedding
+    query_embedding = text_embedder.get_embedding(query)
+
+    # Search documents using the embedding
+    return document_service.search_collection_documents(
+        collection_id=collection_id, query_embedding=query_embedding, top_k=10
+    )
+
+
 # Document Chat routes
 @router.post(
     "/chats", response_model=DocumentChatResponse, status_code=status.HTTP_201_CREATED
@@ -271,33 +355,6 @@ def create_document_relation(
 ):
     """Create a new document relation."""
     return document_service.create_document_relation(relation_data, current_user)
-
-
-@router.get("/graph", response_model=DocumentRelationResponse)
-def create_document_graph(
-    document_id: str,
-    nodes: list[DocumentNodeCreate],
-    edges: list[DocumentEdgeCreate],
-    current_user: User = Depends(get_current_user),
-) -> DocumentRelation:
-    """Create a document relation with nodes and edges."""
-    # Create the relation
-    relation = create_document_relation(
-        DocumentRelationCreate(
-            document_id=document_id,
-            title="Graph Relation",
-            description="Automatically created relation for graph",
-        ),
-    )
-    # Create nodes
-    for node_data in nodes:
-        create_document_node(node_data=node_data, user=current_user)
-
-    # Create edges
-    for edge_data in edges:
-        create_document_edge(edge_data=edge_data, user=current_user)
-
-    return relation
 
 
 @router.get("/{document_id}/relations", response_model=list[DocumentRelationWithNodes])

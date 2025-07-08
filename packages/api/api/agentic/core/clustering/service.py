@@ -53,7 +53,9 @@ class DocumentClusteringService:
 
         for doc in documents:
             doc_id_to_doc[doc.id] = doc
-            chunks = self._DOCUMENT_SERVICE.get_document_chunks(document_id=doc.id)
+            chunks = self._DOCUMENT_SERVICE.get_document_chunks(
+                document_id=doc.id, embedding=True
+            )
             chunks = [ChunkResponse.model_validate(chunk) for chunk in chunks]
 
             for chunk in chunks:

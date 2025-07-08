@@ -177,6 +177,7 @@ source = { editable = "." }
 dependencies = [
     { name = "alembic" },
     { name = "bcrypt" },
+    { name = "bertopic" },
     { name = "chonkie" },
     { name = "fastapi", extra = ["standard"] },
     { name = "jinja2" },
@@ -184,6 +185,9 @@ dependencies = [
     { name = "loguru" },
     { name = "minio" },
     { name = "model2vec" },
+    { name = "numba", version = "0.60.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
+    { name = "numba", version = "0.61.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
+    { name = "numpy" },
     { name = "pgvector" },
     { name = "pocketflow" },
     { name = "psycopg", extra = ["binary"] },
@@ -193,6 +197,7 @@ dependencies = [
     { name = "python-multipart" },
     { name = "sentence-transformers" },
     { name = "sqlalchemy" },
+    { name = "umap-learn" },
 ]
 
 [package.dev-dependencies]
@@ -205,20 +210,15 @@ dev = [
     { name = "ruff" },
 ]
 notebook = [
-    { name = "bertopic" },
     { name = "datamapplot" },
     { name = "ipykernel" },
     { name = "ipywidgets" },
     { name = "matplotlib", version = "3.9.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "matplotlib", version = "3.10.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "nbformat" },
-    { name = "numba", version = "0.60.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
-    { name = "numba", version = "0.61.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-    { name = "numpy" },
     { name = "pandas" },
     { name = "scikit-learn", version = "1.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "scikit-learn", version = "1.7.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
-    { name = "umap-learn" },
 ]
 visualization = [
     { name = "dash" },
@@ -229,6 +229,7 @@ visualization = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.16.2" },
     { name = "bcrypt", specifier = ">=4.2.1" },
+    { name = "bertopic", specifier = ">=0.17.0" },
     { name = "chonkie", specifier = ">=1.0.8" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.13" },
     { name = "jinja2", specifier = ">=3.1.0" },
@@ -236,6 +237,8 @@ requires-dist = [
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "minio", specifier = ">=7.2.8" },
     { name = "model2vec", specifier = ">=0.5.0" },
+    { name = "numba", specifier = ">=0.56.4" },
+    { name = "numpy", specifier = ">=1.26.4" },
     { name = "pgvector", specifier = ">=0.4.1" },
     { name = "pocketflow", specifier = ">=0.0.2" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2.9" },
@@ -245,6 +248,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.20" },
     { name = "sentence-transformers", specifier = ">=4.1.0" },
     { name = "sqlalchemy", specifier = ">=2.0.41" },
+    { name = "umap-learn", specifier = ">=0.5.9.post2" },
 ]
 
 [package.metadata.requires-dev]
@@ -257,17 +261,13 @@ dev = [
     { name = "ruff", specifier = ">=0.8.2" },
 ]
 notebook = [
-    { name = "bertopic", specifier = ">=0.17.0" },
     { name = "datamapplot", specifier = ">=0.6.3" },
     { name = "ipykernel", specifier = ">=6.29.5" },
     { name = "ipywidgets", specifier = ">=8.1.7" },
     { name = "matplotlib", specifier = ">=3.9.4" },
     { name = "nbformat", specifier = ">=4.2.0" },
-    { name = "numba", specifier = ">=0.56.4" },
-    { name = "numpy", specifier = ">=1.26.4" },
     { name = "pandas", specifier = ">=2.3.0" },
     { name = "scikit-learn", specifier = ">=1.6.1" },
-    { name = "umap-learn", specifier = ">=0.5.9.post2" },
 ]
 visualization = [
     { name = "dash", specifier = ">=2.17.1" },

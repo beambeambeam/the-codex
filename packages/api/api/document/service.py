@@ -20,7 +20,8 @@ from ..models.user import User
 from ..storage import storage_service
 from .schemas import (
     ChunkCreate,
-    ChunkSearched,
+    ChunkResponse,
+    ChunkSearchResponse,
     ChunkUpdate,
     DocumentChatCreate,
     DocumentChatHistoryCreate,
@@ -29,6 +30,8 @@ from .schemas import (
     DocumentEdgeCreate,
     DocumentNodeCreate,
     DocumentRelationCreate,
+    DocumentResponse,
+    DocumentSearchResponse,
     DocumentUpdate,
 )
 
@@ -162,13 +165,17 @@ class DocumentService:
     def get_document_chunks(
         self, document_id: str, embedding: bool = False
     ) -> list[Chunk]:
-        """Get all chunks for a document."""
-        return (
+        """Get all chunks for a document, optionally only those with embeddings."""
+        query = (
             self.db.query(Chunk)
             .filter(Chunk.document_id == document_id)
             .order_by(Chunk.page_number, Chunk.end_char)
-            .all()
         )
+
+        if embedding:
+            query = query.filter(Chunk.embedding.isnot(None))
+
+        return query.all()
 
     def update_chunk(
         self, chunk_id: str, update_data: ChunkUpdate, user: User
@@ -424,12 +431,15 @@ class DocumentServiceSearch(DocumentService):
     def __init__(self, db: Session):
         super().__init__(db)
 
-    def search_chunks(
-        self, collection_id: str, query_embedding: list[float], top_k: int = 5
-    ) -> list[ChunkSearched]:
-        retrieved_docs = []
-
-        results: list[tuple[Chunk, float]] = (
+    def _search_collection_chunks_with_distances(
+        self,
+        collection_id: str,
+        query_embedding: list[float],
+        top_k: int,
+        embedding: bool = False,
+    ) -> list[tuple[Chunk, float]]:
+        """Get chunks from a collection with their distances to the query embedding."""
+        return (
             self.db.query(
                 Chunk,
                 Chunk.embedding.l2_distance(query_embedding).label("distance"),
@@ -441,14 +451,116 @@ class DocumentServiceSearch(DocumentService):
             .all()
         )
 
-        for chunk, distance in results:
-            retrieved_docs.append(
-                ChunkSearched(
-                    chunk_text=chunk.chunk_text,
-                    embedding=chunk.embedding,
-                    document_id=chunk.document_id,
+    def _search_document_chunks_with_distances(
+        self, document_id: str, query_embedding: list[float], top_k: int
+    ) -> list[tuple[Chunk, float]]:
+        """Get chunks from a document with their distances to the query embedding."""
+        return (
+            self.db.query(
+                Chunk,
+                Chunk.embedding.l2_distance(query_embedding).label("distance"),
+            )
+            .filter(Chunk.document_id == document_id)
+            .order_by(text("distance ASC"))
+            .limit(top_k)
+            .all()
+        )
+
+    def search_collection_chunks(
+        self,
+        collection_id: str,
+        query_embedding: list[float],
+        top_k: int = 5,
+        embedding: bool = False,
+    ) -> list[ChunkSearchResponse]:
+        """Search for chunks in a collection based on the query embedding."""
+        chunk_results: list[tuple[Chunk, float]] = (
+            self._search_collection_chunks_with_distances(
+                collection_id=collection_id,
+                query_embedding=query_embedding,
+                top_k=top_k,
+            )
+        )
+
+        response_list = []
+        for chunk, distance in chunk_results:
+            response = ChunkResponse.model_validate(chunk)
+            if not embedding:
+                response.embedding = []
+
+            response_list.append(
+                ChunkSearchResponse(**response.model_dump(), distance=float(distance))
+            )
+
+        return response_list
+
+    def search_collection_documents(
+        self,
+        collection_id: str,
+        query_embedding: list[float],
+        top_k: int = 5,
+        embedding: bool = False,
+    ) -> list[DocumentSearchResponse]:
+        # Fetch top-k closest chunks with distances
+        chunk_results = self._search_collection_chunks_with_distances(
+            collection_id=collection_id, query_embedding=query_embedding, top_k=top_k
+        )
+
+        # Group chunks by document_id
+        doc_chunks = {}
+        for chunk, distance in chunk_results:
+            doc_chunks.setdefault(chunk.document_id, []).append(
+                ChunkSearchResponse(
+                    **ChunkResponse.model_validate(chunk).model_dump(),
                     distance=float(distance),
                 )
             )
 
-        return retrieved_docs
+        # Fetch related documents
+        documents = (
+            self.db.query(Document).filter(Document.id.in_(doc_chunks.keys())).all()
+        )
+        id_to_doc = {doc.id: doc for doc in documents}
+
+        # Build ordered DocumentSearchResponse list
+        response_list = []
+        for document_id, chunks in doc_chunks.items():
+            document = id_to_doc.get(document_id)
+            if not document:
+                continue
+
+            response = DocumentSearchResponse(
+                **DocumentResponse.model_validate(document).model_dump(), chunk=chunks
+            )
+
+            if not embedding:
+                for chunk in response.chunk:
+                    chunk.embedding = []
+
+            response_list.append(response)
+
+        return response_list
+
+    def search_document_chunks(
+        self,
+        document_id: str,
+        query_embedding: list[float],
+        top_k: int = 5,
+        embedding: bool = False,
+    ) -> list[ChunkSearchResponse]:
+        """Search for chunks in a document based on the query embedding."""
+        chunk_results = self._search_document_chunks_with_distances(
+            document_id=document_id, query_embedding=query_embedding, top_k=top_k
+        )
+
+        response_list = []
+        for chunk, distance in chunk_results:
+            response = ChunkResponse.model_validate(chunk)
+            if not embedding:
+                response.embedding = []
+
+            response_list.append(
+                ChunkSearchResponse(**response.model_dump(), distance=float(distance))
+            )
+
+        return response_list

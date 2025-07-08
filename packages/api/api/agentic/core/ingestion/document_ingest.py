@@ -243,7 +243,9 @@ class DocumentIngestor:
                     chunk_with_embedding = ChunkCreate(
                         chunk_text=chunk.chunk_text,
                         page_number=chunk.chunk_metadata.page_number,
+                        start_char=chunk.chunk_metadata.start_index,
                         end_char=chunk.chunk_metadata.end_index,
+                        token_count=chunk.chunk_metadata.token_count,
                         embedding=embedding_list,
                         document_id=document_id,
                     )

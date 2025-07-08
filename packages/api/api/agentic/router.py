@@ -19,7 +19,7 @@ router = APIRouter(prefix="/agentic", tags=["agentic"])
 
 
 @router.post(
-    "/ingest",
+    "/upload_ingest",
     response_model=DocumentResponse,
     tags=["agentic"],
     status_code=status.HTTP_201_CREATED,
@@ -87,8 +87,6 @@ async def upload_and_ingest_documents(
 )
 def cluster_documents(
     collection_id: str,
-    cluster_title_top_n_topics: int = 5,
-    cluster_title_top_n_words: int = 10,
     document_clustering_service: DocumentClusteringService = Depends(
         get_document_clustering_service
     ),
@@ -103,6 +101,6 @@ def cluster_documents(
     """
     return document_clustering_service.cluster_documents(
         collection_id=collection_id,
-        cluster_title_top_n_topics=cluster_title_top_n_topics,
-        cluster_title_top_n_words=cluster_title_top_n_words,
+        cluster_title_top_n_topics=5,
+        cluster_title_top_n_words=50,
     )
