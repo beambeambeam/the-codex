@@ -65,7 +65,9 @@ class Chunk(Base):
     chunk_text: Mapped[str] = mapped_column(Text)
     embedding: Mapped[Optional[list[float]]] = mapped_column(Vector(256))
     page_number: Mapped[Optional[int]] = mapped_column(Integer)
+    start_char: Mapped[Optional[int]] = mapped_column(Integer)
     end_char: Mapped[Optional[int]] = mapped_column(Integer)
+    token_count: Mapped[Optional[int]] = mapped_column(Integer)
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL")
     )
