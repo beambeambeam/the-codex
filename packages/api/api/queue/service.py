@@ -137,7 +137,8 @@ class QueueService:
             "data": data,
         }
         channel = f"document_{document_id}"
-        self.client.publish_to_queue(channel, message)
+        with self.client:
+            self.client.publish_to_queue(channel, message)
 
     def publish_collection_event(
         self, collection_id: str, event_type: str, data: dict[str, Any]
@@ -149,7 +150,8 @@ class QueueService:
             "data": data,
         }
         channel = f"collection_{collection_id}"
-        self.client.publish_to_queue(channel, message)
+        with self.client:
+            self.client.publish_to_queue(channel, message)
 
     def publish_chat_event(
         self, chat_id: str, event_type: str, data: dict[str, Any]
@@ -161,7 +163,8 @@ class QueueService:
             "data": data,
         }
         channel = f"chat_{chat_id}"
-        self.client.publish_to_queue(channel, message)
+        with self.client:
+            self.client.publish_to_queue(channel, message)
 
 
 # Singleton instance
