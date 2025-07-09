@@ -207,6 +207,42 @@ class QueueService:
             logger.error(f"Queue health check failed: {e}")
             return False
 
+    def publish_document_event(
+        self, document_id: str, event_type: str, data: dict[str, Any]
+    ) -> None:
+        """Publish an SSE event for a specific document."""
+        message = {
+            "event_type": event_type,
+            "document_id": document_id,
+            "data": data,
+        }
+        channel = f"document_{document_id}"
+        self.client.publish_to_queue(channel, message)
+
+    def publish_collection_event(
+        self, collection_id: str, event_type: str, data: dict[str, Any]
+    ) -> None:
+        """Publish an SSE event for a specific collection."""
+        message = {
+            "event_type": event_type,
+            "collection_id": collection_id,
+            "data": data,
+        }
+        channel = f"collection_{collection_id}"
+        self.client.publish_to_queue(channel, message)
+
+    def publish_chat_event(
+        self, chat_id: str, event_type: str, data: dict[str, Any]
+    ) -> None:
+        """Publish an SSE event for a specific chat."""
+        message = {
+            "event_type": event_type,
+            "chat_id": chat_id,
+            "data": data,
+        }
+        channel = f"chat_{chat_id}"
+        self.client.publish_to_queue(channel, message)
+
 
 # Singleton instance
 _queue_service: Optional[QueueService] = None
