@@ -51,6 +51,12 @@ function CollectionIdSidebarSearchbox() {
               <span>Document #2</span>
             </CommandItem>
           </CommandGroup>
+          <CommandGroup heading="Command Suggestions">
+            <CommandItem>
+              <FilePenIcon />
+              <span>Create new chat</span>
+            </CommandItem>
+          </CommandGroup>
           <CommandSeparator />
         </CommandList>
       </CommandDialog>
