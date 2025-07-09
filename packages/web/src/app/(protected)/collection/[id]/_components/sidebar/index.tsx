@@ -1,3 +1,4 @@
+import CollectionIdSidebarSearchbox from "@/app/(protected)/collection/[id]/_components/sidebar/search";
 import { Separator } from "@/components/ui/separator";
 
 interface CollectionIdSidebarProps {
@@ -14,6 +15,7 @@ function CollectionIdSidebar(props: CollectionIdSidebarProps) {
           {props.description}
         </p>
         <Separator />
+        <CollectionIdSidebarSearchbox />
       </div>
     </div>
   );
