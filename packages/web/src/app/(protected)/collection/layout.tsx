@@ -13,7 +13,7 @@ export default function CollectionLayout({
   const name = "";
 
   return (
-    <div className="flex h-full w-full shrink-0 border-l">
+    <div className="flex h-screen w-full shrink-0 border-l">
       <div className="flex w-[70px] flex-col items-center gap-6 border-r px-5 py-4">
         <Avatar className="size-8">
           <AvatarImage src={imageUrl} alt={name} />

@@ -1,4 +1,4 @@
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import CollectionIdSidebar from "@/app/(protected)/collection/[id]/_components/sidebar";
 
 export default function CollectionIdLayout({
   children,
@@ -6,12 +6,16 @@ export default function CollectionIdLayout({
   children: React.ReactNode;
 }) {
   return (
-    <SidebarProvider>
-      <SidebarInset>
-        <main className="flex h-full shrink-0 items-start justify-start gap-2 p-3">
-          {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+    <div className="">
+      <CollectionIdSidebar
+        title={"LLM with SQL."}
+        description={
+          "Large Language Models (LLMs)—like ChatGPT, GPT-4, Claude, or others—in combination with Structured Query Language (SQL)."
+        }
+      />
+      <main className="flex h-full shrink-0 items-start justify-start gap-2 p-3">
+        {children}
+      </main>
+    </div>
   );
 }
