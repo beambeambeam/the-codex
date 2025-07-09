@@ -6,7 +6,7 @@ export default function CollectionIdLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="">
+    <div className="flex">
       <CollectionIdSidebar
         title={"LLM with SQL."}
         description={
