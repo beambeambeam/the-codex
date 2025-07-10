@@ -1,5 +1,6 @@
-import { PanelsLeftBottomIcon } from "lucide-react";
+import { PanelsLeftBottomIcon, Share2Icon } from "lucide-react";
 
+import CollectionShare from "@/app/(protected)/collection/[id]/_components/sidebar/settings/share";
 import { Scroller } from "@/components/ui/scroller";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,10 +24,21 @@ function CollectionIdSidebarSettingPanel() {
           />
           Overall
         </TabsTrigger>
+        <TabsTrigger value="tab-2" className={TABS_TRIGGER_CLASSNAME}>
+          <Share2Icon
+            className="-ms-0.5 me-1.5 opacity-60"
+            size={16}
+            aria-hidden="true"
+          />
+          share
+        </TabsTrigger>
       </TabsList>
       <Separator orientation="vertical" />
       <TabsContent value="tab-1" className="pl-4">
         <Scroller className="flex h-full flex-col gap-y-4"></Scroller>
+      </TabsContent>
+      <TabsContent value="tab-2" className="pl-4">
+        <CollectionShare />
       </TabsContent>
     </Tabs>
   );
