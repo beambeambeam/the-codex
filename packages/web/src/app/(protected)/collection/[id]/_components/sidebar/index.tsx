@@ -1,5 +1,6 @@
 import CollectionIdSidebarSearchbox from "@/app/(protected)/collection/[id]/_components/sidebar/search";
 import CollectionIdSidebarSettings from "@/app/(protected)/collection/[id]/_components/sidebar/settings";
+import CollectionUploaderButton from "@/app/(protected)/collection/[id]/_components/uploader/button";
 import { useCollectionIdContext } from "@/app/(protected)/collection/[id]/_components/use-collection-id-context";
 import { Separator } from "@/components/ui/separator";
 import { Sidebar } from "@/components/ui/sidebar";
@@ -18,7 +19,10 @@ function CollectionIdSidebar() {
           {context.description}
         </p>
         <Separator />
-        <CollectionIdSidebarSearchbox />
+        <div className="flex w-full">
+          <CollectionIdSidebarSearchbox />
+          <CollectionUploaderButton />
+        </div>
       </div>
     </Sidebar>
   );
