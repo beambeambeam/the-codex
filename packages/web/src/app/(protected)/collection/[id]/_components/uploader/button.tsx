@@ -26,7 +26,7 @@ function CollectionUploaderButton() {
             This is dialog for add new files to collection
           </DialogDescription>
         </DialogHeader>
-        <div className="h-full max-h-[80vh] w-full max-w-[80vw] overflow-y-auto">
+        <div className="h-[80vh] w-[90vw] overflow-y-auto">
           <CollectionUploader />
         </div>
       </DialogContent>
