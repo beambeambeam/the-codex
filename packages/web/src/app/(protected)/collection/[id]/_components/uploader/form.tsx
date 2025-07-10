@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 
 const collectionFileSchema = z.object({
-  file: z.array(z.instanceof(File)),
+  file: z.array(z.instanceof(File)).min(1, "Atleast 1 file for upload"),
 });
 
 export type CollectionFileSchemaType = z.infer<typeof collectionFileSchema>;
@@ -37,15 +37,15 @@ export default function CollectionFileForm(props: {
         })}
       >
         <div></div>
-        <div className="grid h-full w-full grid-cols-[3fr_2fr]">
-          <div className="h-full w-full"></div>
-          <div className="grid h-full w-full grid-rows-[auto_1fr]">
+        <div className="grid h-full w-full lg:grid-cols-[3fr_2fr]">
+          <div className="hidden h-full w-full lg:inline"></div>
+          <div className="grid h-full w-full grid-rows-[auto_1fr] gap-4">
             <FormField
               control={form.control}
               name="file"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Files</FormLabel>
+                  <FormLabel>Uploaded Files ({field.value.length})</FormLabel>
                   <FormControl>
                     <CollectionUploaderFile
                       initialFiles={field.value.map((file, idx) => ({

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { FormLabel } from "@/components/ui/form";
 import { Scroller } from "@/components/ui/scroller";
 import {
   FileMetadata,
@@ -71,7 +71,6 @@ export default function CollectionFileUploader(
         {files.length > 0 ? (
           <div className="flex h-fit w-full flex-col gap-3">
             <div className="flex h-fit items-center justify-between gap-2">
-              <Label>Uploaded Files ({files.length})</Label>
               <Button variant="outline" size="sm" onClick={clearFiles}>
                 <Trash2Icon
                   className="-ms-0.5 size-3.5 opacity-60"
