@@ -1,6 +1,6 @@
 import { PlusIcon } from "lucide-react";
 
-import CollectionUploader from "@/app/(protected)/collection/[id]/_components/uploader";
+import CollectionUploader from "@/app/(protected)/collection/[id]/_components/uploader/form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
