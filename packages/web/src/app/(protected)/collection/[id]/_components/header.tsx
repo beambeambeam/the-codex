@@ -11,8 +11,12 @@ function CollectionIdHeader() {
   return (
     <div className="flex gap-4">
       <SidebarTrigger />
-      <Separator orientation="vertical" />
-      {state == "collapsed" && context.title}
+      {state == "collapsed" && (
+        <>
+          <Separator orientation="vertical" />
+          <span>{context.title}</span>
+        </>
+      )}
     </div>
   );
 }
