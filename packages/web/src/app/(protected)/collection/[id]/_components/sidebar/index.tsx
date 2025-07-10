@@ -1,9 +1,7 @@
 import CollectionIdSidebarSearchbox from "@/app/(protected)/collection/[id]/_components/sidebar/search";
 import { useCollectionIdContext } from "@/app/(protected)/collection/[id]/_components/use-collection-id-context";
-import { ToggleThemeButton } from "@/components/button/toggle-theme";
-import SettingDialog from "@/components/settings/dialog";
 import { Separator } from "@/components/ui/separator";
-import { Sidebar, SidebarFooter } from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 
 function CollectionIdSidebar() {
   const context = useCollectionIdContext();
@@ -18,12 +16,6 @@ function CollectionIdSidebar() {
         <Separator />
         <CollectionIdSidebarSearchbox />
       </div>
-      <SidebarFooter className="items-end">
-        <div className="flex gap-2">
-          <ToggleThemeButton />
-          <SettingDialog />
-        </div>
-      </SidebarFooter>
     </Sidebar>
   );
 }
