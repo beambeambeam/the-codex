@@ -3,15 +3,12 @@ import { UserIcon } from "lucide-react";
 import CreateNewFormDialog from "@/app/(protected)/home/_components/create";
 import HomeSidebarRecents from "@/app/(protected)/home/_components/sidebar/recents";
 import HomeSidebarSearchbox from "@/app/(protected)/home/_components/sidebar/search";
-import SettingButton from "@/components/button/settings";
-import { ToggleThemeButton } from "@/components/button/toggle-theme";
 import { Logo } from "@/components/icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarSeparator,
@@ -59,10 +56,6 @@ function HomeSidebar() {
           <CreateNewFormDialog />
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="flex-row items-end justify-end">
-        <ToggleThemeButton />
-        <SettingButton />
-      </SidebarFooter>
     </Sidebar>
   );
 }
