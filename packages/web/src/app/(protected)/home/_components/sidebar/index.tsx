@@ -1,5 +1,6 @@
 import { UserIcon } from "lucide-react";
 
+import CreateNewFormDialog from "@/app/(protected)/home/_components/create";
 import HomeSidebarRecents from "@/app/(protected)/home/_components/sidebar/recents";
 import HomeSidebarSearchbox from "@/app/(protected)/home/_components/sidebar/search";
 import SettingButton from "@/components/button/settings";
@@ -53,6 +54,9 @@ function HomeSidebar() {
               },
             ]}
           />
+        </SidebarGroup>
+        <SidebarGroup className="flex items-center justify-center">
+          <CreateNewFormDialog />
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="flex-row items-end justify-end">
