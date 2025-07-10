@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ScanEyeIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -13,7 +14,6 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 
@@ -35,7 +35,6 @@ export default function CollectionFileForm(props: {
     null,
   );
 
-  // Reset selectedFileIndex when files are cleared
   const files = form.watch("file");
   useEffect(() => {
     if (files.length === 0) {
@@ -51,20 +50,27 @@ export default function CollectionFileForm(props: {
         })}
         className="h-full w-full"
       >
-        <div></div>
         <div className="grid h-full w-full gap-6 lg:grid-cols-[3fr_2fr]">
-          <div className="border-border hidden h-full w-full rounded-2xl border-2 p-4 lg:flex">
-            {selectedFileIndex !== null && files[selectedFileIndex] && (
-              <FilePreviwer file={files[selectedFileIndex]} />
-            )}
+          <div className="flex h-full w-full flex-col gap-2">
+            <div className="border-border hidden h-full w-full items-center justify-around rounded-2xl border-2 lg:flex">
+              {selectedFileIndex !== null && files[selectedFileIndex] ? (
+                <FilePreviwer file={files[selectedFileIndex]} />
+              ) : (
+                <div className="text-muted-foreground flex h-full w-full flex-col items-center gap-2">
+                  <ScanEyeIcon className="size-20" />
+                  <span className="text-base">
+                    No document selected for preview
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
-          <div className="grid h-full w-full grid-rows-[auto_1fr] gap-4">
+          <div className="grid h-full w-full grid-rows-[1fr_auto] gap-4">
             <FormField
               control={form.control}
               name="file"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Uploaded Files ({field.value.length})</FormLabel>
                   <FormControl>
                     <CollectionUploaderFile
                       initialFiles={field.value.map((file, idx) => ({
@@ -76,8 +82,10 @@ export default function CollectionFileForm(props: {
                         type: file.type,
                       }))}
                       onFilesChange={(files) => {
-                        // Only update form value here
-                        field.onChange(files.map((fwp) => fwp.file));
+                        // Defer the update to avoid setState during render
+                        queueMicrotask(() =>
+                          field.onChange(files.map((fwp) => fwp.file)),
+                        );
                       }}
                       selectedFileIndex={selectedFileIndex}
                       onSelectFile={setSelectedFileIndex}
@@ -87,8 +95,15 @@ export default function CollectionFileForm(props: {
                 </FormItem>
               )}
             />
-            <div>
-              <Button type="submit">Upload</Button>
+            <div className="flex w-full justify-end">
+              <Button
+                type="submit"
+                disabled={
+                  form.formState.isSubmitting || !form.formState.isValid
+                }
+              >
+                Upload
+              </Button>
             </div>
           </div>
         </div>

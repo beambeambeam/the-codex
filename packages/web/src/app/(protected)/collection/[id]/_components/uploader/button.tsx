@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react";
+import { FolderInput, PlusIcon } from "lucide-react";
 
 import CollectionUploaderForm, {
   CollectionFileSchemaType,
@@ -27,7 +27,12 @@ function CollectionUploaderButton() {
       </DialogTrigger>
       <DialogContent className="max-w-full min-w-fit" clickOutside={false}>
         <DialogHeader>
-          <DialogTitle>Add new files</DialogTitle>
+          <DialogTitle>
+            <span className="inline-flex gap-2">
+              <FolderInput />
+              Add new Document
+            </span>
+          </DialogTitle>
           <DialogDescription hidden>
             This is dialog for add new files to collection
           </DialogDescription>

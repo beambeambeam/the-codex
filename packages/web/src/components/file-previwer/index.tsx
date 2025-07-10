@@ -25,13 +25,9 @@ function FilePreviwer({ file }: FilePreviwerProps) {
   // Render preview based on file type
   if (type.startsWith("image/") && url) {
     return (
-      <Image
-        src={url}
-        alt={name}
-        width={0}
-        height={0}
-        className="h-full w-full"
-      />
+      <div className="relative flex h-full max-h-full min-h-[200px] w-full max-w-full items-center justify-center overflow-hidden">
+        <Image src={url} alt={name} fill className="object-contain" />
+      </div>
     );
   } else if (type.startsWith("video/") && url) {
     return <video src={url} controls width={180} className="h-full w-full" />;

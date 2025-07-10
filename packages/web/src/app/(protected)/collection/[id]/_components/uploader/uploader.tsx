@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { FormLabel } from "@/components/ui/form";
 import { Scroller } from "@/components/ui/scroller";
 import {
   FileMetadata,
@@ -18,6 +19,7 @@ import {
   useFileUpload,
 } from "@/hooks/use-file-upload";
 import { getFileIcon } from "@/lib/files";
+import { cn } from "@/lib/utils";
 
 interface CollectionFileUploaderProps {
   initialFiles?: FileMetadata[];
@@ -52,6 +54,7 @@ export default function CollectionFileUploader(
 
   return (
     <div className="flex h-full flex-col gap-2">
+      <FormLabel>File Uploader</FormLabel>
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -59,7 +62,7 @@ export default function CollectionFileUploader(
         onDrop={handleDrop}
         data-dragging={isDragging || undefined}
         data-files={files.length > 0 || undefined}
-        className="border-input data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 flex h-fit flex-col items-center rounded-xl border border-dashed p-4 transition-colors not-data-[files]:justify-center has-[input:focus]:ring-[3px]"
+        className="border-input data-[dragging=true]:bg-accent/50 has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 flex h-full flex-col items-center rounded-xl border border-dashed p-4 transition-colors not-data-[files]:justify-center has-[input:focus]:ring-[3px]"
       >
         <input
           {...getInputProps()}
@@ -68,10 +71,10 @@ export default function CollectionFileUploader(
         />
 
         {files.length > 0 ? (
-          <div className="flex h-fit w-full flex-col gap-3">
+          <div className="flex h-full w-full flex-col gap-3">
             <div className="flex h-fit items-center justify-between gap-2">
               <Button
-                variant="outline"
+                variant="destructive"
                 size="sm"
                 onClick={clearFiles}
                 type="button"
@@ -84,16 +87,20 @@ export default function CollectionFileUploader(
               </Button>
             </div>
             <Scroller
-              className="h-[35vh] w-full space-y-2"
+              className="h-[50vh] w-full space-y-2"
               withNavigation
               hideScrollbar
             >
               {files.map((file, index) => (
                 <div
                   key={file.id}
-                  className="bg-background focus-within:ring-ring hover:ring-ring flex items-center justify-between gap-2 rounded-lg border p-2 pe-3 transition-shadow outline-none focus-within:ring-2 focus-within:ring-offset-1 hover:ring-1"
+                  className={cn(
+                    "bg-background focus-within:border-ring hover:border-ring focus-within:border-offset-1 flex cursor-pointer items-center justify-between gap-2 rounded-lg border p-2 pe-3 transition-all outline-none focus-within:border",
+                    props.selectedFileIndex === index && "border-ring",
+                  )}
                   tabIndex={0}
                   onClick={() => props.onSelectFile?.(index)}
+                  onDoubleClick={() => props.onSelectFile?.(null)}
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
@@ -141,7 +148,7 @@ export default function CollectionFileUploader(
             )}
           </div>
         ) : (
-          <div className="flex h-[45vh] flex-col items-center justify-center text-center">
+          <div className="flex h-full flex-col items-center justify-center text-center">
             <div
               className="bg-background mb-2 flex size-11 shrink-0 items-center justify-center rounded-full border"
               aria-hidden="true"
