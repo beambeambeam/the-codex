@@ -52,9 +52,22 @@ export default function CollectionFileForm(props: {
       >
         <div className="grid h-full w-full gap-6 lg:grid-cols-[3fr_2fr]">
           <div className="flex h-full w-full flex-col gap-2">
-            <div className="border-border hidden h-full w-full items-center justify-around rounded-2xl border-2 lg:flex">
+            <div className="border-border hidden h-full w-full items-center justify-around rounded-2xl border lg:flex">
               {selectedFileIndex !== null && files[selectedFileIndex] ? (
-                <FilePreviwer file={files[selectedFileIndex]} />
+                <div className="flex h-full w-full flex-col">
+                  <div className="border-b p-4 text-base font-bold">
+                    {files[selectedFileIndex].name.replace(/\.[^/.]+$/, "")}{" "}
+                    <span className="text-muted-foreground ml-2 text-sm">
+                      (
+                      {files[selectedFileIndex].name.split(".").pop() ||
+                        "unknown"}
+                      )
+                    </span>
+                  </div>
+                  <div className="h-full w-full p-4">
+                    <FilePreviwer file={files[selectedFileIndex]} />
+                  </div>
+                </div>
               ) : (
                 <div className="text-muted-foreground flex h-full w-full flex-col items-center gap-2 p-4">
                   <div

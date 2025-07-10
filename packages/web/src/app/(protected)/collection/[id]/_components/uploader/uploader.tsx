@@ -86,9 +86,20 @@ export default function CollectionFileUploader(
                 Remove all
               </Button>
             </div>
+            {files.length < maxFiles && (
+              <Button
+                variant="outline"
+                className="mt-2 w-full"
+                onClick={openFileDialog}
+                type="button"
+              >
+                <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
+                Add more
+              </Button>
+            )}
             <div className="h-full min-h-0 flex-1">
               <Scroller
-                className="max-h-[calc(100vh_-_45vh)] w-full space-y-2"
+                className="max-h-[calc(80vh_-_10rem)] w-full space-y-2"
                 withNavigation
                 hideScrollbar
               >
@@ -137,17 +148,6 @@ export default function CollectionFileUploader(
                 ))}
               </Scroller>
             </div>
-            {files.length < maxFiles && (
-              <Button
-                variant="outline"
-                className="mt-2 w-full"
-                onClick={openFileDialog}
-                type="button"
-              >
-                <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
-                Add more
-              </Button>
-            )}
           </div>
         ) : (
           <div className="flex h-full flex-col items-center justify-center text-center">
