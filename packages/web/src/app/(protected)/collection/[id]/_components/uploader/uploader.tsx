@@ -14,13 +14,15 @@ import { Label } from "@/components/ui/label";
 import { Scroller } from "@/components/ui/scroller";
 import {
   FileMetadata,
+  FileWithPreview,
   formatBytes,
   useFileUpload,
 } from "@/hooks/use-file-upload";
 import { getFileIcon } from "@/lib/files";
 
 interface CollectionFileUploaderProps {
-  initialFiles: FileMetadata[];
+  initialFiles?: FileMetadata[];
+  onFilesChange?: (files: FileWithPreview[]) => void;
 }
 
 export default function CollectionFileUploader(
@@ -46,6 +48,7 @@ export default function CollectionFileUploader(
     maxFiles,
     maxSize,
     initialFiles: props.initialFiles,
+    onFilesChange: props.onFilesChange,
   });
 
   return (

@@ -1,6 +1,8 @@
 import { PlusIcon } from "lucide-react";
 
-import CollectionUploader from "@/app/(protected)/collection/[id]/_components/uploader/form";
+import CollectionUploaderForm, {
+  CollectionFileSchemaType,
+} from "@/app/(protected)/collection/[id]/_components/uploader/form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +14,10 @@ import {
 } from "@/components/ui/dialog";
 
 function CollectionUploaderButton() {
+  const onSubmit = (values: CollectionFileSchemaType) => {
+    console.log(values);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -27,7 +33,7 @@ function CollectionUploaderButton() {
           </DialogDescription>
         </DialogHeader>
         <div className="h-[80vh] max-h-[80vh] w-[90vw] overflow-y-auto">
-          <CollectionUploader />
+          <CollectionUploaderForm onSubmit={onSubmit} />
         </div>
       </DialogContent>
     </Dialog>
