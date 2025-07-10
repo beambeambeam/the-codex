@@ -23,14 +23,17 @@ function CollectionIdSidebarSettings() {
           <Settings2Icon />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-full md:min-w-4xl" clickOutside={false}>
-        <DialogHeader>
+      <DialogContent
+        className="max-w-full p-0 md:min-w-4xl"
+        clickOutside={false}
+      >
+        <DialogHeader className="border-b p-4">
           <DialogTitle>{title}, Project&apos;s Settings</DialogTitle>
           <DialogDescription hidden>
             This is dialog for settings the {title}&apos;s Project settings
           </DialogDescription>
         </DialogHeader>
-        <div className="h-full overflow-y-auto">
+        <div className="h-full overflow-y-auto px-4">
           <CollectionIdSidebarSettingPanel />
         </div>
       </DialogContent>
