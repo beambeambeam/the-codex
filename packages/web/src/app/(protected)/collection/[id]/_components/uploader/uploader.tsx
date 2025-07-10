@@ -12,11 +12,21 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Scroller } from "@/components/ui/scroller";
-import { formatBytes, useFileUpload } from "@/hooks/use-file-upload";
+import {
+  FileMetadata,
+  formatBytes,
+  useFileUpload,
+} from "@/hooks/use-file-upload";
 import { getFileIcon } from "@/lib/files";
 
-export default function Component() {
-  const maxSize = 10 * 1024 * 1024; // 10MB default
+interface CollectionFileUploaderProps {
+  initialFiles: FileMetadata[];
+}
+
+export default function CollectionFileUploader(
+  props: CollectionFileUploaderProps,
+) {
+  const maxSize = 10 * 1024 * 1024;
   const maxFiles = 10;
 
   const [
@@ -35,11 +45,11 @@ export default function Component() {
     multiple: true,
     maxFiles,
     maxSize,
+    initialFiles: props.initialFiles,
   });
 
   return (
     <div className="flex h-full flex-col gap-2">
-      {/* Drop area */}
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
