@@ -2,7 +2,7 @@ import CollectionIdHeader from "@/app/(protected)/collection/[id]/_components/he
 
 function CollectionIdPage() {
   return (
-    <div>
+    <div className="flex h-full w-full flex-col">
       <CollectionIdHeader />
     </div>
   );
