@@ -46,8 +46,6 @@ export default function CollectionFileUploader(
     },
   ] = useFileUpload({
     multiple: true,
-    maxFiles,
-    maxSize,
     initialFiles: props.initialFiles,
     onFilesChange: props.onFilesChange,
   });
@@ -90,10 +88,12 @@ export default function CollectionFileUploader(
               withNavigation
               hideScrollbar
             >
-              {files.map((file) => (
+              {files.map((file, index) => (
                 <div
                   key={file.id}
-                  className="bg-background flex items-center justify-between gap-2 rounded-lg border p-2 pe-3"
+                  className="bg-background focus-within:ring-ring hover:ring-ring flex items-center justify-between gap-2 rounded-lg border p-2 pe-3 transition-shadow outline-none focus-within:ring-2 focus-within:ring-offset-1 hover:ring-1"
+                  tabIndex={0}
+                  onClick={() => props.onSelectFile?.(index)}
                 >
                   <div className="flex items-center gap-3 overflow-hidden">
                     <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">

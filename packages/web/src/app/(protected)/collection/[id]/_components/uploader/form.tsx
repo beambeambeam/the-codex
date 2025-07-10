@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import CollectionUploaderFile from "@/app/(protected)/collection/[id]/_components/uploader/uploader";
+import FilePreviwer from "@/components/file-previwer";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -48,10 +49,15 @@ export default function CollectionFileForm(props: {
         onSubmit={form.handleSubmit((values) => {
           props.onSubmit?.(values);
         })}
+        className="h-full w-full"
       >
         <div></div>
-        <div className="grid h-full w-full lg:grid-cols-[3fr_2fr]">
-          <div className="hidden h-full w-full lg:inline"></div>
+        <div className="grid h-full w-full gap-6 lg:grid-cols-[3fr_2fr]">
+          <div className="border-border hidden h-full w-full rounded-2xl border-2 p-4 lg:flex">
+            {selectedFileIndex !== null && files[selectedFileIndex] && (
+              <FilePreviwer file={files[selectedFileIndex]} />
+            )}
+          </div>
           <div className="grid h-full w-full grid-rows-[auto_1fr] gap-4">
             <FormField
               control={form.control}
