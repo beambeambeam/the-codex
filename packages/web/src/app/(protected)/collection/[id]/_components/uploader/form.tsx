@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -29,6 +30,18 @@ export default function CollectionFileForm(props: {
     defaultValues: { file: [] },
   });
 
+  const [selectedFileIndex, setSelectedFileIndex] = useState<number | null>(
+    null,
+  );
+
+  // Reset selectedFileIndex when files are cleared
+  const files = form.watch("file");
+  useEffect(() => {
+    if (files.length === 0) {
+      setSelectedFileIndex(null);
+    }
+  }, [files]);
+
   return (
     <Form {...form}>
       <form
@@ -56,9 +69,12 @@ export default function CollectionFileForm(props: {
                         size: file.size,
                         type: file.type,
                       }))}
-                      onFilesChange={(files) =>
-                        field.onChange(files.map((fwp) => fwp.file))
-                      }
+                      onFilesChange={(files) => {
+                        // Only update form value here
+                        field.onChange(files.map((fwp) => fwp.file));
+                      }}
+                      selectedFileIndex={selectedFileIndex}
+                      onSelectFile={setSelectedFileIndex}
                     />
                   </FormControl>
                   <FormMessage />

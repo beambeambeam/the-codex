@@ -22,6 +22,8 @@ import { getFileIcon } from "@/lib/files";
 interface CollectionFileUploaderProps {
   initialFiles?: FileMetadata[];
   onFilesChange?: (files: FileWithPreview[]) => void;
+  selectedFileIndex?: number | null;
+  onSelectFile?: (index: number | null) => void;
 }
 
 export default function CollectionFileUploader(
@@ -70,7 +72,12 @@ export default function CollectionFileUploader(
         {files.length > 0 ? (
           <div className="flex h-fit w-full flex-col gap-3">
             <div className="flex h-fit items-center justify-between gap-2">
-              <Button variant="outline" size="sm" onClick={clearFiles}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearFiles}
+                type="button"
+              >
                 <Trash2Icon
                   className="-ms-0.5 size-3.5 opacity-60"
                   aria-hidden="true"
@@ -114,6 +121,7 @@ export default function CollectionFileUploader(
                     className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
                     onClick={() => removeFile(file.id)}
                     aria-label="Remove file"
+                    type="button"
                   >
                     <XIcon className="size-4" aria-hidden="true" />
                   </Button>
@@ -125,6 +133,7 @@ export default function CollectionFileUploader(
                 variant="outline"
                 className="mt-2 w-full"
                 onClick={openFileDialog}
+                type="button"
               >
                 <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
                 Add more
@@ -143,7 +152,12 @@ export default function CollectionFileUploader(
             <p className="text-muted-foreground text-xs">
               Max {maxFiles} files ∙ Up to {maxSize}MB
             </p>
-            <Button variant="outline" className="mt-4" onClick={openFileDialog}>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={openFileDialog}
+              type="button"
+            >
               <UploadIcon className="-ms-1 opacity-60" aria-hidden="true" />
               Select files
             </Button>
