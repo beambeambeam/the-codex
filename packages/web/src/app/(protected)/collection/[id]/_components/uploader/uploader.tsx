@@ -86,55 +86,57 @@ export default function CollectionFileUploader(
                 Remove all
               </Button>
             </div>
-            <Scroller
-              className="h-[50vh] w-full space-y-2"
-              withNavigation
-              hideScrollbar
-            >
-              {files.map((file, index) => (
-                <div
-                  key={file.id}
-                  className={cn(
-                    "bg-background focus-within:border-ring hover:border-ring focus-within:border-offset-1 flex cursor-pointer items-center justify-between gap-2 rounded-lg border p-2 pe-3 transition-all outline-none focus-within:border",
-                    props.selectedFileIndex === index && "border-ring",
-                  )}
-                  tabIndex={0}
-                  onClick={() => props.onSelectFile?.(index)}
-                  onDoubleClick={() => props.onSelectFile?.(null)}
-                >
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
-                      {getFileIcon(file)}
-                    </div>
-                    <div className="flex min-w-0 flex-col gap-0.5">
-                      <p className="truncate text-[13px] font-medium">
-                        {file.file instanceof File
-                          ? file.file.name
-                          : file.file.name}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        {formatBytes(
-                          file.file instanceof File
-                            ? file.file.size
-                            : file.file.size,
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
-                    onClick={() => removeFile(file.id)}
-                    aria-label="Remove file"
-                    type="button"
+            <div className="h-full min-h-0 flex-1">
+              <Scroller
+                className="max-h-[calc(100vh_-_45vh)] w-full space-y-2"
+                withNavigation
+                hideScrollbar
+              >
+                {files.map((file, index) => (
+                  <div
+                    key={file.id}
+                    className={cn(
+                      "bg-background focus-within:border-ring hover:border-ring focus-within:border-offset-1 flex cursor-pointer items-center justify-between gap-2 rounded-lg border p-2 pe-3 transition-all outline-none focus-within:border",
+                      props.selectedFileIndex === index && "border-ring",
+                    )}
+                    tabIndex={0}
+                    onClick={() => props.onSelectFile?.(index)}
+                    onDoubleClick={() => props.onSelectFile?.(null)}
                   >
-                    <XIcon className="size-4" aria-hidden="true" />
-                  </Button>
-                </div>
-              ))}
-            </Scroller>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className="flex aspect-square size-10 shrink-0 items-center justify-center rounded border">
+                        {getFileIcon(file)}
+                      </div>
+                      <div className="flex min-w-0 flex-col gap-0.5">
+                        <p className="truncate text-[13px] font-medium">
+                          {file.file instanceof File
+                            ? file.file.name
+                            : file.file.name}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {formatBytes(
+                            file.file instanceof File
+                              ? file.file.size
+                              : file.file.size,
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground/80 hover:text-foreground -me-2 size-8 hover:bg-transparent"
+                      onClick={() => removeFile(file.id)}
+                      aria-label="Remove file"
+                      type="button"
+                    >
+                      <XIcon className="size-4" aria-hidden="true" />
+                    </Button>
+                  </div>
+                ))}
+              </Scroller>
+            </div>
             {files.length < maxFiles && (
               <Button
                 variant="outline"

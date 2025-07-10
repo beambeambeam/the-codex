@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { FileX2Icon } from "lucide-react";
+import { FileXIcon } from "lucide-react";
 
 import type { FileMetadata } from "@/hooks/use-file-upload";
 
@@ -38,8 +38,13 @@ function FilePreviwer({ file }: FilePreviwerProps) {
   }
 
   return (
-    <div className="text-muted-foreground flex h-full w-full flex-col items-center gap-2">
-      <FileX2Icon className="size-20" strokeWidth={1.25} />
+    <div className="text-muted-foreground flex h-full w-full flex-col items-center gap-2 p-4">
+      <div
+        className="bg-background flex size-11 shrink-0 items-center justify-center rounded-full border"
+        aria-hidden="true"
+      >
+        <FileXIcon className="size-4 opacity-60" />
+      </div>
       <span className="text-base">
         Can&apos;t preview this type ({type}) of file
       </span>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ScanEyeIcon } from "lucide-react";
+import { SearchXIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -56,8 +56,13 @@ export default function CollectionFileForm(props: {
               {selectedFileIndex !== null && files[selectedFileIndex] ? (
                 <FilePreviwer file={files[selectedFileIndex]} />
               ) : (
-                <div className="text-muted-foreground flex h-full w-full flex-col items-center gap-2">
-                  <ScanEyeIcon className="size-20" />
+                <div className="text-muted-foreground flex h-full w-full flex-col items-center gap-2 p-4">
+                  <div
+                    className="bg-background flex size-11 shrink-0 items-center justify-center rounded-full border"
+                    aria-hidden="true"
+                  >
+                    <SearchXIcon className="size-4 opacity-60" />
+                  </div>
                   <span className="text-base">
                     No document selected for preview
                   </span>
