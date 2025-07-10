@@ -21,7 +21,7 @@ function SettingDialog() {
       </DialogTrigger>
       <DialogContent className="max-w-full md:min-w-4xl" clickOutside={false}>
         <DialogHeader>
-          <DialogTitle>Settings</DialogTitle>
+          <DialogTitle>User&apos;s Settings</DialogTitle>
           <DialogDescription hidden>
             This is dialog for settings change for overall
           </DialogDescription>
