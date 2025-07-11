@@ -3,13 +3,11 @@ from typing import Union
 from pydantic import BaseModel, Field
 
 from ..collection.schemas import (
-    CollectionChatCreate,
     CollectionChatHistoryBase,
     CollectionChatResponse,
 )
 from ..document.schemas import (
     ChunkSearchResponse,
-    DocumentChatCreate,
     DocumentChatHistoryBase,
     DocumentChatResponse,
 )

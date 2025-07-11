@@ -129,7 +129,7 @@ async def get_session_cookie() -> Optional[str]:
     timeout = aiohttp.ClientTimeout(total=60, connect=10)
 
     try:
-        async with aiohttp.ClientSession(
+        async with aiohttp.ClientSession(  # noqa: SIM117
             connector=connector, timeout=timeout
         ) as session:  # noqa: SIM117
             async with session.post(
