@@ -11,7 +11,7 @@ function CollectionIdHeader() {
   const { state } = useSidebar();
 
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="mb-2 flex w-full items-center justify-between gap-4">
       <div className="flex items-center gap-4">
         <SidebarTrigger />
         {state == "collapsed" && (
