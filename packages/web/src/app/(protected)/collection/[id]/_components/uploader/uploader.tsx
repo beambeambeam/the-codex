@@ -10,7 +10,6 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { FormLabel } from "@/components/ui/form";
 import { Scroller } from "@/components/ui/scroller";
 import {
   FileMetadata,
@@ -54,7 +53,6 @@ export default function CollectionFileUploader(
 
   return (
     <div className="flex h-full flex-col gap-2">
-      <FormLabel>File Uploader</FormLabel>
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
