@@ -5,6 +5,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from ..models.enum import Role
+
 
 class DocumentBase(BaseModel):
     """Base document schema."""
@@ -61,7 +63,11 @@ class ChunkBase(BaseModel):
 
     chunk_text: str = Field(..., min_length=1, description="Chunk text content")
     page_number: Optional[int] = Field(None, description="Page number")
+    start_char: Optional[int] = Field(None, description="Start character position")
     end_char: Optional[int] = Field(None, description="End character position")
+    token_count: Optional[int] = Field(
+        None, description="Number of tokens in the chunk"
+    )
 
 
 class ChunkCreate(ChunkBase):
@@ -92,6 +98,7 @@ class ChunkResponse(ChunkBase):
 
     id: str
     document_id: str
+    embedding: list[float] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
     created_by: Optional[str]
@@ -99,6 +106,20 @@ class ChunkResponse(ChunkBase):
 
     class Config:
         from_attributes = True
+
+
+class ChunkSearchResponse(ChunkResponse):
+    """Schema for searched chunks."""
+
+    distance: float = Field(..., description="Distance score for similarity search")
+
+
+class DocumentSearchResponse(DocumentResponse):
+    """Schema for searched documents."""
+
+    chunk: list[ChunkSearchResponse] = Field(
+        default_factory=list, description="List of chunks with search results"
+    )
 
 
 class DocumentChatBase(BaseModel):
@@ -144,12 +165,10 @@ class DocumentChatResponse(DocumentChatBase):
 class DocumentChatHistoryBase(BaseModel):
     """Base document chat history schema."""
 
-    agent: str = Field(..., pattern="^(User|Agent)$", description="Message agent type")
-    system_prompt: Optional[str] = Field(
-        None, description="System prompt for the message"
+    role: Role = Field(
+        ..., description="Role of the message sender (user, assistant, system)"
     )
-    instruct: Optional[str] = Field(None, description="Instruction for the message")
-    text: str = Field(..., min_length=1, description="Message text content")
+    content: Optional[str] = Field(..., description="message content")
 
 
 class DocumentChatHistoryCreate(DocumentChatHistoryBase):

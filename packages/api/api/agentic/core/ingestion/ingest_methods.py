@@ -1,7 +1,16 @@
+import re
 from typing import Optional, Union
 
 import fitz  # PyMuPDF
-from chonkie import RecursiveChunk, RecursiveChunker
+from chonkie import (
+    LateChunk,
+    LateChunker,
+    Model2VecEmbeddings,
+    RecursiveChunk,
+    RecursiveChunker,
+    SemanticChunk,
+    SentenceTransformerEmbeddings,
+)
 
 from .schemas import ChunkMetadata, DocumentChunk
 
@@ -13,17 +22,6 @@ def _normalize_file_type(file_type: str) -> str:
     return file_type.lower()
 
 
-def clean_extracted_text(extracted_text: Union[str, bytes]) -> str:
-    if isinstance(extracted_text, bytes):
-        content = extracted_text.decode("utf-8", errors="replace").replace(
-            "\x00", "\ufffd"
-        )
-    else:
-        content = extracted_text.replace("\x00", "\ufffd")
-
-    return content
-
-
 def _chunk_text(
     text: str,
     file_name: str,
@@ -31,15 +29,29 @@ def _chunk_text(
     chunk_size: int = 512,
     min_characters_per_chunk: int = 24,
     page_number: Optional[int] = None,
+    embedding_model: Optional[
+        Union[str, SentenceTransformerEmbeddings, Model2VecEmbeddings]
+    ] = None,
 ) -> list[DocumentChunk]:
     """Create chunks from text using consistent chunking logic."""
     if not text.strip():
         return []
 
-    chunker = RecursiveChunker(
-        chunk_size=chunk_size, min_characters_per_chunk=min_characters_per_chunk
-    )
-    document_chunks: list[RecursiveChunk] = chunker(text=text, show_progress=False)
+    document_chunks: list[LateChunk] | list[RecursiveChunk] | list[SemanticChunk]
+
+    if embedding_model:
+        chunker = LateChunker(
+            embedding_model=embedding_model,
+            chunk_size=chunk_size,
+            min_characters_per_chunk=min_characters_per_chunk,
+        )
+
+    else:
+        chunker = RecursiveChunker(
+            chunk_size=chunk_size, min_characters_per_chunk=min_characters_per_chunk
+        )
+
+    document_chunks = chunker(text=text, show_progress=False)
 
     chunk_documents = []
 
@@ -53,13 +65,10 @@ def _chunk_text(
         if page_number is not None:
             metadata.page_number = page_number
 
-        # Sanitize chunk text before creating DocumentChunk
-        cleaned_chunk_text = clean_extracted_text(chunk.text)
-
         chunk_data = DocumentChunk(
             file_name=file_name,
             file_type=file_type,
-            chunk_text=cleaned_chunk_text,
+            chunk_text=chunk.text,
             chunk_metadata=metadata,
         )
         chunk_documents.append(chunk_data)
@@ -67,11 +76,20 @@ def _chunk_text(
     return chunk_documents
 
 
+def preprocess_content(
+    content: str,
+):
+    """Preprocess content by removing control characters."""
+    content = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", content)
+    return content
+
+
 def extract_chunks_from_pdf(
     file_input: Union[str, bytes],
     file_name: str,
     chunk_size: int = 512,
     min_characters_per_chunk: int = 24,
+    embedding_model: Optional[Union[str, SentenceTransformerEmbeddings]] = None,
 ) -> list[DocumentChunk]:
     """Extract and chunk text from a PDF file."""
     try:
@@ -90,22 +108,39 @@ def extract_chunks_from_pdf(
         return []
 
     try:
-        full_text = ""
+        chunk_list = []
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
             page_text = page.get_text()
             if page_text:
-                full_text += page_text + "\n"
+                page_text = preprocess_content(page_text)
+
+                if not page_text.strip():
+                    print(f"No text extracted from page {page_num + 1} of {file_name}")
+                    continue
+
+                normalized_type = _normalize_file_type(".pdf")
+
+                chunks = _chunk_text(
+                    page_text,
+                    file_name,
+                    normalized_type,
+                    chunk_size,
+                    min_characters_per_chunk,
+                    page_number=page_num + 1,  # Page numbers are 1-based
+                    embedding_model=embedding_model,
+                )
+
+                if chunks:
+                    chunk_list.extend(chunks)
+
     finally:
         doc.close()
 
-    if not full_text.strip():
+    if not chunk_list:
         print(f"No text extracted from {file_name}")
         return []
-
-    return _chunk_text(
-        full_text, file_name, "pdf", chunk_size, min_characters_per_chunk
-    )
+    return chunk_list
 
 
 def extract_chunks_from_text_file(
@@ -114,6 +149,7 @@ def extract_chunks_from_text_file(
     file_type: str,
     chunk_size: int = 512,
     min_characters_per_chunk: int = 24,
+    embedding_model: Optional[Union[str, SentenceTransformerEmbeddings]] = None,
 ) -> list[DocumentChunk]:
     """Extract and chunk text from a text file."""
     try:
@@ -131,11 +167,19 @@ def extract_chunks_from_text_file(
         print(f"Error reading text file {file_name}: {e}")
         return []
 
+    content = preprocess_content(content)
+
     if not content.strip():
         print(f"No text extracted from {file_name}")
         return []
 
     normalized_type = _normalize_file_type(file_type)
+
     return _chunk_text(
-        content, file_name, normalized_type, chunk_size, min_characters_per_chunk
+        content,
+        file_name,
+        normalized_type,
+        chunk_size,
+        min_characters_per_chunk,
+        embedding_model=embedding_model,
     )

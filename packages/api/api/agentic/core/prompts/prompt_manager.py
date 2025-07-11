@@ -3,7 +3,7 @@ Prompt template management using Jinja2.
 """
 
 import os
-from typing import Any
+from typing import Any, Union
 
 from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound
 
@@ -120,4 +120,44 @@ def render_knowledge_graph_extraction_prompt(
     manager = get_prompt_manager()
     return manager.render_template(
         "knowledge_graph_extraction.j2", full_text=full_text, text_limit=text_limit
+    )
+
+
+def render_keyword_to_topic_extraction(keywords: Union[str, list[str]]) -> str:
+    """
+    Convenience function to render the keyword to topic extraction prompt.
+
+    Args:
+        full_text: The text to extract keywords and topics from
+        text_limit: Maximum characters to include from the text
+
+    Returns:
+        Rendered prompt string
+    """
+    if isinstance(keywords, list):
+        keywords = ", ".join(keywords)
+
+    manager = get_prompt_manager()
+    return manager.render_template("keyword_to_topic_extraction.j2", keywords=keywords)
+
+
+def render_collection_rag_agent_prompt(
+    question: str, contexts: Union[str, list[str]] = None
+) -> str:
+    """
+    Convenience function to render the collection RAG agent prompt.
+
+    Args:
+        question: The user's question
+        contexts: Context documents to include in the prompt
+
+    Returns:
+        Rendered prompt string
+    """
+    if isinstance(contexts, list):
+        contexts = "\n\n---\n\n".join(contexts)
+
+    manager = get_prompt_manager()
+    return manager.render_template(
+        "collection_rag_agent.j2", question=question, contexts=contexts
     )

@@ -1,10 +1,14 @@
 from fastapi import Depends
 
 from ..auth.dependencies import get_current_user
+from ..collection.dependencies import get_collection_service
+from ..collection.service import CollectionService
 from ..document.dependencies import get_document_service
 from ..document.service import DocumentService
 from ..models.user import User
+from .agent import rag_agent
 from .core import (
+    DocumentClusteringService,
     DocumentIngestorService,
     KnowledgeGraphExtractor,
     TextEmbedder,
@@ -56,4 +60,32 @@ def get_document_ingestor(
         document_service=document_service,
         text_embedder=text_embedder,
         kg_extractor=graph_extractor,
+    )
+
+
+def get_document_clustering_service(
+    document_service: DocumentService = Depends(get_document_service),
+) -> DocumentClusteringService:
+    """
+    Returns an instance of DocumentClusteringService with the necessary dependencies.
+    """
+    return DocumentClusteringService(
+        document_service=document_service,
+    )
+
+
+def get_rag_agent(
+    user: User = Depends(get_current_user),
+    document_service: DocumentService = Depends(get_document_service),
+    text_embedder: TextEmbedder = Depends(get_text_embedder),
+    collection_service: CollectionService = Depends(get_collection_service),
+) -> rag_agent:
+    """
+    Returns an instance of rag_agent with the necessary dependencies.
+    """
+    return rag_agent(
+        current_user=user,
+        document_service=document_service,
+        collection_service=collection_service,
+        embedding_model=text_embedder,
     )

@@ -4,16 +4,18 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, Integer, Text
+from sqlalchemy import TIMESTAMP, Boolean, Enum, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
+from .enum import Role
 
 if TYPE_CHECKING:
     from .user import User
 
 
+# Models
 class Document(Base):
     __tablename__ = "document"
 
@@ -65,7 +67,9 @@ class Chunk(Base):
     chunk_text: Mapped[str] = mapped_column(Text)
     embedding: Mapped[Optional[list[float]]] = mapped_column(Vector(256))
     page_number: Mapped[Optional[int]] = mapped_column(Integer)
+    start_char: Mapped[Optional[int]] = mapped_column(Integer)
     end_char: Mapped[Optional[int]] = mapped_column(Integer)
+    token_count: Mapped[Optional[int]] = mapped_column(Integer)
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL")
     )
@@ -127,10 +131,8 @@ class DocumentChatHistory(Base):
     document_chat_id: Mapped[str] = mapped_column(
         Text, ForeignKey("document_chat.id", ondelete="CASCADE")
     )
-    agent: Mapped[str] = mapped_column(Text)  # User or Agent
-    system_prompt: Mapped[str] = mapped_column(Text)
-    instruct: Mapped[str] = mapped_column(Text)
-    text: Mapped[str] = mapped_column(Text)
+    role: Mapped[Role] = mapped_column(Enum(Role, native_enum=False), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL")
     )

@@ -11,6 +11,8 @@ MODEL_BACKEND_MAP = {
     "jaeyong2/bge-m3-Thai": "sentence_transformer",
 }
 
+_MODEL_CACHE = {}
+
 
 class TextEmbedder:
     """Class for generating text embeddings using specified models and backends."""
@@ -33,20 +35,26 @@ class TextEmbedder:
         self.model: Union[SentenceTransformer, StaticModel] = self._load_model()
 
     def _load_model(self):
-        """Loads the embedding model based on backend type."""
+        key = f"{self.backend}:{self.model_name}"
+        if key in _MODEL_CACHE:
+            logger.info(f"Using cached model for: {key}")
+            return _MODEL_CACHE[key]
+
         logger.info(
             f"Loading embedding model: {self.model_name} using backend: {self.backend}"
         )
 
         if self.backend == "model2vec":
             model = StaticModel.from_pretrained(self.model_name)
-
         elif self.backend == "sentence_transformer":
-            model = SentenceTransformer(self.model_name, cache_folder=self.cache_folder)
-
+            model = SentenceTransformer(
+                self.model_name, cache_folder=self.cache_folder, device=self.device
+            )
         else:
             raise ValueError(f"Unsupported backend type: {self.backend}")
 
+        _ = model.encode("warm up", normalize_embeddings=True)
+        _MODEL_CACHE[key] = model
         logger.info("Embedding model loaded successfully.")
         return model
 
