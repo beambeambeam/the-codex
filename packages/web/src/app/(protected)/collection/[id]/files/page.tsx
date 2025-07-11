@@ -1,4 +1,4 @@
 function CollectionIdFilePage() {
-  return <div>CollectionIdFilePage</div>;
+  return <div className="h-full w-full border-l p-4">CollectionIdFilePage</div>;
 }
 export default CollectionIdFilePage;

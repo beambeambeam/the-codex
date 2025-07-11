@@ -19,7 +19,7 @@ function CollectionIdSidebar() {
           {context.description}
         </p>
         <Separator />
-        <div className="flex w-full">
+        <div className="flex w-full gap-2">
           <CollectionIdSidebarSearchbox />
           <CollectionUploaderButton />
         </div>

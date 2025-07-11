@@ -34,7 +34,7 @@ export default function CollectionIdLayout({
       <SidebarProvider>
         <CollectionIdSidebar />
         <SidebarInset>
-          <main className="flex h-full shrink-0 flex-col items-start justify-start p-3">
+          <main className="flex h-full shrink-0 flex-col items-start justify-start px-3 pt-3">
             <CollectionIdHeader />
             <Tabs
               defaultValue="tab-overview"
