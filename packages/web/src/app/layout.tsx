@@ -1,3 +1,5 @@
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+
 import { BreakpointIndicator } from "@/components/breakpoint-indicator";
 import { ThemeProvider } from "@/provider/themes";
 
@@ -16,16 +18,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-background h-full min-h-screen w-full antialiased">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          themes={["light", "dark"]}
-        >
-          {children}
-          <BreakpointIndicator />
-        </ThemeProvider>
+        <NuqsAdapter>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+            themes={["light", "dark"]}
+          >
+            {children}
+            <BreakpointIndicator />
+          </ThemeProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

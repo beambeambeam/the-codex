@@ -19,6 +19,13 @@ class Settings:
     MINIO_SECURE: bool = os.getenv("MINIO_SECURE", "false").lower() == "true"
     MINIO_BUCKET_NAME: str = os.getenv("MINIO_BUCKET_NAME", "documents")
 
+    # RabbitMQ settings
+    RABBITMQ_HOST: str = os.getenv("RABBITMQ_HOST", "localhost")
+    RABBITMQ_PORT: int = int(os.getenv("RABBITMQ_PORT", "5672"))
+    RABBITMQ_USER: str = os.getenv("RABBITMQ_DEFAULT_USER", "guest")
+    RABBITMQ_PASSWORD: str = os.getenv("RABBITMQ_DEFAULT_PASS", "guest")
+    RABBITMQ_VHOST: str = os.getenv("RABBITMQ_VHOST", "/")
+
     @property
     def MINIO_POLICY(self):
         return {
