@@ -1,5 +1,6 @@
 "use client";
 
+import FileQueueTable from "@/app/(protected)/collection/[id]/files/_components/file-queue-table";
 import CollectionFileForm from "@/app/(protected)/collection/[id]/files/_components/form";
 
 function CollectionIdFilePage() {
@@ -14,6 +15,7 @@ function CollectionIdFilePage() {
           throw new Error("Function not implemented.");
         }}
       />
+      <FileQueueTable />
     </div>
   );
 }
