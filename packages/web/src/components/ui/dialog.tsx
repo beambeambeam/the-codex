@@ -50,9 +50,11 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  clickOutside = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean;
+  clickOutside?: boolean;
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -64,6 +66,11 @@ function DialogContent({
           className,
         )}
         {...props}
+        onInteractOutside={(e) => {
+          if (!clickOutside) {
+            e.preventDefault();
+          }
+        }}
       >
         {children}
         {showCloseButton && (
@@ -110,7 +117,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-semibold", className)}
+      className={cn("text-2xl leading-none font-bold", className)}
       {...props}
     />
   );

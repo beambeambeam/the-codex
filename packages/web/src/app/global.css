@@ -367,3 +367,7 @@
   display: inline-block;
   color: var(--foreground);
 }
+
+.react-flow__controls-button {
+  color: black;
+}
