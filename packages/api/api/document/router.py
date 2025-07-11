@@ -357,6 +357,33 @@ def create_document_relation(
     return document_service.create_document_relation(relation_data, current_user)
 
 
+@router.get("/graph", response_model=DocumentRelationResponse)
+def create_document_graph(
+    document_id: str,
+    nodes: list[DocumentNodeCreate],
+    edges: list[DocumentEdgeCreate],
+    current_user: User = Depends(get_current_user),
+) -> DocumentRelation:
+    """Create a document relation with nodes and edges."""
+    # Create the relation
+    relation = create_document_relation(
+        DocumentRelationCreate(
+            document_id=document_id,
+            title="Graph Relation",
+            description="Automatically created relation for graph",
+        ),
+    )
+    # Create nodes
+    for node_data in nodes:
+        create_document_node(node_data=node_data, user=current_user)
+
+    # Create edges
+    for edge_data in edges:
+        create_document_edge(edge_data=edge_data, user=current_user)
+
+    return relation
+
+
 @router.get("/{document_id}/relations", response_model=list[DocumentRelationWithNodes])
 def list_document_relations(
     document: Document = Depends(get_document_or_404),

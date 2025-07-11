@@ -77,6 +77,12 @@ class ChunkCreate(ChunkBase):
     document_id: str = Field(..., description="Document ID this chunk belongs to")
 
 
+class ChunkSearched(ChunkCreate):
+    """Schema for searched chunks."""
+
+    distance: float = Field(..., description="Distance score for similarity search")
+
+
 class ChunkUpdate(BaseModel):
     """Schema for updating a chunk."""
 
