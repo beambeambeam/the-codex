@@ -139,3 +139,25 @@ def render_keyword_to_topic_extraction(keywords: Union[str, list[str]]) -> str:
 
     manager = get_prompt_manager()
     return manager.render_template("keyword_to_topic_extraction.j2", keywords=keywords)
+
+
+def render_collection_rag_agent_prompt(
+    question: str, contexts: Union[str, list[str]] = None
+) -> str:
+    """
+    Convenience function to render the collection RAG agent prompt.
+
+    Args:
+        question: The user's question
+        contexts: Context documents to include in the prompt
+
+    Returns:
+        Rendered prompt string
+    """
+    if isinstance(contexts, list):
+        contexts = "\n\n---\n\n".join(contexts)
+
+    manager = get_prompt_manager()
+    return manager.render_template(
+        "collection_rag_agent.j2", question=question, contexts=contexts
+    )

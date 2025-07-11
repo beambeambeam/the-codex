@@ -1,3 +1,4 @@
+import re
 from typing import Optional, Union
 
 import fitz  # PyMuPDF
@@ -8,7 +9,6 @@ from chonkie import (
     RecursiveChunk,
     RecursiveChunker,
     SemanticChunk,
-    SemanticChunker,
     SentenceTransformerEmbeddings,
 )
 
@@ -76,6 +76,14 @@ def _chunk_text(
     return chunk_documents
 
 
+def preprocess_content(
+    content: str,
+):
+    """Preprocess content by removing control characters."""
+    content = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", content)
+    return content
+
+
 def extract_chunks_from_pdf(
     file_input: Union[str, bytes],
     file_name: str,
@@ -100,27 +108,39 @@ def extract_chunks_from_pdf(
         return []
 
     try:
-        full_text = ""
+        chunk_list = []
         for page_num in range(len(doc)):
             page = doc.load_page(page_num)
             page_text = page.get_text()
             if page_text:
-                full_text += page_text + "\n"
+                page_text = preprocess_content(page_text)
+
+                if not page_text.strip():
+                    print(f"No text extracted from page {page_num + 1} of {file_name}")
+                    continue
+
+                normalized_type = _normalize_file_type(".pdf")
+
+                chunks = _chunk_text(
+                    page_text,
+                    file_name,
+                    normalized_type,
+                    chunk_size,
+                    min_characters_per_chunk,
+                    page_number=page_num + 1,  # Page numbers are 1-based
+                    embedding_model=embedding_model,
+                )
+
+                if chunks:
+                    chunk_list.extend(chunks)
+
     finally:
         doc.close()
 
-    if not full_text.strip():
+    if not chunk_list:
         print(f"No text extracted from {file_name}")
         return []
-
-    return _chunk_text(
-        full_text,
-        file_name,
-        "pdf",
-        chunk_size,
-        min_characters_per_chunk,
-        embedding_model=embedding_model,
-    )
+    return chunk_list
 
 
 def extract_chunks_from_text_file(
@@ -146,6 +166,8 @@ def extract_chunks_from_text_file(
     except Exception as e:
         print(f"Error reading text file {file_name}: {e}")
         return []
+
+    content = preprocess_content(content)
 
     if not content.strip():
         print(f"No text extracted from {file_name}")

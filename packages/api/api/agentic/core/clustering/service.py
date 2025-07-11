@@ -1,6 +1,7 @@
 from collections import Counter, defaultdict
 
 import numpy as np
+import pandas as pd
 import umap
 from bertopic import BERTopic
 from hdbscan import HDBSCAN
@@ -176,6 +177,22 @@ class DocumentClusteringService:
                 chunk_texts.append(chunk.chunk_text)
                 embeddings.append(chunk.embedding)
                 doc_ids.append(doc_id)
+
+        # create dataframe for topic modeling
+        chunk_df = pd.DataFrame(
+            {
+                "chunk_text": chunk_texts,
+                "embedding": embeddings,
+                "doc_id": doc_ids,
+            }
+        )
+        # remove duplicate chunks
+        chunk_df = chunk_df.drop_duplicates(subset=["embedding"])
+        chunk_texts = chunk_df["chunk_text"].tolist()
+        embeddings = chunk_df["embedding"].tolist()
+        doc_ids = chunk_df["doc_id"].tolist()
+
+        logger.info(f"remove duplications, now {len(set(doc_ids))} documents.")
 
         # 1. Perform Topic Modeling
         topics, _ = self.TOPIC_MODEL.fit_transform(

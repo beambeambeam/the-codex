@@ -1,9 +1,7 @@
-import os
 from typing import Union
 
 from ....document.schemas import (
     ChunkCreate,
-    DocumentCreate,
     DocumentEdgeCreate,
     DocumentNodeCreate,
     DocumentRelationCreate,
@@ -26,26 +24,6 @@ class DocumentIngestor:
     chunking, embedding generation, and knowledge graph extraction.
     """
 
-    # MIME type to file extension mapping
-    MIME_TYPE_MAPPING = {
-        "application/pdf": ".pdf",
-        "text/plain": ".txt",
-        "text/markdown": ".md",
-        "application/json": ".json",
-        "text/html": ".html",
-        "text/css": ".css",
-        "application/javascript": ".js",
-        "text/javascript": ".js",
-        "text/csv": ".csv",
-        "application/xml": ".xml",
-        "text/xml": ".xml",
-        "application/x-python": ".py",
-        "text/x-python": ".py",
-        "application/x-yaml": ".yml",
-        "text/yaml": ".yml",
-        "text/x-log": ".log",
-    }
-
     def __init__(
         self,
         document_service: DocumentService,
@@ -64,63 +42,6 @@ class DocumentIngestor:
         self.document_service: DocumentService = document_service
         self.text_embedder: TextEmbedder = text_embedder
         self.kg_extractor: KnowledgeGraphExtractor = kg_extractor
-
-    def detect_file_type(self, type_hint: str, filename: str = "") -> str:
-        """
-        Detect file type from extension or MIME type.
-
-        Args:
-            type_hint: File extension (e.g., '.pdf') or MIME type (e.g., 'application/pdf')
-            filename: Optional filename to extract extension from as fallback
-
-        Returns:
-            Normalized file extension (e.g., '.pdf')
-        """
-        # If it's already a file extension
-        if type_hint.startswith("."):
-            return type_hint.lower()
-
-        # If it's a MIME type
-        elif "/" in type_hint:
-            mapped_extension = self.MIME_TYPE_MAPPING.get(type_hint.lower())
-            if mapped_extension:
-                return mapped_extension
-            else:
-                print(
-                    f"Unknown MIME type '{type_hint}', falling back to text extraction"
-                )
-                return ".txt"
-
-        # Try to infer from filename as fallback
-        elif filename:
-            extension = os.path.splitext(filename)[1].lower()
-            return extension if extension else ".txt"
-
-        # Default fallback
-        else:
-            return ".txt"
-
-    def normalize_file_input(self, input_file: Union[str, FileInput]) -> FileInput:
-        """Convert various input formats to a normalized FileInput structure."""
-        if isinstance(input_file, FileInput):
-            # Ensure the type is properly normalized (handles MIME types)
-            normalized_type = self.detect_file_type(input_file.type, input_file.name)
-            input_file.type = normalized_type
-            return input_file
-
-        elif isinstance(input_file, str):
-            # File path
-            file_extension = os.path.splitext(input_file)[1] or ".txt"
-            return FileInput(
-                content=input_file,
-                file_name=os.path.basename(input_file),
-                name=input_file,
-                type=self.detect_file_type(file_extension, input_file),
-                is_path=True,
-            )
-
-        else:
-            raise ValueError("Input must be a file path (str) or FileInput instance")
 
     def extract_full_text(self, file_input: FileInput) -> str:
         """Extract full text from file input."""
@@ -379,11 +300,10 @@ class DocumentIngestorService(DocumentIngestor):
     async def ingest_file(
         self,
         input_file: Union[str, FileInput],
-        save_path: str,
-        collection_id: str,
+        document: Document,
         graph_extract: bool,
         user: User,
-    ) -> Document:
+    ) -> None:
         """
         Ingest a single file: extract text, generate knowledge graph, chunk, embed, and store.
 
@@ -396,44 +316,11 @@ class DocumentIngestorService(DocumentIngestor):
         Returns:
             Document: The created document record
         """
-        # Normalize input using Pydantic model
-        file_input: FileInput = self.normalize_file_input(input_file)
-        print(
-            f"Processing {file_input.name} (type: {file_input.type}) for collection {collection_id}"
-        )
-
-        # Create document record
-        document = self.document_service.create_document(
-            document_data=DocumentCreate(
-                file_name=file_input.name,
-                file_type=file_input.type,
-                source_file_path=save_path,
-                collection_id=collection_id,
-            ),
-            user=user,
-        )
-
-        if not document:
-            raise RuntimeError(
-                f"Failed to create document record for {file_input.name}"
-            )
-
-        print(f"Created document record ID {document.id} for {file_input.name}")
-
-        # Extract knowledge graph if not already done (Optional)
-        if not document.is_graph_extracted and graph_extract:
-            document = await self.extract_and_store_knowledge_graph(
-                file_input=file_input,
-                document_id=document.id,
-                user=user,
-            )
-            if not document:
-                print(f"Failed to extract knowledge graph for {file_input.name}")
 
         # Extract and store vector chunks if not already done
         if not document.is_vectorized:
             embedded_chunks = self.chunk_and_embed(
-                file_input=file_input, document_id=document.id
+                file_input=input_file, document_id=document.id
             )
             if embedded_chunks:
                 for chunk in embedded_chunks:
@@ -448,5 +335,14 @@ class DocumentIngestorService(DocumentIngestor):
                     user=user,
                 )
 
-        print(f"Finished processing {file_input.name}")
-        return document
+        # Extract knowledge graph if not already done (Optional)
+        if not document.is_graph_extracted and graph_extract:
+            document = await self.extract_and_store_knowledge_graph(
+                file_input=input_file,
+                document_id=document.id,
+                user=user,
+            )
+            if not document:
+                print(f"Failed to extract knowledge graph for {input_file.name}")
+
+        print(f"Finished processing {input_file.name}")
