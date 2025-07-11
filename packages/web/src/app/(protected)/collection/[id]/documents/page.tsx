@@ -1,7 +1,7 @@
 "use client";
 
-import FileQueueTable from "@/app/(protected)/collection/[id]/files/_components/file-queue-table";
-import CollectionFileForm from "@/app/(protected)/collection/[id]/files/_components/form";
+import FileQueueTable from "@/app/(protected)/collection/[id]/documents/_components/documents-queue-table";
+import CollectionFileForm from "@/app/(protected)/collection/[id]/documents/_components/form";
 import { Label } from "@/components/ui/label";
 
 function CollectionIdFilePage() {

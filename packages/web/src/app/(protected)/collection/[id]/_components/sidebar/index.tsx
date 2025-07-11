@@ -24,9 +24,9 @@ function CollectionIdSidebar() {
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
     if (uuidRegex.test(last) || !isNaN(Number(last))) {
-      return `${pathname}/files`;
+      return `${pathname}/documents`;
     } else {
-      parts[parts.length - 1] = "files";
+      parts[parts.length - 1] = "documents";
       return "/" + parts.join("/");
     }
   }, [pathname]);

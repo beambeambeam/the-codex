@@ -13,7 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function getInitialTab(pathname: string) {
   if (pathname.endsWith("/chat")) return "tab-chat";
-  if (pathname.endsWith("/files")) return "tab-files";
+  if (pathname.endsWith("/documents")) return "tab-documents";
   return "tab-overview";
 }
 
@@ -41,18 +41,20 @@ export default function CollectionIdLayout({
               value={tab}
               onValueChange={(value: string) => {
                 if (value === "tab-overview") {
-                  router.push(pathname.replace(/\/(chat|files)$/, "") || "/");
+                  router.push(
+                    pathname.replace(/\/(chat|documents)$/, "") || "/",
+                  );
                 } else if (value === "tab-chat") {
                   router.push(
                     pathname.endsWith("/chat")
                       ? pathname
-                      : pathname.replace(/\/(files)?$/, "") + "/chat",
+                      : pathname.replace(/\/(documents)?$/, "") + "/chat",
                   );
-                } else if (value === "tab-files") {
+                } else if (value === "tab-documents") {
                   router.push(
-                    pathname.endsWith("/files")
+                    pathname.endsWith("/documents")
                       ? pathname
-                      : pathname.replace(/\/(chat)?$/, "") + "/files",
+                      : pathname.replace(/\/(chat)?$/, "") + "/documents",
                   );
                 }
                 setTab(value);
@@ -83,7 +85,7 @@ export default function CollectionIdLayout({
                     Chat
                   </TabsTrigger>
                   <TabsTrigger
-                    value="tab-files"
+                    value="tab-documents"
                     className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
                   >
                     <PanelsTopLeftIcon
@@ -91,7 +93,7 @@ export default function CollectionIdLayout({
                       size={16}
                       aria-hidden="true"
                     />
-                    Files
+                    documents
                   </TabsTrigger>
                 </TabsList>
                 <ScrollBar orientation="horizontal" />

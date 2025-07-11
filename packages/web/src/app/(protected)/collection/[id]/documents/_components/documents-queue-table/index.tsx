@@ -1,4 +1,4 @@
-import { fileQueueColumns } from "@/app/(protected)/collection/[id]/files/_components/file-queue-table/columns";
+import { fileQueueColumns } from "@/app/(protected)/collection/[id]/documents/_components/documents-queue-table/columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
