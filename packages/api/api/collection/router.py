@@ -11,6 +11,7 @@ from ..document.service import DocumentService
 from ..models.collection import CollectionRelation
 from ..models.user import User
 from .dependencies import (
+    get_collection_chat_history_or_404,
     get_collection_chat_or_404,
     get_collection_chat_with_modify_permission,
     get_collection_or_404,
@@ -127,28 +128,16 @@ def list_collection_chats(
     return collection_service.get_collection_chats(collection.id)
 
 
-@router.get("/chats/{chat_id}", response_model=CollectionChatWithHistory)
+@router.get("/chats/{collection_chat_id}", response_model=CollectionChatResponse)
 def get_collection_chat(
     chat=Depends(get_collection_chat_or_404),
     collection_service: CollectionService = Depends(get_collection_service),
-    limit: int = Query(
-        100, ge=1, le=1000, description="Number of history items to return"
-    ),
-    offset: int = Query(0, ge=0, description="Number of history items to skip"),
 ):
-    """Get a collection chat with history."""
-    history = collection_service.get_chat_history(chat.id, limit, offset)
-
-    # Convert to response model
-    chat_response = CollectionChatWithHistory.model_validate(chat)
-    chat_response.history = [
-        CollectionChatHistoryResponse.model_validate(h) for h in history
-    ]
-
-    return chat_response
+    """Get a specific collection chat."""
+    return collection_service.get_collection_chat(chat.id)
 
 
-@router.put("/chats/{chat_id}", response_model=CollectionChatResponse)
+@router.put("/chats/{collection_chat_id}", response_model=CollectionChatResponse)
 def update_collection_chat(
     update_data: CollectionChatUpdate,
     chat=Depends(get_collection_chat_with_modify_permission),
@@ -159,7 +148,7 @@ def update_collection_chat(
     return collection_service.update_collection_chat(chat.id, update_data, current_user)
 
 
-@router.delete("/chats/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/chats/{collection_chat_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_collection_chat(
     chat=Depends(get_collection_chat_with_modify_permission),
     current_user: User = Depends(get_current_user),
@@ -169,35 +158,79 @@ def delete_collection_chat(
     collection_service.delete_collection_chat(chat.id, current_user)
 
 
+@router.get(
+    "/chats/{collection_chat_id}/history", response_model=CollectionChatWithHistory
+)
+def list_collection_chat_history(
+    chat=Depends(get_collection_chat_or_404),
+    collection_service: CollectionService = Depends(get_collection_service),
+    limit: int = Query(
+        100, ge=1, le=1000, description="Number of history items to return"
+    ),
+    offset: int = Query(0, ge=0, description="Number of history items to skip"),
+):
+    """Get a collection chat with history."""
+    history = collection_service.get_chat_history_list(chat.id, limit, offset)
+
+    # Convert to response model
+    chat_response = CollectionChatWithHistory.model_validate(chat)
+    chat_response.history = [
+        CollectionChatHistoryResponse.model_validate(h) for h in history
+    ]
+
+    return chat_response
+
+
+@router.delete(
+    "/chats/{collection_chat_id}/history", status_code=status.HTTP_204_NO_CONTENT
+)
+def clear_chat_history(
+    chat=Depends(get_collection_chat_with_modify_permission),
+    current_user: User = Depends(get_current_user),
+    collection_service: CollectionService = Depends(get_collection_service),
+):
+    """Clear chat history for a collection chat."""
+    collection_service.clear_chat_history(chat.id, current_user)
+
+
 # Chat History routes
 @router.post(
-    "/chats/{chat_id}/history",
+    "/chats/{collection_chat_id}/history",
     response_model=CollectionChatHistoryResponse,
     status_code=status.HTTP_201_CREATED,
 )
 def add_chat_history(
     history_data: CollectionChatHistoryCreate,
-    chat=Depends(get_collection_chat_or_404),
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
 ):
     """Add a message to chat history."""
     # Ensure the chat_id in the data matches the URL parameter
-    history_data.collection_chat_id = chat.id
     return collection_service.add_chat_history(history_data, current_user)
 
 
-@router.get(
-    "/chats/{chat_id}/history", response_model=list[CollectionChatHistoryResponse]
-)
+@router.get("/history/{history_id}", response_model=CollectionChatHistoryResponse)
 def get_chat_history(
-    chat=Depends(get_collection_chat_or_404),
+    history=Depends(get_collection_chat_history_or_404),
     collection_service: CollectionService = Depends(get_collection_service),
-    limit: int = Query(100, ge=1, le=1000, description="Number of messages"),
-    offset: int = Query(0, ge=0, description="Number of messages to skip"),
 ):
-    """Get chat history for a collection chat."""
-    return collection_service.get_chat_history(chat.id, limit, offset)
+    """Get a specific chat history item."""
+    return collection_service.get_chat_history(history.id)
+
+
+@router.post(
+    "/history/{history_id}/edit",
+    status_code=status.HTTP_201_CREATED,
+)
+def edit_chat_history(
+    history_id: str,
+    new_history_data: CollectionChatHistoryCreate,
+    current_user: User = Depends(get_current_user),
+    collection_service: CollectionService = Depends(get_collection_service),
+):
+    """Edit a chat history item."""
+    if collection_service.edit_chat_history(history_id, current_user, new_history_data):
+        return {"message": "Chat history edited successfully"}
 
 
 # Collection Relation routes

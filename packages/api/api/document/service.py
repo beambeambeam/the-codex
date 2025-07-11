@@ -151,8 +151,10 @@ class DocumentService:
             document_id=chunk_data.document_id,
             chunk_text=chunk_data.chunk_text,
             embedding=chunk_data.embedding,
+            start_char=chunk_data.start_char,
             page_number=chunk_data.page_number,
             end_char=chunk_data.end_char,
+            token_count=chunk_data.token_count,
             created_by=user.id,
             updated_by=user.id,
         )
@@ -287,10 +289,8 @@ class DocumentService:
         history = DocumentChatHistory(
             id=str(uuid4()),
             document_chat_id=history_data.document_chat_id,
-            agent=history_data.agent,
-            system_prompt=history_data.system_prompt,
+            role=history_data.role,
             instruct=history_data.instruct,
-            text=history_data.text,
             created_by=user.id,
         )
 

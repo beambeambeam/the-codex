@@ -5,6 +5,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from ..models.enum import Role
+
 
 class CollectionBase(BaseModel):
     """Base collection schema."""
@@ -88,12 +90,10 @@ class CollectionChatResponse(CollectionChatBase):
 class CollectionChatHistoryBase(BaseModel):
     """Base collection chat history schema."""
 
-    agent: str = Field(..., pattern="^(User|Agent)$", description="Message agent type")
-    system_prompt: Optional[str] = Field(
-        None, description="System prompt for the message"
+    role: Role = Field(
+        ..., description="Role of the message sender (user, assistant, system)"
     )
-    instruct: Optional[str] = Field(None, description="Instruction for the message")
-    text: str = Field(..., min_length=1, description="Message text content")
+    content: Optional[str] = Field(..., description="message content")
 
 
 class CollectionChatHistoryCreate(CollectionChatHistoryBase):

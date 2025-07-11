@@ -144,10 +144,12 @@ class CollectionService:
         self.db.refresh(chat)
         return chat
 
-    def get_collection_chat(self, chat_id: str) -> Optional[CollectionChat]:
+    def get_collection_chat(self, collection_chat_id: str) -> Optional[CollectionChat]:
         """Get a collection chat by ID."""
         return (
-            self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
+            self.db.query(CollectionChat)
+            .filter(CollectionChat.id == collection_chat_id)
+            .first()
         )
 
     def get_collection_chats(self, collection_id: str) -> list[CollectionChat]:
@@ -160,10 +162,10 @@ class CollectionService:
         )
 
     def update_collection_chat(
-        self, chat_id: str, update_data: CollectionChatUpdate, user: User
+        self, collection_chat_id: str, update_data: CollectionChatUpdate, user: User
     ) -> CollectionChat:
         """Update a collection chat."""
-        chat = self.get_collection_chat(chat_id)
+        chat = self.get_collection_chat(collection_chat_id)
         if not chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
@@ -186,9 +188,9 @@ class CollectionService:
         self.db.refresh(chat)
         return chat
 
-    def delete_collection_chat(self, chat_id: str, user: User) -> bool:
+    def delete_collection_chat(self, collection_chat_id: str, user: User) -> bool:
         """Delete a collection chat."""
-        chat = self.get_collection_chat(chat_id)
+        chat = self.get_collection_chat(collection_chat_id)
         if not chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
@@ -224,10 +226,8 @@ class CollectionService:
         history = CollectionChatHistory(
             id=str(uuid4()),
             collection_chat_id=history_data.collection_chat_id,
-            agent=history_data.agent,
-            system_prompt=history_data.system_prompt,
-            instruct=history_data.instruct,
-            text=history_data.text,
+            role=history_data.role,
+            content=history_data.content,
             created_by=user.id,
         )
 
@@ -236,18 +236,90 @@ class CollectionService:
         self.db.refresh(history)
         return history
 
-    def get_chat_history(
-        self, chat_id: str, limit: int = 100, offset: int = 0
+    def get_chat_history_list(
+        self, collection_chat_id: str, limit: int = 100, offset: int = 0
     ) -> list[CollectionChatHistory]:
         """Get chat history for a chat."""
         return (
             self.db.query(CollectionChatHistory)
-            .filter(CollectionChatHistory.collection_chat_id == chat_id)
+            .filter(CollectionChatHistory.collection_chat_id == collection_chat_id)
             .order_by(CollectionChatHistory.created_at.asc())
             .offset(offset)
             .limit(limit)
             .all()
         )
+
+    def get_chat_history(self, history_id: str) -> CollectionChatHistory:
+        """Get a specific chat history entry by ID."""
+        return (
+            self.db.query(CollectionChatHistory)
+            .filter(CollectionChatHistory.id == history_id)
+            .first()
+        )
+
+    def delete_chat_history(self, history_id: str, user: User) -> bool:
+        """Delete chat history for a single chat."""
+        chat_history = (
+            self.db.query(CollectionChatHistory)
+            .filter(CollectionChatHistory.id == history_id)
+            .first()
+        )
+
+        if not chat_history:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Chat history not found"
+            )
+
+        if not self._can_access_chat(chat_history.chat, user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to delete this chat history",
+            )
+
+        self.db.delete(chat_history)
+        self.db.commit()
+        return True
+
+    def clear_chat_history(self, collection_chat_id: str, user: User) -> bool:
+        """Clear all chat history for a specific chat."""
+        try:
+            self.db.query(CollectionChatHistory).filter(
+                CollectionChatHistory.collection_chat_id == collection_chat_id
+            ).delete()
+            self.db.commit()
+            return True
+
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to clear chat history: {str(e)}",
+            ) from e
+
+    def edit_chat_history(
+        self, history_id: str, user: User, new_history_data: CollectionChatHistoryCreate
+    ) -> bool:
+        """Delete chat history after chat creation and create a new chat history entry."""
+        chat = self.get_chat_history(history_id)
+        try:
+            # Delete histories after chat.created_at
+            self.db.query(CollectionChatHistory).filter(
+                CollectionChatHistory.collection_chat_id == chat.collection_chat_id,
+                CollectionChatHistory.created_at >= chat.created_at,
+            ).delete()
+
+            # Add the new chat history entry
+            history = self.add_chat_history(new_history_data, user)
+
+            self.db.commit()
+            return history
+
+        except Exception as e:
+            self.db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to modify chat history: {str(e)}",
+            ) from e
 
     # Collection Relation operations
     def create_collection_relation(

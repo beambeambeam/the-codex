@@ -90,7 +90,7 @@ def login(
         key="session",
         value=token,
         httponly=True,
-        secure=True,  # Set to True in production with HTTPS
+        secure=False,  # Set to True in production with HTTPS
         samesite="lax",
         max_age=max_age,
     )
