@@ -22,8 +22,8 @@ function CollectionIdFilePage() {
         />
       </div>
       <div className="flex flex-col gap-2">
-        <div className="text-2xl font-bold">Documents Queue</div>
-        <Label>View all files currently being processed / done processed</Label>
+        <div className="text-2xl font-bold">All Documents</div>
+        <Label>View all files in the collection</Label>
         <FileQueueTable />
       </div>
     </div>
