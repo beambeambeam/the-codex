@@ -21,7 +21,7 @@ function CustomNode({ data, className }: CustomNodeProps) {
   return (
     <div
       className={cn(
-        "bg-card text-card-foreground max-w-[21rem] min-w-[13rem] rounded-lg transition-all duration-200",
+        "bg-card text-card-foreground max-w-[21rem] min-w-[13rem] rounded-lg border transition-all duration-200",
         className,
       )}
       onClick={() => window.location.assign(data.href)}

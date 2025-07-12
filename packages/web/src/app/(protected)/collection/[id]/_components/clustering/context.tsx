@@ -141,7 +141,7 @@ export const ClusteringProvider = ({
             const topicLabelNode: GraphNode = {
               id: `${topic.id}-label`,
               data: { label: topic.title },
-              position: { x: 0, y: -45 },
+              position: { x: 0, y: -30 },
               parentId: topic.id,
               type: "groupLabel",
             };
