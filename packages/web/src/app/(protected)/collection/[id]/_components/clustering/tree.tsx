@@ -21,6 +21,7 @@ import {
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Button } from "@/components/ui/button";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
+import { getFileIcon } from "@/lib/files";
 
 interface Item {
   name: string;
@@ -34,8 +35,6 @@ function ClusteringTree() {
   const clustering = useClusterings();
 
   const clusteringTree = clusteringToTree(clustering[0]);
-
-  console.log(clusteringTree);
 
   const tree = useTree<Item>({
     indent,
@@ -59,14 +58,10 @@ function ClusteringTree() {
       <div className="flex w-full items-center justify-between gap-2">
         <p className="font-bold">Clustering</p>
         <div className="flex items-center justify-end gap-2">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => tree.expandAll()}
-          >
+          <Button size="icon" variant="ghost" onClick={() => tree.expandAll()}>
             <ListTreeIcon size={16} aria-hidden="true" />
           </Button>
-          <Button size="icon" variant="outline" onClick={tree.collapseAll}>
+          <Button size="icon" variant="ghost" onClick={tree.collapseAll}>
             <ListCollapseIcon size={16} aria-hidden="true" />
           </Button>
         </div>
@@ -84,6 +79,13 @@ function ClusteringTree() {
                     ) : (
                       <FolderIcon className="text-muted-foreground pointer-events-none size-4" />
                     ))}
+                  {!item.isFolder() &&
+                    getFileIcon({
+                      file: {
+                        name: item.getItemName(),
+                        type: item.getItemName(),
+                      },
+                    })}
                   {item.getItemName()}
                   {item.isFolder() && (
                     <span className="text-muted-foreground -ms-1">
