@@ -4,7 +4,7 @@ import { Handle, Position } from "@xyflow/react";
 import { cn } from "@/lib/utils";
 
 interface ClusteringCustomNodeData {
-  header: string;
+  label: string;
 }
 
 interface ClusteringCustomNodeProps {
@@ -14,7 +14,7 @@ interface ClusteringCustomNodeProps {
 }
 
 function ClusteringCustomNode({ data, className }: ClusteringCustomNodeProps) {
-  const { header } = data;
+  const { label } = data;
 
   return (
     <div
@@ -37,7 +37,7 @@ function ClusteringCustomNode({ data, className }: ClusteringCustomNodeProps) {
 
       <div className="flex flex-col items-start justify-start gap-1.5 p-4">
         <h3 className="text-foreground text-2xl leading-tight font-bold">
-          {header !== "" ? header : "No Header"}
+          {label !== "" ? label : "No label"}
         </h3>
       </div>
     </div>

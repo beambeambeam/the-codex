@@ -2,10 +2,15 @@
 
 import { Controls, ReactFlow, useNodesState } from "@xyflow/react";
 
+import ClusteringCustomNode from "@/app/(protected)/collection/[id]/_components/clustering/canvas/node";
 import {
   useClusteringActions,
   useClusterings,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
+
+const nodeTypes = {
+  children: ClusteringCustomNode,
+};
 
 function ClusteringCanvas() {
   const clustering = useClusterings();
@@ -20,6 +25,7 @@ function ClusteringCanvas() {
         nodes={nodes}
         onNodesChange={onNodesChange}
         defaultEdgeOptions={{ type: "straight" }}
+        nodeTypes={nodeTypes}
         fitView
       >
         <Controls />
