@@ -2,6 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { Text } from "lucide-react";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { RelativeTimeCard } from "@/components/ui/relative-time-card";
 
 type FileQueue = {
   id: string;
@@ -100,6 +101,7 @@ export const fileQueueColumns = [
       <DataTableColumnHeader column={column} title="Created At" />
     ),
     meta: { label: "Created At", placeholder: "", variant: "date" },
+    cell: ({ cell }) => <RelativeTimeCard date={cell.getValue()} />,
   }),
   columnHelper.accessor("updated_at", {
     header: ({ column }) => (
@@ -107,5 +109,6 @@ export const fileQueueColumns = [
     ),
     meta: { label: "Updated At", placeholder: "", variant: "date" },
     enableColumnFilter: true,
+    cell: ({ cell }) => <RelativeTimeCard date={cell.getValue()} />,
   }),
 ];
