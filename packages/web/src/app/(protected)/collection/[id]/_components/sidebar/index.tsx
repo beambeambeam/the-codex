@@ -4,12 +4,13 @@ import { useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FilePlus2Icon } from "lucide-react";
 
+import ClusteringTree from "@/app/(protected)/collection/[id]/_components/clustering/tree";
 import CollectionIdSidebarSearchbox from "@/app/(protected)/collection/[id]/_components/sidebar/search";
 import CollectionIdSidebarSettings from "@/app/(protected)/collection/[id]/_components/sidebar/settings";
 import { useCollectionIdContext } from "@/app/(protected)/collection/[id]/_components/use-collection-id-context";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Sidebar } from "@/components/ui/sidebar";
+import { Sidebar, SidebarGroup } from "@/components/ui/sidebar";
 
 function CollectionIdSidebar() {
   const context = useCollectionIdContext();
@@ -53,6 +54,9 @@ function CollectionIdSidebar() {
             <FilePlus2Icon />
           </Button>
         </div>
+        <SidebarGroup>
+          <ClusteringTree />
+        </SidebarGroup>
       </div>
     </Sidebar>
   );
