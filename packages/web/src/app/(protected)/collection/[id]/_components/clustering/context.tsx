@@ -135,7 +135,19 @@ export const ClusteringProvider = ({
               style: { width: 200, height: 120 + 40 * topic.documents.length },
               type: "group",
             };
+
             nodes.push(topicNode);
+
+            const topicLabelNode: GraphNode = {
+              id: `${topic.id}-label`,
+              data: { label: topic.title },
+              position: { x: 0, y: -45 },
+              parentId: topic.id,
+              type: "groupLabel",
+            };
+
+            nodes.push(topicLabelNode);
+
             topic.documents.forEach((doc, j) => {
               nodes.push({
                 id: doc.id,
