@@ -9,6 +9,6 @@ interface ClusteringGroupLabelNodeProps {
 }
 
 function ClusteringGroupLabelNode(props: ClusteringGroupLabelNodeProps) {
-  return <div>{props.data.label}</div>;
+  return <div className="nodrag">{props.data.label}</div>;
 }
 export default ClusteringGroupLabelNode;

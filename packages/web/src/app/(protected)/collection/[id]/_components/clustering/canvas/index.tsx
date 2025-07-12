@@ -3,6 +3,7 @@
 import { Controls, ReactFlow, useNodesState } from "@xyflow/react";
 
 import ClusteringGroupLabelNode from "@/app/(protected)/collection/[id]/_components/clustering/canvas/label";
+import ClusteringCustomNode from "@/app/(protected)/collection/[id]/_components/clustering/canvas/node";
 import {
   useClusteringActions,
   useClusterings,
@@ -10,6 +11,7 @@ import {
 
 const nodeTypes = {
   groupLabel: ClusteringGroupLabelNode,
+  groupChildren: ClusteringCustomNode,
 };
 
 function ClusteringCanvas() {

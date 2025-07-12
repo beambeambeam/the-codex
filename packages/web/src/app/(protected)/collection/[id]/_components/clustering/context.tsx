@@ -155,7 +155,7 @@ export const ClusteringProvider = ({
                 position: { x: 10 + j * 100, y: 50 + j * 40 },
                 parentId: topic.id,
                 extent: "parent",
-                type: "children",
+                type: "groupChildren",
               });
             });
           });
