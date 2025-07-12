@@ -4,6 +4,7 @@ import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { HouseIcon, MessageCircleIcon, PanelsTopLeftIcon } from "lucide-react";
 
+import { MOCK_CLUSTERING } from "@/app/(protected)/collection/[id]/__mock__/clustering";
 import { ClusteringProvider } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import CollectionIdHeader from "@/app/(protected)/collection/[id]/_components/header";
 import CollectionIdSidebar from "@/app/(protected)/collection/[id]/_components/sidebar";
@@ -32,50 +33,7 @@ export default function CollectionIdLayout({
       initialTitle="LLM with SQL."
       initialDescription="Large Language Models (LLMs)—like ChatGPT, GPT-4, Claude, or others—in combination with Structured Query Language (SQL)."
     >
-      <ClusteringProvider
-        initialClusterings={[
-          {
-            id: "d",
-            title: "cluster1",
-            topics: [
-              {
-                id: "topic_1",
-                title: "topic_1",
-                documents: [
-                  {
-                    id: "mock-id-1",
-                    collection_id: "mock-collection-1",
-                    file_name: "example.pdf",
-                    source_file_path: "/files/example.pdf",
-                    file_type: "pdf",
-                    is_vectorized: true,
-                    is_graph_extracted: false,
-                    created_at: "2025-07-12T12:00:00Z",
-                    updated_at: "2025-07-12T12:00:00Z",
-                    created_by: "user1",
-                    updated_by: "user1",
-                  },
-                ],
-              },
-            ],
-            documents: [
-              {
-                id: "mock-id-1",
-                collection_id: "mock-collection-1",
-                file_name: "example.pdf",
-                source_file_path: "/files/example.pdf",
-                file_type: "pdf",
-                is_vectorized: true,
-                is_graph_extracted: false,
-                created_at: "2025-07-12T12:00:00Z",
-                updated_at: "2025-07-12T12:00:00Z",
-                created_by: "user1",
-                updated_by: "user1",
-              },
-            ],
-          },
-        ]}
-      >
+      <ClusteringProvider initialClusterings={[MOCK_CLUSTERING]}>
         <SidebarProvider>
           <CollectionIdSidebar />
           <SidebarInset>
