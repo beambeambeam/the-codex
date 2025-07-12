@@ -93,7 +93,7 @@ export default function CollectionIdLayout({
                       size={16}
                       aria-hidden="true"
                     />
-                    documents
+                    Documents
                   </TabsTrigger>
                 </TabsList>
                 <ScrollBar orientation="horizontal" />
