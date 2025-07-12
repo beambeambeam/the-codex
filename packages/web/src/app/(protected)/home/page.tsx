@@ -24,9 +24,10 @@ function HomePage() {
         nodes={[
           {
             data: {
-              header: "",
-              paragraph: "",
-              href: "",
+              header: "LLM with SQL.",
+              paragraph:
+                "Large Language Models (LLMs)—like ChatGPT, GPT-4, Claude, or others—in combination with Structured Query Language (SQL).",
+              href: "/collection/1",
             },
           },
         ]}
