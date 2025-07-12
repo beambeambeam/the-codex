@@ -36,9 +36,43 @@ export default function CollectionIdLayout({
         initialClusterings={[
           {
             id: "d",
-            title: "d",
-            topics: [],
-            documents: [],
+            title: "cluster1",
+            topics: [
+              {
+                id: "topic_1",
+                title: "topic_1",
+                documents: [
+                  {
+                    id: "mock-id-1",
+                    collection_id: "mock-collection-1",
+                    file_name: "example.pdf",
+                    source_file_path: "/files/example.pdf",
+                    file_type: "pdf",
+                    is_vectorized: true,
+                    is_graph_extracted: false,
+                    created_at: "2025-07-12T12:00:00Z",
+                    updated_at: "2025-07-12T12:00:00Z",
+                    created_by: "user1",
+                    updated_by: "user1",
+                  },
+                ],
+              },
+            ],
+            documents: [
+              {
+                id: "mock-id-1",
+                collection_id: "mock-collection-1",
+                file_name: "example.pdf",
+                source_file_path: "/files/example.pdf",
+                file_type: "pdf",
+                is_vectorized: true,
+                is_graph_extracted: false,
+                created_at: "2025-07-12T12:00:00Z",
+                updated_at: "2025-07-12T12:00:00Z",
+                created_by: "user1",
+                updated_by: "user1",
+              },
+            ],
           },
         ]}
       >

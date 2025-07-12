@@ -33,6 +33,12 @@ interface ClusteringActions {
   reset: () => void;
   getClustering: (id: string) => Clustering | undefined;
   getAllClusterings: () => Clustering[];
+  clusteringToTree: (clustering: Clustering) => Record<string, Item>;
+}
+// Item interface for tree transformation
+export interface Item {
+  name: string;
+  children?: string[];
 }
 
 type ClusteringStore = ClusteringState & { actions: ClusteringActions };
@@ -81,6 +87,32 @@ export const ClusteringProvider = ({
           }),
         getClustering: (id) => get().clusterings.find((c) => c.id === id),
         getAllClusterings: () => get().clusterings,
+        clusteringToTree: (clustering) => {
+          const items: Record<string, Item> = {
+            root: {
+              name: "root",
+              children: clustering.topics.map((t) => t.id),
+            },
+          };
+
+          for (const topic of clustering.topics) {
+            items[topic.id] = {
+              name: topic.title,
+              children:
+                topic.documents.length > 0
+                  ? topic.documents.map((d) => d.id)
+                  : [],
+            };
+
+            for (const doc of topic.documents) {
+              items[doc.id] = {
+                name: doc.file_name || doc.id,
+                children: [],
+              };
+            }
+          }
+          return items;
+        },
       },
     })),
   );

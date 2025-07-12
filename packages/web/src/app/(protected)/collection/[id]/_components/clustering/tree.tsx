@@ -15,6 +15,10 @@ import {
   ListTreeIcon,
 } from "lucide-react";
 
+import {
+  useClusteringActions,
+  useClusterings,
+} from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Button } from "@/components/ui/button";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
 
@@ -23,47 +27,24 @@ interface Item {
   children?: string[];
 }
 
-const items: Record<string, Item> = {
-  company: {
-    name: "Company",
-    children: ["engineering", "marketing", "operations"],
-  },
-  engineering: {
-    name: "Engineering",
-    children: ["frontend", "backend", "platform-team"],
-  },
-  frontend: { name: "Frontend", children: ["design-system", "web-platform"] },
-  "design-system": {
-    name: "Design System",
-    children: ["components", "tokens", "guidelines"],
-  },
-  components: { name: "Components" },
-  tokens: { name: "Tokens" },
-  guidelines: { name: "Guidelines" },
-  "web-platform": { name: "Web Platform" },
-  backend: { name: "Backend", children: ["apis", "infrastructure"] },
-  apis: { name: "APIs" },
-  infrastructure: { name: "Infrastructure" },
-  "platform-team": { name: "Platform Team" },
-  marketing: { name: "Marketing", children: ["content", "seo"] },
-  content: { name: "Content" },
-  seo: { name: "SEO" },
-  operations: { name: "Operations", children: ["hr", "finance"] },
-  hr: { name: "HR" },
-  finance: { name: "Finance" },
-};
-
 const indent = 20;
 
 function ClusteringTree() {
+  const { clusteringToTree } = useClusteringActions();
+  const clustering = useClusterings();
+
+  const clusteringTree = clusteringToTree(clustering[0]);
+
+  console.log(clusteringTree);
+
   const tree = useTree<Item>({
     indent,
-    rootItemId: "company",
+    rootItemId: "root",
     getItemName: (item) => item.getItemData().name,
     isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
     dataLoader: {
-      getItem: (itemId) => items[itemId],
-      getChildren: (itemId) => items[itemId].children ?? [],
+      getItem: (itemId) => clusteringTree[itemId],
+      getChildren: (itemId) => clusteringTree[itemId]?.children ?? [],
     },
     features: [
       syncDataLoaderFeature,
@@ -75,13 +56,20 @@ function ClusteringTree() {
 
   return (
     <div className="flex h-full flex-col gap-2 *:nth-2:grow">
-      <div className="flex w-full items-center justify-end gap-2">
-        <Button size="icon" variant="outline" onClick={() => tree.expandAll()}>
-          <ListTreeIcon size={16} aria-hidden="true" />
-        </Button>
-        <Button size="icon" variant="outline" onClick={tree.collapseAll}>
-          <ListCollapseIcon size={16} aria-hidden="true" />
-        </Button>
+      <div className="flex w-full items-center justify-between gap-2">
+        <p className="font-bold">Clustering</p>
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => tree.expandAll()}
+          >
+            <ListTreeIcon size={16} aria-hidden="true" />
+          </Button>
+          <Button size="icon" variant="outline" onClick={tree.collapseAll}>
+            <ListCollapseIcon size={16} aria-hidden="true" />
+          </Button>
+        </div>
       </div>
 
       <Tree indent={indent} tree={tree}>
