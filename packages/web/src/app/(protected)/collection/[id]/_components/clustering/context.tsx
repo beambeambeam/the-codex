@@ -25,6 +25,16 @@ interface ClusteringState {
   isError: boolean;
 }
 
+export interface GraphNode {
+  id: string;
+  type?: string;
+  data: { label: string };
+  position: { x: number; y: number };
+  style?: React.CSSProperties;
+  parentId?: string;
+  extent?: "parent";
+}
+
 interface ClusteringActions {
   setClusterings: (clusterings: Clustering[]) => void;
   addClustering: (clustering: Clustering) => void;
@@ -34,6 +44,7 @@ interface ClusteringActions {
   getClustering: (id: string) => Clustering | undefined;
   getAllClusterings: () => Clustering[];
   clusteringToTree: (clustering: Clustering) => Record<string, Item>;
+  clusteringToGraph: (clustering: Clustering) => GraphNode[];
 }
 // Item interface for tree transformation
 export interface Item {
@@ -112,6 +123,30 @@ export const ClusteringProvider = ({
             }
           }
           return items;
+        },
+        clusteringToGraph: (clustering) => {
+          const nodes: GraphNode[] = [];
+
+          clustering.topics.forEach((topic, i) => {
+            const topicNode: GraphNode = {
+              id: topic.id,
+              data: { label: topic.title },
+              position: { x: 100 + i * 250, y: 100 },
+              style: { width: 200, height: 120 + 40 * topic.documents.length },
+              type: "group",
+            };
+            nodes.push(topicNode);
+            topic.documents.forEach((doc, j) => {
+              nodes.push({
+                id: doc.id,
+                data: { label: doc.file_name },
+                position: { x: 10 + j * 100, y: 50 + j * 40 },
+                parentId: topic.id,
+                extent: "parent",
+              });
+            });
+          });
+          return nodes;
         },
       },
     })),
