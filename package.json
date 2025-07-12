@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "pnpm dlx nx run-many -t dev",
+    "build": "pnpm dlx nx run-many -t build",
     "lint": "pnpm dlx nx run-many -t lint",
     "commitlint": "commitlint --edit",
     "prepare": "husky"
