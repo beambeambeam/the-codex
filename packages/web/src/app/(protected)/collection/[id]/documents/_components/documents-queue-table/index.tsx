@@ -10,12 +10,38 @@ function FileQueueTable() {
     data: [
       {
         id: "d",
-        name: "d",
+        file_name: "d",
+        source_file_path: "",
+        file_type: "",
+        is_vectorized: false,
+        is_graph_extracted: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_by: "",
+      },
+      {
+        id: "d2",
+        file_name: "d2",
+        source_file_path: "",
+        file_type: "",
+        is_vectorized: false,
+        is_graph_extracted: false,
+        created_at: new Date(),
+        updated_at: new Date(),
+        created_by: "",
       },
     ],
     columns: fileQueueColumns,
     pageCount: 10,
     getRowId: (row) => row.id,
+    initialState: {
+      columnVisibility: {
+        id: false,
+        source_file_path: false,
+        created_at: false,
+        created_by: false,
+      },
+    },
   });
 
   return (
