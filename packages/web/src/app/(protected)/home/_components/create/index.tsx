@@ -29,7 +29,7 @@ function CreateNewFormDialog() {
     "/collections/",
     {
       onSuccess: (data) => {
-        toast.success("Library created successfully!");
+        toast.success("Collection created successfully!");
         setOpen(false);
         QueryClient.invalidateQueries({ queryKey: ["get", "/collections/"] });
       },
@@ -38,7 +38,9 @@ function CreateNewFormDialog() {
           typeof error === "object" && error !== null && "detail" in error
             ? (error as { detail?: string }).detail
             : undefined;
-        toast.error(message || "Failed to create library. Please try again.");
+        toast.error(
+          message || "Failed to create collection. Please try again.",
+        );
       },
     },
   );
@@ -57,7 +59,7 @@ function CreateNewFormDialog() {
       <DialogTrigger asChild>
         <Button className="w-fit">
           <PlusIcon />
-          Create new Library!
+          Create new Collection!
         </Button>
       </DialogTrigger>
       <DialogContent
@@ -68,10 +70,10 @@ function CreateNewFormDialog() {
         <DialogHeader className="pt-2 pb-6">
           <DialogTitle className="flex items-center gap-2">
             <LibraryIcon />
-            <span>Create New Library</span>
+            <span>Create New Collection</span>
           </DialogTitle>
           <DialogDescription>
-            Create your Personal Libraries for current topic you want!
+            Create your Personal Collections for current topic you want!
           </DialogDescription>
         </DialogHeader>
         <CreateLibraryForm
