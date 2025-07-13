@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { toast } from "sonner";
 
-import SignInForm from "@/app/(authentication)/sign-in/form";
+import SignInForm, {
+  SignInFormSchemaType,
+} from "@/app/(authentication)/sign-in/form";
 import { Logo } from "@/components/icon";
 import {
   Card,
@@ -10,8 +13,30 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { $api } from "@/lib/api/client";
+import { useUserActions } from "@/store/userStore";
 
 function SignInPage() {
+  const { setUser } = useUserActions();
+  const { mutate, isSuccess, isPending } = $api.useMutation(
+    "post",
+    "/auth/login",
+    {
+      onSuccess(data) {
+        toast.success("Sign-in successful! Welcome back.");
+        setUser(data.user);
+        window.location.href = "/home";
+      },
+      onError(error: unknown) {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(message || "Sign-in failed. Please try again.");
+      },
+    },
+  );
+
   return (
     <div className="grid h-screen grid-cols-1 lg:grid-cols-2">
       <div className="hidden h-full flex-col items-center justify-center lg:flex">
@@ -34,12 +59,15 @@ function SignInPage() {
               username: "",
               password: "",
             }}
-            onSubmit={function (values: {
-              username: string;
-              password: string;
-            }): void {
-              throw new Error("Function not implemented.");
-            }}
+            onSubmit={(values: SignInFormSchemaType) =>
+              mutate({
+                body: {
+                  ...values,
+                },
+              })
+            }
+            disabled={isSuccess || isPending}
+            isPending={isPending}
           />
         </Card>
         <p className="text-accent-foreground/60">

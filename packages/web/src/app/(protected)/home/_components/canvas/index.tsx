@@ -37,7 +37,7 @@ const generateCircularPositions = (
 };
 
 const centerPosition = { x: 500, y: 300 };
-const radius = 500;
+const radius = 200;
 
 interface HomeCanvasProps {
   nodes: {

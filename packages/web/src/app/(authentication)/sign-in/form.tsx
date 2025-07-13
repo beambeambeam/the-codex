@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Loader } from "@/components/ui/loader";
 import { FormProps } from "@/types";
 
 const signInFormSchema = z.object({
@@ -22,12 +23,13 @@ const signInFormSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-type SignInFormSchemaType = z.infer<typeof signInFormSchema>;
+export type SignInFormSchemaType = z.infer<typeof signInFormSchema>;
 
 function SignInForm(props: FormProps<SignInFormSchemaType>) {
   const form = useForm<SignInFormSchemaType>({
     resolver: zodResolver(signInFormSchema),
     defaultValues: props.defaultValues,
+    disabled: props.disabled,
   });
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
@@ -91,7 +93,9 @@ function SignInForm(props: FormProps<SignInFormSchemaType>) {
           />
         </CardContent>
         <CardFooter className="flex w-full items-center justify-center pt-5">
-          <Button type="submit">Submit</Button>
+          <Button type="submit" disabled={props.disabled}>
+            {props.isPending ? <Loader variant="classic" /> : "Sign In"}
+          </Button>
         </CardFooter>
       </form>
     </Form>
