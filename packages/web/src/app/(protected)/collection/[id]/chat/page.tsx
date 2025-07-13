@@ -45,15 +45,36 @@ export default function ChatPage() {
     const assistantMessage = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
-      content: `## Streaming Markdown
+      content: `
+# Markdown Example
 
-This response was streamed with *typewriter effect*.
+This is a **bold text** and this is an *italic text*.
 
-- Here's a bullet
-- And a \`code block\`
+## Lists
 
-\`\`\`js
-console.log("Hello, world!");
+### Unordered List
+- Item 1
+- Item 2
+- Item 3
+
+### Ordered List
+1. First item
+2. Second item
+3. Third item
+
+## Links and Images
+
+[Visit Prompt Kit](https://prompt-kit.com)
+
+## Code
+
+Inline \`code\` example.
+
+\`\`\`javascript
+// Code block example
+function greet(name) {
+  return \`Hello, \${name}!\`;
+}
 \`\`\`
 `,
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
@@ -159,16 +180,12 @@ function ChatMessage({
       >
         {isAssistant ? (
           shouldStream ? (
-            <Markdown className="prose prose-sm dark:prose-invert prose-h2:mt-0! prose-h2:scroll-m-0!">
-              {displayedText}
-            </Markdown>
+            <Markdown className="prose">{displayedText}</Markdown>
           ) : (
-            <Markdown className="prose prose-sm dark:prose-invert prose-h2:mt-0! prose-h2:scroll-m-0! text-sm">
-              {message.content}
-            </Markdown>
+            <Markdown className="prose">{message.content}</Markdown>
           )
         ) : (
-          <p className="text-xs">{message.content}</p>
+          <Markdown className="text-xs">{message.content}</Markdown>
         )}
       </div>
 
