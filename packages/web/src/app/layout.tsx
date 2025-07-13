@@ -5,6 +5,9 @@ import { ThemeProvider } from "@/provider/themes";
 
 import "./global.css";
 
+import { Toaster } from "@/components/ui/sonner";
+import QueryProvider from "@/provider/query";
+
 export const metadata = {
   title: "The Codex",
   description: "Your personal Librarian that handle every file for you.",
@@ -26,8 +29,11 @@ export default function RootLayout({
             disableTransitionOnChange
             themes={["light", "dark"]}
           >
-            {children}
-            <BreakpointIndicator />
+            <QueryProvider>
+              {children}
+              <BreakpointIndicator />
+              <Toaster />
+            </QueryProvider>
           </ThemeProvider>
         </NuqsAdapter>
       </body>
