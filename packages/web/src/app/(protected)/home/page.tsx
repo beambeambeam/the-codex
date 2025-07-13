@@ -54,7 +54,7 @@ function HomePage() {
             data: {
               header: item.name,
               paragraph: item.description ?? "",
-              href: `/collections/${item.id}`,
+              href: `/collection/${item.id}`,
             },
           }))}
         />
