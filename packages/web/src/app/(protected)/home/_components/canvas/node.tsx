@@ -48,7 +48,7 @@ function CustomNode({ data, className }: CustomNodeProps) {
           <p>Description</p>
         </span>
         <p className="text-foreground text-start text-sm leading-relaxed">
-          {paragraph !== "" ? paragraph : "No Content"}
+          {paragraph !== "" ? paragraph : "No Description yet!"}
         </p>
       </div>
     </div>
