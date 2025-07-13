@@ -31,8 +31,8 @@ export default function RootLayout({
           >
             <QueryProvider>
               {children}
+              <Toaster expand position="top-center" richColors />
               <BreakpointIndicator />
-              <Toaster />
             </QueryProvider>
           </ThemeProvider>
         </NuqsAdapter>
