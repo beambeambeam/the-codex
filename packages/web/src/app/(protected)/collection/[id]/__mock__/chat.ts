@@ -1,4 +1,57 @@
-export const MOCK_CHAT = {
+export const MOCK_CHAT_COLLECTION = [
+  {
+    title: "test",
+    description: "test",
+    id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
+    collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
+    created_at: "2025-07-10T15:00:56.338344",
+    updated_at: "2025-07-10T15:00:56.338344",
+    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+  },
+  {
+    title: "Sample Document A",
+    description: "First sample document in collection.",
+    id: "3d4c62cb-bb8e-495a-9a2d-cda7813e58cf",
+    collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
+    created_at: "2025-07-11T10:20:30.221000",
+    updated_at: "2025-07-11T10:20:30.221000",
+    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+  },
+  {
+    title: "Project Proposal",
+    description: "A draft proposal for the new project initiative.",
+    id: "8828e2fb-f3c6-42c4-86d3-97e748a2c3fa",
+    collection_id: "fa172b9c-5ff1-4685-9703-334c9f2121f9",
+    created_at: "2025-07-12T08:45:12.543000",
+    updated_at: "2025-07-12T08:45:12.543000",
+    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+  },
+  {
+    title: "Research Paper Draft",
+    description: "Contains the initial draft of the research paper.",
+    id: "cc63fb23-4ae9-4e0b-823d-5a3812cf30ef",
+    collection_id: "a75e9c31-0c8c-493d-96c7-9f8f94565e5b",
+    created_at: "2025-07-13T12:10:00.100000",
+    updated_at: "2025-07-13T12:10:00.100000",
+    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+  },
+  {
+    title: "Meeting Notes",
+    description: "Summary of meeting held on July 12th.",
+    id: "49f312f3-d830-4b2c-bb60-376960df4d4e",
+    collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
+    created_at: "2025-07-12T14:00:00.000000",
+    updated_at: "2025-07-12T14:30:00.000000",
+    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+  },
+];
+
+export const MOCK_CHAT_HISTORY = {
   title: "test",
   description: "test",
   id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",

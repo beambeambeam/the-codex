@@ -1,18 +1,42 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "next/navigation";
+import { formatDistanceToNow } from "date-fns";
+import { ArrowUpRight, ChevronDown } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Markdown } from "@/components/ui/markdown";
 import { useTextStream } from "@/components/ui/response-stream";
 
-import { MOCK_CHAT } from "../__mock__/chat";
+import { MOCK_CHAT_COLLECTION, MOCK_CHAT_HISTORY } from "../__mock__/chat";
+import type { ChatCollection, ChatMessage } from "./types";
 
 export default function ChatPage() {
-  const [chatHistory, setChatHistory] = useState(MOCK_CHAT.history);
+  // const params = useParams();
+  const params = { id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d" }; // Mocking useParams for demonstration
+  const { id } = params;
+
+  const chatData: ChatCollection | undefined = useMemo(() => {
+    const data = MOCK_CHAT_COLLECTION.find((chat) => chat.id === id);
+    if (!data) return undefined;
+    if (data.id === MOCK_CHAT_HISTORY.id) {
+      return { ...data, history: MOCK_CHAT_HISTORY.history };
+    }
+    return { ...data, history: [] };
+  }, [id]);
+
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>(
+    chatData?.history ?? [],
+  );
   const [inputText, setInputText] = useState("");
   const chatRef = useRef<HTMLDivElement | null>(null);
 
@@ -30,7 +54,7 @@ export default function ChatPage() {
     if (!inputText.trim()) return;
 
     const now = new Date().toISOString();
-    const userMessage = {
+    const userMessage: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
       content: inputText,
@@ -42,7 +66,7 @@ export default function ChatPage() {
     setChatHistory((prev) => [...prev, userMessage]);
     setInputText("");
 
-    const assistantMessage = {
+    const assistantMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
       content: `
@@ -93,11 +117,54 @@ function greet(name) {
     }
   };
 
+  if (!chatData) {
+    return <div>Chat not found</div>;
+  }
+
   return (
     <div className="bg-background flex h-[calc(100vh-8rem)] w-full flex-col">
       <header className="border-b p-4">
-        <h1 className="text-xl font-bold">{MOCK_CHAT.title}</h1>
-        <p className="text-muted-foreground text-sm">{MOCK_CHAT.description}</p>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="flex items-center gap-2 p-0">
+              <h1 className="text-xl font-bold">{chatData.title}</h1>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <div className="p-2">
+              <p className="font-bold">{chatData.title}</p>
+              <p className="text-muted-foreground text-sm">
+                {chatData.description}
+              </p>
+              <div className="text-muted-foreground mt-2 text-xs">
+                <p>Updated by: {chatData.updated_by}</p>
+                <p>
+                  Updated at:{" "}
+                  {formatDistanceToNow(new Date(chatData.updated_at), {
+                    addSuffix: true,
+                  })}
+                </p>
+              </div>
+            </div>
+            <div className="my-2 border-t" />
+            <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+              Other Chats
+            </div>
+            {MOCK_CHAT_COLLECTION.filter((c) => c.id !== chatData.id).map(
+              (chat) => (
+                <DropdownMenuItem
+                  key={chat.id}
+                  onClick={() => {
+                    window.location.href = `/collection/${chat.collection_id}/chat/${chat.id}`; // หรือใช้ router.push ถ้า next/router
+                  }}
+                >
+                  {chat.title}
+                </DropdownMenuItem>
+              ),
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       <main ref={chatRef} className="flex-1 space-y-4 overflow-y-auto p-4">
@@ -134,7 +201,7 @@ function ChatMessage({
   message,
   chatRef,
 }: {
-  message: any;
+  message: ChatMessage;
   chatRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const isAssistant = message.role === "assistant";
