@@ -36,7 +36,7 @@ function HomeSidebar() {
             <HomeSidebarRecents
               links={collections.map((c) => ({
                 title: c.name,
-                href: `/collections/${c.id}`,
+                href: `/collection/${c.id}`,
                 starred: false,
               }))}
             />
