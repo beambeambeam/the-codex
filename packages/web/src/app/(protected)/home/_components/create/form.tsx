@@ -16,30 +16,29 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Loader } from "@/components/ui/loader";
 import { TextareaAutosize } from "@/components/ui/textarea";
+import { FormProps } from "@/types";
 
 const createLibrarySchema = z.object({
   topic: z.string().min(1, "Topic is required"),
-  description: z.string().min(1, "Description is required"),
+  description: z.string(),
 });
 
 export type CreateLibrarySchemaType = z.infer<typeof createLibrarySchema>;
 
-export default function CreateLibraryForm({
-  defaultValues = { topic: "", description: "" },
-  onSubmit,
-}: {
-  defaultValues?: CreateLibrarySchemaType;
-  onSubmit: (values: CreateLibrarySchemaType) => void;
-}) {
+export default function CreateLibraryForm(
+  props: FormProps<CreateLibrarySchemaType>,
+) {
   const form = useForm<CreateLibrarySchemaType>({
     resolver: zodResolver(createLibrarySchema),
-    defaultValues,
+    defaultValues: props.defaultValues,
+    disabled: props.disabled,
   });
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(props.onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="topic"
@@ -82,7 +81,7 @@ export default function CreateLibraryForm({
               Cancel
             </Button>
           </DialogClose>
-          <Button>Let&apos;s Go!</Button>
+          <Button>{props.isPending ? <Loader /> : "Create new!"}</Button>
         </DialogFooter>
       </form>
     </Form>

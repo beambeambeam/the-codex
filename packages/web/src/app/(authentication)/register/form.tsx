@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Loader } from "@/components/ui/loader";
 import { FormProps } from "@/types";
 
 const registerFormSchema = z
@@ -29,13 +30,14 @@ const registerFormSchema = z
     path: ["confirmPassword"],
   });
 
-type RegisterFormSchemaType = z.infer<typeof registerFormSchema>;
+export type RegisterFormSchemaType = z.infer<typeof registerFormSchema>;
 
 function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
   const passwordId = useId();
   const form = useForm<RegisterFormSchemaType>({
     resolver: zodResolver(registerFormSchema),
     defaultValues: props.defaultValues,
+    disabled: props.disabled,
   });
 
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
@@ -272,7 +274,9 @@ function RegisterForm(props: FormProps<RegisterFormSchemaType>) {
           />
         </CardContent>
         <CardFooter className="flex w-full items-center justify-center pt-5">
-          <Button type="submit">Create Account</Button>
+          <Button type="submit" disabled={props.disabled}>
+            {props.isPending ? <Loader variant="classic" /> : "Create Account"}
+          </Button>
         </CardFooter>
       </form>
     </Form>

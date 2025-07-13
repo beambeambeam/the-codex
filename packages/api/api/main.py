@@ -11,7 +11,6 @@ load_dotenv()
 
 app = FastAPI(
     title="The Codex API",
-    description="Authentication API with cookie-based sessions",
     version="1.0.0",
 )
 
