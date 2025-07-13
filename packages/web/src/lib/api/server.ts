@@ -3,7 +3,7 @@ import createFetchClient from "openapi-fetch";
 
 import { paths } from "@/lib/api/path";
 
-export const fetchClientServer = createFetchClient<paths>({
+export const fetchServer = createFetchClient<paths>({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   fetch: async (request) => {
     return fetch(request, {

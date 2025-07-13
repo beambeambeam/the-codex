@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { LibraryIcon, PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { useHomeActions } from "@/app/(protected)/home/_components/context";
 import CreateLibraryForm, {
   CreateLibrarySchemaType,
 } from "@/app/(protected)/home/_components/create/form";
@@ -22,7 +22,7 @@ import { $api } from "@/lib/api/client";
 function CreateNewFormDialog() {
   const [open, setOpen] = useState(false);
 
-  const QueryClient = useQueryClient();
+  const { fetch } = useHomeActions();
 
   const { mutate, isPending, isSuccess } = $api.useMutation(
     "post",
@@ -31,7 +31,7 @@ function CreateNewFormDialog() {
       onSuccess: (data) => {
         toast.success("Collection created successfully!");
         setOpen(false);
-        QueryClient.invalidateQueries({ queryKey: ["get", "/collections/"] });
+        fetch();
       },
       onError: (error: unknown) => {
         const message =

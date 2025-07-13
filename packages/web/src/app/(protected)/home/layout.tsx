@@ -10,7 +10,7 @@ export default function HomeLayout({
   children: React.ReactNode;
 }) {
   return (
-    <HomeProvider initialCollections={[]} initialIsPending={true}>
+    <HomeProvider initialCollections={[]}>
       <SidebarProvider>
         <HomeSidebar />
         <SidebarInset>

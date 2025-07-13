@@ -1,14 +1,16 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { createStore, StoreApi, useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
+import { fetchClient } from "@/lib/api/client";
 import { components } from "@/lib/api/path";
 
 interface HomeState {
   collections: components["schemas"]["CollectionResponse"][];
   isPending: boolean;
+  isError: boolean;
 }
 
 interface HomeAction {
@@ -19,7 +21,7 @@ interface HomeAction {
     collections: components["schemas"]["CollectionResponse"][],
   ) => void;
   resetCollections: () => void;
-  setIsPending: (value: boolean) => void;
+  fetch: () => Promise<void>;
 }
 
 type HomeStore = HomeState & { actions: HomeAction };
@@ -29,18 +31,17 @@ const HomeStoreContext = createContext<StoreApi<HomeStore> | null>(null);
 interface HomeProviderProps {
   children: React.ReactNode;
   initialCollections?: components["schemas"]["CollectionResponse"][];
-  initialIsPending?: boolean;
 }
 
 export const HomeProvider = ({
   children,
   initialCollections = [],
-  initialIsPending = true,
 }: HomeProviderProps) => {
   const [store] = useState(() =>
     createStore<HomeStore>()((set) => ({
       collections: initialCollections,
-      isPending: initialIsPending,
+      isPending: true,
+      isError: false,
       actions: {
         addCollections: (collections) =>
           set((state) => ({
@@ -53,10 +54,25 @@ export const HomeProvider = ({
               : [collections],
           }),
         resetCollections: () => set({ collections: [] }),
-        setIsPending: (value: boolean) => set({ isPending: value }),
+        fetch: async () => {
+          set({
+            isPending: true,
+          });
+
+          const response = await fetchClient.GET("/collections/");
+
+          set({
+            collections: response?.data ?? [],
+            isPending: false,
+          });
+        },
       },
     })),
   );
+
+  useEffect(() => {
+    store.getState().actions.fetch();
+  }, [store]);
 
   return (
     <HomeStoreContext.Provider value={store}>
