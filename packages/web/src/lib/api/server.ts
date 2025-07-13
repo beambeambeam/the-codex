@@ -1,6 +1,8 @@
 import { cookies } from "next/headers";
 import createFetchClient from "openapi-fetch";
 
+import { paths } from "@/lib/api/path";
+
 export const fetchClientServer = createFetchClient<paths>({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   fetch: async (request) => {
