@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { LibraryIcon, PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import CreateLibraryForm, {
   CreateLibrarySchemaType,
@@ -14,14 +16,40 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { $api } from "@/lib/api/client";
 
 function CreateNewFormDialog() {
+  const [open, setOpen] = useState(false);
+
+  const { mutate, isPending, isSuccess } = $api.useMutation(
+    "post",
+    "/collections/",
+    {
+      onSuccess: () => {
+        toast.success("Library created successfully!");
+        setOpen(false);
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(message || "Failed to create library. Please try again.");
+      },
+    },
+  );
+
   const handleSubmit = (values: CreateLibrarySchemaType) => {
-    console.log("Create Library:", values);
+    mutate({
+      body: {
+        ...values,
+        name: values.topic,
+      },
+    });
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="w-fit">
           <PlusIcon />
@@ -42,7 +70,15 @@ function CreateNewFormDialog() {
             Create your Personal Libraries for current topic you want!
           </DialogDescription>
         </DialogHeader>
-        <CreateLibraryForm onSubmit={handleSubmit} />
+        <CreateLibraryForm
+          onSubmit={handleSubmit}
+          defaultValues={{
+            topic: "",
+            description: "",
+          }}
+          disabled={isPending || isSuccess}
+          isPending={isPending}
+        />
       </DialogContent>
     </Dialog>
   );
