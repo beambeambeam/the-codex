@@ -22,7 +22,7 @@ function HomeSidebar() {
         <Logo />
       </SidebarHeader>
       <SidebarSeparator />
-      <SidebarContent>
+      <SidebarContent className="p-2">
         <SidebarGroup>
           <HomeSidebarUser />
         </SidebarGroup>
