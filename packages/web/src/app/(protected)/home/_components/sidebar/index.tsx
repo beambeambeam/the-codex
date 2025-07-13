@@ -1,11 +1,8 @@
-import { UserIcon } from "lucide-react";
-
 import CreateNewFormDialog from "@/app/(protected)/home/_components/create";
 import HomeSidebarRecents from "@/app/(protected)/home/_components/sidebar/recents";
 import HomeSidebarSearchbox from "@/app/(protected)/home/_components/sidebar/search";
+import HomeSidebarUser from "@/app/(protected)/home/_components/sidebar/user";
 import { Logo } from "@/components/icon";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Sidebar,
   SidebarContent,
@@ -23,20 +20,7 @@ function HomeSidebar() {
       <SidebarSeparator />
       <SidebarContent>
         <SidebarGroup>
-          <Card className="py-5">
-            <CardContent className="flex flex-row items-center gap-2 px-6">
-              <Avatar>
-                <AvatarImage src="" />
-                <AvatarFallback>
-                  <UserIcon className="size-4" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <h4 className="text-sm">Username</h4>
-                <p className="text-xs">Email@email.com</p>
-              </div>
-            </CardContent>
-          </Card>
+          <HomeSidebarUser />
         </SidebarGroup>
         <SidebarGroup>
           <HomeSidebarSearchbox />

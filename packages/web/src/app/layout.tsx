@@ -7,6 +7,7 @@ import "./global.css";
 
 import { Toaster } from "@/components/ui/sonner";
 import QueryProvider from "@/provider/query";
+import { UserProvider } from "@/store/userStore";
 
 export const metadata = {
   title: "The Codex",
@@ -30,9 +31,11 @@ export default function RootLayout({
             themes={["light", "dark"]}
           >
             <QueryProvider>
-              {children}
-              <Toaster expand position="top-center" richColors />
-              <BreakpointIndicator />
+              <UserProvider>
+                {children}
+                <Toaster expand position="top-center" richColors />
+                <BreakpointIndicator />
+              </UserProvider>
             </QueryProvider>
           </ThemeProvider>
         </NuqsAdapter>

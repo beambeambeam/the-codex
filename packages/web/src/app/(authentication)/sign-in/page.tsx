@@ -14,14 +14,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { $api } from "@/lib/api/client";
+import { useUserActions } from "@/store/userStore";
 
 function SignInPage() {
+  const { setUser } = useUserActions();
   const { mutate, isSuccess, isPending } = $api.useMutation(
     "post",
     "/auth/login",
     {
-      onSuccess() {
+      onSuccess(data) {
         toast.success("Sign-in successful! Welcome back.");
+        setUser(data.user);
+        window.location.href = "/home";
       },
       onError(error: unknown) {
         const message =
