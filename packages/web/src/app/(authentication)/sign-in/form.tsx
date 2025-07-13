@@ -93,7 +93,7 @@ function SignInForm(props: FormProps<SignInFormSchemaType>) {
           />
         </CardContent>
         <CardFooter className="flex w-full items-center justify-center pt-5">
-          <Button type="submit">
+          <Button type="submit" disabled={props.disabled}>
             {props.isPending ? <Loader variant="classic" /> : "Sign In"}
           </Button>
         </CardFooter>
