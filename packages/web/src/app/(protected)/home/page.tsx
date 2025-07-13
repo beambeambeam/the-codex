@@ -1,13 +1,28 @@
 "use client";
 
+import { useEffect } from "react";
+
 import HomeCanvas from "@/app/(protected)/home/_components/canvas";
+import { useHomeActions } from "@/app/(protected)/home/_components/context";
 import { ToggleThemeButton } from "@/components/button/toggle-theme";
 import SettingDialog from "@/components/settings/dialog";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { $api } from "@/lib/api/client";
 import { useUser } from "@/store/userStore";
 
 function HomePage() {
   const { username } = useUser();
+  const { setCollections, setIsPending } = useHomeActions();
+
+  const { data, isPending, isSuccess } = $api.useQuery("get", "/collections/");
+
+  useEffect(() => {
+    if (isSuccess) {
+      setCollections(data);
+      setIsPending(false);
+    }
+  }, [isSuccess, data, setCollections, setIsPending]);
+
   return (
     <div className="flex h-full w-full flex-col items-start justify-center gap-4">
       <div className="flex w-full items-center justify-between">
@@ -24,18 +39,19 @@ function HomePage() {
           <SettingDialog />
         </div>
       </div>
-      <HomeCanvas
-        nodes={[
-          {
+      {isPending ? (
+        <div></div>
+      ) : (
+        <HomeCanvas
+          nodes={(data ?? []).map((item) => ({
             data: {
-              header: "LLM with SQL.",
-              paragraph:
-                "Large Language Models (LLMs)—like ChatGPT, GPT-4, Claude, or others—in combination with Structured Query Language (SQL).",
-              href: "/collection/1",
+              header: item.name,
+              paragraph: item.description ?? "",
+              href: `/collections/${item.id}`,
             },
-          },
-        ]}
-      />
+          }))}
+        />
+      )}
     </div>
   );
 }

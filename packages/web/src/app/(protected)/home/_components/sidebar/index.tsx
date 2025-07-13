@@ -1,5 +1,7 @@
+import { useHome } from "@/app/(protected)/home/_components/context";
 import CreateNewFormDialog from "@/app/(protected)/home/_components/create";
 import HomeSidebarRecents from "@/app/(protected)/home/_components/sidebar/recents";
+import { HomeSidebarRecentsSkeleton } from "@/app/(protected)/home/_components/sidebar/recents/skeleton";
 import HomeSidebarSearchbox from "@/app/(protected)/home/_components/sidebar/search";
 import HomeSidebarUser from "@/app/(protected)/home/_components/sidebar/user";
 import { Logo } from "@/components/icon";
@@ -12,6 +14,8 @@ import {
 } from "@/components/ui/sidebar";
 
 function HomeSidebar() {
+  const { collections, isPending } = useHome();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -26,15 +30,17 @@ function HomeSidebar() {
           <HomeSidebarSearchbox />
         </SidebarGroup>
         <SidebarGroup>
-          <HomeSidebarRecents
-            links={[
-              {
-                title: "VLM Technical Report",
-                href: "home",
-                starred: true,
-              },
-            ]}
-          />
+          {isPending ? (
+            <HomeSidebarRecentsSkeleton />
+          ) : (
+            <HomeSidebarRecents
+              links={collections.map((c) => ({
+                title: c.name,
+                href: `/collections/${c.id}`,
+                starred: false,
+              }))}
+            />
+          )}
         </SidebarGroup>
         <SidebarGroup className="flex items-center justify-center">
           <CreateNewFormDialog />

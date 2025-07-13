@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Handle, Position } from "@xyflow/react";
+import { BadgeInfoIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -42,7 +43,10 @@ function CustomNode({ data, className }: CustomNodeProps) {
         <h3 className="text-foreground text-2xl leading-tight font-bold">
           {header !== "" ? header : "No Header"}
         </h3>
-        <p className="text-muted-foreground text-xs">Ai Summarize 📝</p>
+        <span className="text-muted-foreground flex items-center gap-1 text-xs">
+          <BadgeInfoIcon className="size-4" />
+          <p>Description</p>
+        </span>
         <p className="text-foreground text-start text-sm leading-relaxed">
           {paragraph !== "" ? paragraph : "No Content"}
         </p>
