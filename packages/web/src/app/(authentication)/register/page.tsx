@@ -1,8 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { toast } from "sonner";
 
-import RegisterForm from "@/app/(authentication)/register/form";
+import RegisterForm, {
+  RegisterFormSchemaType,
+} from "@/app/(authentication)/register/form";
 import { Logo } from "@/components/icon";
 import {
   Card,
@@ -10,8 +14,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { $api } from "@/lib/api/client";
 
 function RegisterPage() {
+  const { mutate, isSuccess, isPending } = $api.useMutation(
+    "post",
+    "/auth/register",
+    {
+      onSuccess() {
+        toast.success("Registration successful! Please sign in to continue.");
+        redirect("/sign-in");
+      },
+      onError(error: unknown) {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(message || "Registration failed. Please try again.");
+      },
+    },
+  );
+
+  const onSubmit = (values: RegisterFormSchemaType) => {
+    mutate({
+      body: {
+        ...values,
+      },
+    });
+  };
+
   return (
     <div className="grid h-screen grid-cols-1 lg:grid-cols-2">
       <div className="hidden h-full flex-col items-center justify-center lg:flex">
@@ -38,14 +69,9 @@ function RegisterPage() {
               password: "",
               confirmPassword: "",
             }}
-            onSubmit={function (values: {
-              username: string;
-              email: string;
-              password: string;
-              confirmPassword: string;
-            }): void {
-              throw new Error("Function not implemented.");
-            }}
+            onSubmit={onSubmit}
+            disabled={isSuccess || isPending}
+            isPending={isPending}
           />
         </Card>
         <p className="text-accent-foreground/60">
