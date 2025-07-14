@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+// import { useParams } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowUpRight, ChevronDown, Square } from "lucide-react";
 
