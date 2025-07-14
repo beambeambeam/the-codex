@@ -9,7 +9,7 @@ from typing import Any, Optional
 
 from sse_starlette import EventSourceResponse
 
-from ..queue.service import QueueType, get_queue_service
+from ..message_queue.service import QueueType, get_queue_service
 
 logger = logging.getLogger(__name__)
 

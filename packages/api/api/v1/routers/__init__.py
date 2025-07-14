@@ -4,7 +4,7 @@ from ...agentic.router import router as agentic_router
 from ...auth.router import router as auth_router
 from ...collection.router import router as collection_router
 from ...document.router import router as document_router
-from ...queue.router import router as queue_router
+from ...message_queue.router import router as queue_router
 from ...sse.router import router as sse_router
 from .health import router as health_router
 
