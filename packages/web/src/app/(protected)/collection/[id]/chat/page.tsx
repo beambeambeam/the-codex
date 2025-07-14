@@ -276,7 +276,7 @@ def scaled_dot_product_attention(Q, K, V):
         ))}
       </main>
 
-      <footer className="flex w-full justify-center p-6">
+      <footer className="absolute bottom-5 left-0 flex w-full justify-center bg-transparent p-6">
         <div className="relative w-1/2">
           <PromptInput
             value={inputText}
