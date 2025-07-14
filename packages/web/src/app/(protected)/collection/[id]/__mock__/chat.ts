@@ -1,3 +1,46 @@
+export const MOCK_CHAT_CONTENT = `
+# Exploring Transformer Architectures in Natural Language Processing
+
+Natural Language Processing (NLP) has experienced rapid advancements due to the introduction of transformer-based models. One of the foundational works in this domain is the **Attention Is All You Need** paper by Vaswani et al. (2017), which introduced the transformer model architecture.
+
+## Key Concepts
+
+### Self-Attention Mechanism
+The **self-attention** mechanism allows the model to weigh the importance of different words in a sequence when encoding a particular word, enabling it to capture contextual relationships more effectively.
+
+### Positional Encoding
+Since transformer models lack recurrence, positional encodings are added to input embeddings to retain the order of sequences.
+
+## Example: Positional Encoding Formula
+
+The positional encoding for each position and dimension is defined as:
+
+1 + 1 = 2
+
+where:
+- (pos) is the position index
+- (i) is the dimension index
+- (d_{model}) is the embedding size
+
+## Code Example: Simple Self-Attention in Python
+
+\`\`\`python
+import torch
+import torch.nn.functional as F
+
+def scaled_dot_product_attention(Q, K, V):
+    scores = torch.matmul(Q, K.transpose(-2, -1)) / Q.size(-1)**0.5
+    weights = F.softmax(scores, dim=-1)
+    return torch.matmul(weights, V)
+\`\`\`
+
+## References
+
+- Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). *Attention is all you need*. In *Advances in Neural Information Processing Systems* (pp. 5998-6008). [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
+
+
+`;
+
 export const MOCK_CHAT_COLLECTION = [
   {
     title: "test",

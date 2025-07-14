@@ -5,7 +5,6 @@ import { useParams } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowUpRight, ChevronDown, Square } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,20 +12,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Loader } from "@/components/ui/loader";
-import { Markdown } from "@/components/ui/markdown";
 import {
   PromptInput,
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
-import { useTextStream } from "@/components/ui/response-stream";
 import { getFileIcon } from "@/lib/files";
 import type { ChatCollection, ChatMessage, Document } from "@/types";
 
-import { MOCK_CHAT_COLLECTION, MOCK_CHAT_HISTORY } from "../__mock__/chat";
+import {
+  MOCK_CHAT_COLLECTION,
+  MOCK_CHAT_CONTENT,
+  MOCK_CHAT_HISTORY,
+} from "../__mock__/chat";
 import { MOCK_DOCUMENTS } from "../__mock__/documents";
+import { ChatMessageStream } from "./_components/ChatMessageStream";
 
 export default function ChatPage() {
   // const params = useParams();
@@ -88,48 +89,7 @@ export default function ChatPage() {
     const assistantMessage: ChatMessage = {
       id: (Date.now() + 1).toString(),
       role: "assistant",
-      content: `
-# Exploring Transformer Architectures in Natural Language Processing
-
-Natural Language Processing (NLP) has experienced rapid advancements due to the introduction of transformer-based models. One of the foundational works in this domain is the **Attention Is All You Need** paper by Vaswani et al. (2017), which introduced the transformer model architecture.
-
-## Key Concepts
-
-### Self-Attention Mechanism
-The **self-attention** mechanism allows the model to weigh the importance of different words in a sequence when encoding a particular word, enabling it to capture contextual relationships more effectively.
-
-### Positional Encoding
-Since transformer models lack recurrence, positional encodings are added to input embeddings to retain the order of sequences.
-
-## Example: Positional Encoding Formula
-
-The positional encoding for each position and dimension is defined as:
-
-1 + 1 = 2
-
-where:
-- (pos) is the position index
-- (i) is the dimension index
-- (d_{model}) is the embedding size
-
-## Code Example: Simple Self-Attention in Python
-
-\`\`\`python
-import torch
-import torch.nn.functional as F
-
-def scaled_dot_product_attention(Q, K, V):
-    scores = torch.matmul(Q, K.transpose(-2, -1)) / Q.size(-1)**0.5
-    weights = F.softmax(scores, dim=-1)
-    return torch.matmul(weights, V)
-\`\`\`
-
-## References
-
-- Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). *Attention is all you need*. In *Advances in Neural Information Processing Systems* (pp. 5998-6008). [https://arxiv.org/abs/1706.03762](https://arxiv.org/abs/1706.03762)
-
-
-`,
+      content: MOCK_CHAT_CONTENT,
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: now,
       created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
@@ -137,12 +97,13 @@ def scaled_dot_product_attention(Q, K, V):
 
     setChatHistory((prev) => [...prev, assistantMessage]);
     setLastAssistantMessageId(assistantMessage.id);
+
+    // Control loading and streaming states
     setIsLoading(true);
     setIsStreaming(true);
 
     setTimeout(() => {
       setIsLoading(false);
-      // You can decide if/when to set streaming false depending on your actual stream state logic
       setIsStreaming(true);
     }, 2000);
   };
@@ -204,8 +165,6 @@ def scaled_dot_product_attention(Q, K, V):
       " "
     ).length;
     setCursorPosition(newCursorPos);
-
-    // Optionally, you can set focus back to input and set cursor position manually with a ref
   };
   if (!chatData) {
     return <div>Chat not found</div>;
@@ -258,7 +217,7 @@ def scaled_dot_product_attention(Q, K, V):
 
       <main ref={chatRef} className="flex-1 space-y-4 overflow-y-auto p-4">
         {chatHistory.map((message) => (
-          <ChatMessage
+          <ChatMessageStream
             key={message.id}
             message={message}
             chatRef={chatRef}
@@ -336,83 +295,6 @@ def scaled_dot_product_attention(Q, K, V):
           </PromptInput>
         </div>
       </footer>
-    </div>
-  );
-}
-
-// Component to render each message
-interface ChatMessageProps {
-  message: ChatMessage;
-  chatRef: React.RefObject<HTMLDivElement | null>;
-  isLoading: boolean;
-  isStreaming: boolean;
-}
-
-function ChatMessage({
-  message,
-  chatRef,
-  isLoading,
-  isStreaming,
-}: ChatMessageProps) {
-  const isAssistant = message.role === "assistant";
-  const shouldStream = isAssistant && isStreaming;
-
-  const { displayedText, startStreaming } = useTextStream({
-    textStream: message.content,
-    mode: "typewriter",
-    speed: 50,
-  });
-
-  // Start streaming effect when isStreaming is true
-  useEffect(() => {
-    if (shouldStream) startStreaming();
-  }, [startStreaming, shouldStream]);
-
-  // Scroll to bottom whenever streaming text updates
-  useEffect(() => {
-    if (shouldStream && chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }
-  }, [displayedText, shouldStream, chatRef]);
-
-  return (
-    <div
-      className={`flex items-start gap-4 ${
-        message.role === "user" ? "justify-end" : ""
-      }`}
-    >
-      {isAssistant && (
-        <Avatar className="h-8 w-8">
-          <AvatarImage src="/static/logo/icon.svg" alt="Assistant" />
-          <AvatarFallback>A</AvatarFallback>
-        </Avatar>
-      )}
-
-      <div
-        className={`max-w-[75%] rounded-lg p-3 ${
-          message.role === "user"
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted"
-        }`}
-      >
-        {isLoading ? (
-          <Loader variant="text-shimmer" text="Fetching Documents..." />
-        ) : isAssistant ? (
-          shouldStream ? (
-            <Markdown className="prose">{displayedText}</Markdown>
-          ) : (
-            <Markdown className="prose">{message.content}</Markdown>
-          )
-        ) : (
-          <Markdown className="text-xs">{message.content}</Markdown>
-        )}
-      </div>
-
-      {message.role === "user" && (
-        <Avatar className="h-8 w-8">
-          <AvatarFallback>U</AvatarFallback>
-        </Avatar>
-      )}
     </div>
   );
 }
