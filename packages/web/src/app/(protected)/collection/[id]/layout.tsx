@@ -15,7 +15,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function getInitialTab(pathname: string) {
   if (pathname.endsWith("/chat")) return "tab-chat";
-  if (pathname.endsWith("/documents")) return "tab-documents";
+  if (pathname.endsWith("/docs")) return "tab-docs";
   return "tab-overview";
 }
 
@@ -44,20 +44,18 @@ export default function CollectionIdLayout({
                 value={tab}
                 onValueChange={(value: string) => {
                   if (value === "tab-overview") {
-                    router.push(
-                      pathname.replace(/\/(chat|documents)$/, "") || "/",
-                    );
+                    router.push(pathname.replace(/\/(chat|docs)$/, "") || "/");
                   } else if (value === "tab-chat") {
                     router.push(
                       pathname.endsWith("/chat")
                         ? pathname
-                        : pathname.replace(/\/(documents)?$/, "") + "/chat",
+                        : pathname.replace(/\/(docs)?$/, "") + "/chat",
                     );
-                  } else if (value === "tab-documents") {
+                  } else if (value === "tab-docs") {
                     router.push(
-                      pathname.endsWith("/documents")
+                      pathname.endsWith("/docs")
                         ? pathname
-                        : pathname.replace(/\/(chat)?$/, "") + "/documents",
+                        : pathname.replace(/\/(chat)?$/, "") + "/docs",
                     );
                   }
                   setTab(value);
@@ -88,7 +86,7 @@ export default function CollectionIdLayout({
                       Chat
                     </TabsTrigger>
                     <TabsTrigger
-                      value="tab-documents"
+                      value="tab-docs"
                       className="bg-muted overflow-hidden rounded-b-none border-x border-t py-2 data-[state=active]:z-10 data-[state=active]:shadow-none"
                     >
                       <PanelsTopLeftIcon
@@ -96,7 +94,7 @@ export default function CollectionIdLayout({
                         size={16}
                         aria-hidden="true"
                       />
-                      Documents
+                      Docs
                     </TabsTrigger>
                   </TabsList>
                   <ScrollBar orientation="horizontal" />
