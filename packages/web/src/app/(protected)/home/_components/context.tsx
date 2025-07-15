@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import { createStore, StoreApi, useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
+import { MOCK_HOME_COLLECTIONS } from "@/app/(protected)/home/__mock__/home";
 import { fetchClient } from "@/lib/api/client";
 import { components } from "@/lib/api/path";
 
@@ -71,7 +72,13 @@ export const HomeProvider = ({
   );
 
   useEffect(() => {
-    store.getState().actions.fetch();
+    store.setState({
+      collections: MOCK_HOME_COLLECTIONS,
+    });
+
+    store.setState({
+      isPending: false,
+    });
   }, [store]);
 
   return (

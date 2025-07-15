@@ -27,8 +27,10 @@ function HomeSidebarRecents(props: HomeSidebarRecentProps) {
               key={link.href}
               className="hover:bg-muted cursor-pointer py-3 shadow-none transition-colors"
             >
-              <CardContent className="flex items-center justify-between overflow-hidden px-4 text-sm text-ellipsis whitespace-nowrap">
-                <span>{link.title}</span>
+              <CardContent className="flex items-center justify-between overflow-hidden px-4 text-sm">
+                <span className="block max-w-[14rem] truncate">
+                  {link.title}
+                </span>
                 {link.starred && <StarIcon className="size-4" />}
               </CardContent>
             </Card>
