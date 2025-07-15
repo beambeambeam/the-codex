@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ArrowUpRight, ChevronDown, Square } from "lucide-react";
 
+import CollectionIdTabs from "@/app/(protected)/collection/[id]/_components/tabs";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -169,132 +170,136 @@ export default function ChatPage() {
   if (!chatData) {
     return <div>Chat not found</div>;
   }
+
   return (
-    <div className="bg-background flex h-[calc(100vh-8rem)] w-full flex-col">
-      <header className="border-b p-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 p-0">
-              <h1 className="text-xl font-bold">{chatData.title}</h1>
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <div className="p-2">
-              <p className="font-bold">{chatData.title}</p>
-              <p className="text-muted-foreground text-sm">
-                {chatData.description}
-              </p>
-              <div className="text-muted-foreground mt-2 text-xs">
-                <p>Updated by: {chatData.updated_by}</p>
-                <p>
-                  Updated at:{" "}
-                  {formatDistanceToNow(new Date(chatData.updated_at), {
-                    addSuffix: true,
-                  })}
+    <>
+      <CollectionIdTabs tab="tab-chat" />
+      <div className="bg-background flex h-[calc(100vh-8rem)] w-full flex-col border-l">
+        <header className="border-b p-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2 p-0">
+                <h1 className="text-xl font-bold">{chatData.title}</h1>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <div className="p-2">
+                <p className="font-bold">{chatData.title}</p>
+                <p className="text-muted-foreground text-sm">
+                  {chatData.description}
                 </p>
+                <div className="text-muted-foreground mt-2 text-xs">
+                  <p>Updated by: {chatData.updated_by}</p>
+                  <p>
+                    Updated at:{" "}
+                    {formatDistanceToNow(new Date(chatData.updated_at), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div className="my-2 border-t" />
-            <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
-              Other Chats
-            </div>
-            {MOCK_CHAT_COLLECTION.filter((c) => c.id !== chatData.id).map(
-              (chat) => (
-                <DropdownMenuItem
-                  key={chat.id}
-                  onClick={() => {
-                    window.location.href = `/collection/${chat.collection_id}/chat/${chat.id}`;
-                  }}
-                >
-                  {chat.title}
-                </DropdownMenuItem>
-              ),
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </header>
-
-      <main ref={chatRef} className="flex-1 space-y-4 overflow-y-auto p-4">
-        {chatHistory.map((message) => (
-          <ChatMessageStream
-            key={message.id}
-            message={message}
-            chatRef={chatRef}
-            isLoading={
-              isLoading &&
-              message.role === "assistant" &&
-              message.id === lastAssistantMessageId
-            }
-            isStreaming={
-              isStreaming &&
-              message.role === "assistant" &&
-              message.id === lastAssistantMessageId
-            }
-          />
-        ))}
-      </main>
-
-      <footer className="absolute bottom-5 left-0 flex w-full justify-center bg-transparent p-6">
-        <div className="relative w-1/2">
-          <PromptInput
-            value={inputText}
-            onValueChange={(value) => setInputText(value)}
-            onCursorChange={(pos) => setCursorPosition(pos)}
-            isLoading={isLoading}
-            onSubmit={handleSend}
-            className="w-full"
-          >
-            <PromptInputTextarea placeholder="Type @ to mention a document..." />
-
-            {showAutocomplete && (
-              <div className="bg-background absolute bottom-20 left-0 z-50 w-full rounded-lg border shadow-md">
-                {filteredDocuments.length > 0 ? (
-                  filteredDocuments.map((doc) => (
-                    <button
-                      key={doc.id}
-                      className="hover:bg-muted flex w-full items-center gap-2 px-4 py-2 text-left text-sm"
-                      onClick={() => handleSelectDocument(doc)}
-                    >
-                      {getFileIcon({
-                        file: {
-                          name: doc.file_name,
-                          type: doc.file_type,
-                        },
-                      })}
-                      {doc.file_name}
-                    </button>
-                  ))
-                ) : (
-                  <div className="text-muted-foreground px-4 py-2 text-sm">
-                    No results found
-                  </div>
-                )}
+              <div className="my-2 border-t" />
+              <div className="text-muted-foreground px-2 py-1 text-xs font-semibold">
+                Other Chats
               </div>
-            )}
+              {MOCK_CHAT_COLLECTION.filter((c) => c.id !== chatData.id).map(
+                (chat) => (
+                  <DropdownMenuItem
+                    key={chat.id}
+                    onClick={() => {
+                      window.location.href = `/collection/${chat.collection_id}/chat/${chat.id}`;
+                    }}
+                  >
+                    {chat.title}
+                  </DropdownMenuItem>
+                ),
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </header>
 
-            <PromptInputActions className="justify-end pt-2">
-              <PromptInputAction
-                tooltip={isLoading ? "Stop generation" : "Send message"}
-              >
-                <Button
-                  variant="default"
-                  size="icon"
-                  className="absolute right-0 h-8 w-8 -translate-y-1/2 rounded-full"
-                  onClick={handleSend}
-                  aria-label="Send message"
-                >
-                  {isLoading ? (
-                    <Square className="size-5 fill-current" />
+        <main ref={chatRef} className="flex-1 space-y-4 overflow-y-auto p-4">
+          {chatHistory.map((message) => (
+            <ChatMessageStream
+              key={message.id}
+              message={message}
+              chatRef={chatRef}
+              isLoading={
+                isLoading &&
+                message.role === "assistant" &&
+                message.id === lastAssistantMessageId
+              }
+              isStreaming={
+                isStreaming &&
+                message.role === "assistant" &&
+                message.id === lastAssistantMessageId
+              }
+            />
+          ))}
+        </main>
+
+        <footer className="absolute bottom-5 left-0 flex w-full justify-center bg-transparent p-6">
+          <div className="relative w-1/2">
+            <PromptInput
+              value={inputText}
+              onValueChange={(value) => setInputText(value)}
+              onCursorChange={(pos) => setCursorPosition(pos)}
+              isLoading={isLoading}
+              onSubmit={handleSend}
+              className="w-full"
+            >
+              <PromptInputTextarea placeholder="Type @ to mention a document..." />
+
+              {showAutocomplete && (
+                <div className="bg-background absolute bottom-20 left-0 z-50 w-full rounded-lg border shadow-md">
+                  {filteredDocuments.length > 0 ? (
+                    filteredDocuments.map((doc) => (
+                      <button
+                        key={doc.id}
+                        className="hover:bg-muted flex w-full items-center gap-2 px-4 py-2 text-left text-sm"
+                        onClick={() => handleSelectDocument(doc)}
+                      >
+                        {getFileIcon({
+                          file: {
+                            name: doc.file_name,
+                            type: doc.file_type,
+                          },
+                        })}
+                        {doc.file_name}
+                      </button>
+                    ))
                   ) : (
-                    <ArrowUpRight className="size-5" />
+                    <div className="text-muted-foreground px-4 py-2 text-sm">
+                      No results found
+                    </div>
                   )}
-                </Button>
-              </PromptInputAction>
-            </PromptInputActions>
-          </PromptInput>
-        </div>
-      </footer>
-    </div>
+                </div>
+              )}
+
+              <PromptInputActions className="justify-end pt-2">
+                <PromptInputAction
+                  tooltip={isLoading ? "Stop generation" : "Send message"}
+                >
+                  <Button
+                    variant="default"
+                    size="icon"
+                    className="absolute right-0 h-8 w-8 -translate-y-1/2 rounded-full"
+                    onClick={handleSend}
+                    aria-label="Send message"
+                  >
+                    {isLoading ? (
+                      <Square className="size-5 fill-current" />
+                    ) : (
+                      <ArrowUpRight className="size-5" />
+                    )}
+                  </Button>
+                </PromptInputAction>
+              </PromptInputActions>
+            </PromptInput>
+          </div>
+        </footer>
+      </div>
+    </>
   );
 }
