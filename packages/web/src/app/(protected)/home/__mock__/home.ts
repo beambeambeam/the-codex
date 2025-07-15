@@ -68,4 +68,14 @@ export const MOCK_HOME_COLLECTIONS = [
     created_by: "User Alpha",
     updated_by: "User Alpha",
   },
+  {
+    id: "g1h2i3j4-k5l6-m7n8-o9p0-q1r2s3t4u5v6",
+    name: "Attention Is All You Need",
+    description:
+      "A seminal paper introducing the Transformer architecture, which relies entirely on attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and sequence modeling.",
+    created_at: "2017-06-12T00:00:00Z",
+    updated_at: "2024-07-12T12:00:00Z",
+    created_by: "User Alpha",
+    updated_by: "User Alpha",
+  },
 ];
