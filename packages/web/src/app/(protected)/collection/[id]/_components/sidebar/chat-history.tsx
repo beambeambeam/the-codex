@@ -6,7 +6,7 @@ import { MOCK_CHAT_COLLECTION } from "@/app/(protected)/collection/[id]/__mock__
 import { Scroller } from "@/components/ui/scroller";
 
 function ChatHistorySidebar() {
-  const params = useParams<{ id: string }>();
+  const params = useParams<{ id: string; chat_id: string }>();
 
   return (
     <div className="h-full">
@@ -28,21 +28,26 @@ function ChatHistorySidebar() {
               new Date(b.updated_at).getTime() -
               new Date(a.updated_at).getTime(),
           )
-          .map((chat) => (
-            <Link
-              href={`/collection/${params.id}/chat/${chat.id}`}
-              key={`/chat/${chat.id}`}
-            >
-              <div
-                key={chat.id}
-                className="hover:bg-muted inline-flex w-full cursor-pointer items-center rounded p-2 py-1 shadow-none transition-colors"
+          .map((chat) => {
+            const isActive = params.chat_id === chat.id;
+            return (
+              <Link
+                href={`/collection/${params.id}/chat/${chat.id}`}
+                key={`/chat/${chat.id}`}
               >
-                <span className="block w-full truncate text-base">
-                  {chat.title}
-                </span>
-              </div>
-            </Link>
-          ))}
+                <div
+                  key={chat.id}
+                  className={`hover:bg-muted inline-flex w-full cursor-pointer items-center rounded p-2 py-1 shadow-none transition-colors ${
+                    isActive ? "bg-muted font-bold" : ""
+                  }`}
+                >
+                  <span className="block w-full truncate text-base">
+                    {chat.title}
+                  </span>
+                </div>
+              </Link>
+            );
+          })}
       </Scroller>
     </div>
   );
