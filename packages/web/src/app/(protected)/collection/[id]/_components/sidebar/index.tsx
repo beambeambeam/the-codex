@@ -38,7 +38,7 @@ function CollectionIdSidebar() {
             </Button>
           </Link>
         </div>
-        <SidebarGroup>
+        <SidebarGroup className="p-0">
           {pathname.match(/\/chat(\/.*)?$/) ? (
             <ChatHistorySidebar />
           ) : (

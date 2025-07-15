@@ -37,7 +37,7 @@ function ChatHistorySidebar() {
               >
                 <div
                   key={chat.id}
-                  className={`hover:bg-muted inline-flex w-full cursor-pointer items-center rounded p-2 py-1 shadow-none transition-colors ${
+                  className={`hover:bg-muted inline-flex w-full cursor-pointer items-center rounded p-2 py-1.5 shadow-none transition-colors ${
                     isActive ? "bg-muted font-bold" : ""
                   }`}
                 >
