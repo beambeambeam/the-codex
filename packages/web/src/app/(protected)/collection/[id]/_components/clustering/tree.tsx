@@ -86,7 +86,9 @@ function ClusteringTree() {
                         type: item.getItemName(),
                       },
                     })}
-                  {item.getItemName()}
+                  <span className="max-w-40 truncate">
+                    {item.getItemName()}
+                  </span>
                   {item.isFolder() && (
                     <span className="text-muted-foreground -ms-1">
                       {`(${item.getChildren().length})`}
