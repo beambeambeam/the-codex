@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FilePlus2Icon } from "lucide-react";
 
 import ClusteringTree from "@/app/(protected)/collection/[id]/_components/clustering/tree";
@@ -16,27 +16,6 @@ import { Sidebar, SidebarGroup } from "@/components/ui/sidebar";
 function CollectionIdSidebar() {
   const context = useCollectionIdContext();
   const pathname = usePathname();
-  const router = useRouter();
-
-  const targetHref = useMemo(() => {
-    const parts = pathname.split("/").filter(Boolean);
-    const last = parts[parts.length - 1];
-
-    const uuidRegex =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-    if (uuidRegex.test(last) || !isNaN(Number(last))) {
-      return `${pathname}/docs`;
-    } else {
-      parts[parts.length - 1] = "docs";
-      return "/" + parts.join("/");
-    }
-  }, [pathname]);
-
-  const handleNavigate = () => {
-    router.push(targetHref);
-    router.refresh();
-  };
 
   return (
     <Sidebar>
@@ -51,9 +30,11 @@ function CollectionIdSidebar() {
         <Separator />
         <div className="flex w-full gap-2">
           <CollectionIdSidebarSearchbox />
-          <Button size="icon" variant="outline" onClick={handleNavigate}>
-            <FilePlus2Icon />
-          </Button>
+          <Link href="docs">
+            <Button size="icon" variant="outline">
+              <FilePlus2Icon />
+            </Button>
+          </Link>
         </div>
         <SidebarGroup>
           {pathname.match(/\/chat(\/.*)?$/) ? (
