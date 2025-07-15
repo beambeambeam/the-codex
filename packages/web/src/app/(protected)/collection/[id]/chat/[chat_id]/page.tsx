@@ -8,6 +8,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
+import { Scroller } from "@/components/ui/scroller";
 
 function CollectionIdPage() {
   return (
@@ -18,7 +19,9 @@ function CollectionIdPage() {
           <header className="relative z-20 border-b p-4">
             Start New Conversation
           </header>
-          <div className="mx-8 h-full bg-red-500"></div>
+          <Scroller className="mx-8 h-full max-h-[calc(100vh-200px))]">
+            d
+          </Scroller>
         </div>
         <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10">
           <PromptInput>
