@@ -56,7 +56,7 @@ function CollectionIdSidebar() {
           </Button>
         </div>
         <SidebarGroup>
-          {pathname.endsWith("/chat") ? (
+          {pathname.match(/\/chat(\/.*)?$/) ? (
             <ChatHistorySidebar />
           ) : (
             <ClusteringTree />
