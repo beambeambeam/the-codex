@@ -1,7 +1,6 @@
 import { ArrowUpRightIcon } from "lucide-react";
 
 import CollectionIdTabs from "@/app/(protected)/collection/[id]/_components/tabs";
-import ChangeChatSheet from "@/app/(protected)/collection/[id]/chat/_components/change-chat";
 import { Button } from "@/components/ui/button";
 import {
   PromptInput,
@@ -17,7 +16,7 @@ function ChatPage() {
       <div className="bg-background flex h-full w-full flex-col border-l">
         <div className="h-full w-full">
           <header className="relative z-20 border-b p-4">
-            <ChangeChatSheet title="Start New Conversation" />
+            Start New Conversation
           </header>
           <div className="mx-8 h-full bg-red-500"></div>
         </div>
