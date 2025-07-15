@@ -1,14 +1,11 @@
-import { ArrowUpRightIcon } from "lucide-react";
+"use client";
 
+import { MOCK_CHAT_HISTORY } from "@/app/(protected)/collection/[id]/__mock__/chat";
 import CollectionIdTabs from "@/app/(protected)/collection/[id]/_components/tabs";
-import { Button } from "@/components/ui/button";
-import {
-  PromptInput,
-  PromptInputAction,
-  PromptInputActions,
-  PromptInputTextarea,
-} from "@/components/ui/prompt-input";
-import { Scroller } from "@/components/ui/scroller";
+import ChatForm, {
+  ChatFormSchemaType,
+} from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
+import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 
 function CollectionIdPage() {
   return (
@@ -16,29 +13,22 @@ function CollectionIdPage() {
       <CollectionIdTabs tab="tab-chat" />
       <div className="bg-background flex h-full w-full flex-col border-l">
         <div className="h-full w-full">
-          <header className="relative z-20 border-b p-4">
-            Start New Conversation
+          <header className="relative z-20 mb-4 border-b p-4">
+            {MOCK_CHAT_HISTORY.title}
           </header>
-          <Scroller className="mx-8 h-full max-h-[calc(100vh-200px))]">
-            d
-          </Scroller>
+          <ChatTemplate message={MOCK_CHAT_HISTORY.history} />
         </div>
         <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10">
-          <PromptInput>
-            <PromptInputTextarea placeholder="Type @ to mention a document..." />
-            <PromptInputActions className="justify-end pt-2">
-              <PromptInputAction tooltip="Send message">
-                <Button
-                  variant="default"
-                  size="icon"
-                  aria-label="Send message"
-                  className="rounded-full"
-                >
-                  <ArrowUpRightIcon className="size-5" />
-                </Button>
-              </PromptInputAction>
-            </PromptInputActions>
-          </PromptInput>
+          <ChatForm
+            onSubmit={function (
+              values: ChatFormSchemaType,
+            ): void | Promise<void> {
+              throw new Error("Function not implemented.");
+            }}
+            defaultValues={{
+              chat_message: "",
+            }}
+          />
         </div>
       </div>
     </>
