@@ -28,6 +28,7 @@ function CollectionIdPage() {
             defaultValues={{
               chat_message: "",
             }}
+            suggest={false}
           />
         </div>
       </div>

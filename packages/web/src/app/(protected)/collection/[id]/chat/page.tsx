@@ -4,6 +4,7 @@ import CollectionIdTabs from "@/app/(protected)/collection/[id]/_components/tabs
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
+import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 
 function ChatPage() {
   return (
@@ -14,6 +15,7 @@ function ChatPage() {
           <header className="relative z-20 border-b p-4">
             Start New Conversation
           </header>
+          <ChatTemplate message={[]} />
         </div>
         <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10">
           <ChatForm
@@ -25,6 +27,7 @@ function ChatPage() {
             defaultValues={{
               chat_message: "",
             }}
+            suggest={true}
           />
         </div>
       </div>

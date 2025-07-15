@@ -19,6 +19,8 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from "@/components/ui/prompt-input";
+import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
+import type { FormProps } from "@/types";
 
 const chatFormSchema = z.object({
   chat_message: z.string().min(1, "Message is required"),
@@ -26,14 +28,9 @@ const chatFormSchema = z.object({
 
 export type ChatFormSchemaType = z.infer<typeof chatFormSchema>;
 
-type ChatFormProps = {
-  onSubmit: (values: ChatFormSchemaType) => void | Promise<void>;
-  isPending?: boolean;
-  disabled?: boolean;
-  defaultValues?: Partial<ChatFormSchemaType>;
-};
-
-function ChatForm(props: ChatFormProps) {
+function ChatForm(
+  props: FormProps<ChatFormSchemaType> & { suggest?: boolean },
+) {
   const form = useForm<ChatFormSchemaType>({
     resolver: zodResolver(chatFormSchema),
     defaultValues: props.defaultValues,
@@ -46,8 +43,37 @@ function ChatForm(props: ChatFormProps) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(props.onSubmit)}
-        className="flex w-full gap-2"
+        className="flex w-full flex-col gap-2"
       >
+        {props.suggest && form.watch("chat_message") === "" && (
+          <div className="flex flex-wrap gap-2">
+            <PromptSuggestion
+              onClick={() =>
+                form.setValue(
+                  "chat_message",
+                  "Introduce me to this collections",
+                  {
+                    shouldValidate: true,
+                  },
+                )
+              }
+              type="button"
+            >
+              Introduce me to this collections
+            </PromptSuggestion>
+
+            <PromptSuggestion
+              onClick={() =>
+                form.setValue("chat_message", "Find me X", {
+                  shouldValidate: true,
+                })
+              }
+              type="button"
+            >
+              Find me X
+            </PromptSuggestion>
+          </div>
+        )}
         <FormField
           control={form.control}
           name="chat_message"
