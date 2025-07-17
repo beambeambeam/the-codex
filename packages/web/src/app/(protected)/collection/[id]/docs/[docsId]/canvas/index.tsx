@@ -26,6 +26,7 @@ function DocCanvas(props: DocCanvasProps) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
+        defaultEdgeOptions={{ type: "straight" }}
       >
         <Controls />
         <Background variant={BackgroundVariant.Dots} />

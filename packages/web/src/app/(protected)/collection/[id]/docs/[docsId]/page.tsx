@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 
-import DocCanvas from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas";
+import DocCanvasLayout from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/layout";
 import FilePreviwer from "@/components/file-previwer";
 import { Label } from "@/components/ui/label";
 import { Markdown } from "@/components/ui/markdown";
@@ -44,6 +44,66 @@ const MOCK_DOCS = {
   },
   is_graph_extracted: true,
 };
+
+const MOCK_DOCS_NODES = [
+  {
+    id: "1",
+    data: { label: "Transformer" },
+    type: "concept",
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "2",
+    data: { label: "Attention" },
+    type: "concept",
+    position: { x: 200, y: 0 },
+  },
+  {
+    id: "3",
+    data: { label: "Encoder" },
+    type: "component",
+    position: { x: 0, y: 150 },
+  },
+  {
+    id: "4",
+    data: { label: "Decoder" },
+    type: "component",
+    position: { x: 200, y: 150 },
+  },
+];
+
+const MOCK_DOCS_EDGES = [
+  {
+    id: "e1",
+    source: "1",
+    target: "2",
+    data: { label: "uses" },
+  },
+  {
+    id: "e2",
+    source: "1",
+    target: "3",
+    data: { label: "has" },
+  },
+  {
+    id: "e3",
+    source: "1",
+    target: "4",
+    data: { label: "has" },
+  },
+  {
+    id: "e4",
+    source: "3",
+    target: "2",
+    data: { label: "applies" },
+  },
+  {
+    id: "e5",
+    source: "4",
+    target: "2",
+    data: { label: "applies" },
+  },
+];
 
 function DocIdPage() {
   const [tab, setTab] = useQueryState(
@@ -170,11 +230,14 @@ function DocIdPage() {
                   <Pill className="h-fit">
                     <PillStatus>
                       <PillIndicator variant="success" />
-                      Lastest Update
+                      Latest Update
                     </PillStatus>
                     <RelativeTimeCard date="2025-07-16T00:00:00.000Z" />
                   </Pill>
-                  <DocCanvas nodes={[]} edges={[]} />
+                  <DocCanvasLayout
+                    nodes={MOCK_DOCS_NODES}
+                    edges={MOCK_DOCS_EDGES}
+                  />
                 </div>
               </TabsContent>
             </Tabs>
