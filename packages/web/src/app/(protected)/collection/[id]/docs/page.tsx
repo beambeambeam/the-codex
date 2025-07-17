@@ -10,7 +10,7 @@ function CollectionIdFilePage() {
     <>
       <CollectionIdTabs tab="tab-docs" />
       <div className="flex h-full w-full flex-col gap-6 border-l p-4">
-        <div className="text-4xl font-bold">Manage doucuments</div>
+        <div className="text-4xl font-bold">Manage documents</div>
         <div className="flex flex-col">
           <div className="text-2xl font-bold">
             Upload documents to collections
