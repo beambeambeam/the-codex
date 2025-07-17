@@ -47,61 +47,212 @@ const MOCK_DOCS = {
 
 const MOCK_DOCS_NODES = [
   {
-    id: "1",
-    data: { label: "Transformer" },
-    type: "concept",
+    id: "123a0198-8fc9-4cfe-b000-f1307f94196b",
+    data: { label: "Ashish Vaswani" },
     position: { x: 0, y: 0 },
   },
   {
-    id: "2",
-    data: { label: "Attention" },
-    type: "concept",
-    position: { x: 200, y: 0 },
+    id: "dd5e7683-40e5-4a6e-9f06-c87f81063a66",
+    data: { label: "Noam Shazeer" },
+    position: { x: 0, y: 0 },
   },
   {
-    id: "3",
-    data: { label: "Encoder" },
-    type: "component",
-    position: { x: 0, y: 150 },
+    id: "01f90575-afdb-4cc4-afda-ad6703fbe82e",
+    data: { label: "Niki Parmar" },
+    position: { x: 0, y: 0 },
   },
   {
-    id: "4",
-    data: { label: "Decoder" },
-    type: "component",
-    position: { x: 200, y: 150 },
+    id: "85c1ddd6-936d-4916-8060-8a8a7ffaef1b",
+    data: { label: "Jakob Uszkoreit" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "f1a7dde6-515c-445a-a9d8-7e4a47b3b7be",
+    data: { label: "Llion Jones" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "1b8923a8-307a-46f9-84d3-bf5635db2f38",
+    data: { label: "Aidan N. Gomez" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "2d7a2be9-a643-4e15-9ee7-ba3aa2da854c",
+    data: { label: "Łukasz Kaiser" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "8c05ee0a-da14-47c4-bfee-3beabdbbafc1",
+    data: { label: "Illia Polosukhin" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "9da61faa-dc9c-4a89-9d65-75cd4f7982cf",
+    data: { label: "Google Brain" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "e5703dca-6154-4faa-8d64-2b9d58b82b58",
+    data: { label: "Google Research" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "8c6eff78-12d9-4926-8b98-bccc7c3e493e",
+    data: { label: "University of Toronto" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "fc960f24-c11b-4ad7-a846-d0d23002d181",
+    data: { label: "Transformer Model" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "4d7c7350-980c-4c88-be1b-a7faa4caea7f",
+    data: { label: "Attention Mechanism" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "f119caf3-1451-44b8-88ef-10c44b4014b2",
+    data: { label: "Self-Attention" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "5e4dacc9-2c3d-4b5e-9b4a-d56642294780",
+    data: { label: "Scaled Dot-Product Attention" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "b1ff39a5-dda4-4cb5-b73a-47cc0294f8a5",
+    data: { label: "Multi-Head Attention" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "8d1e8c94-0aa8-4735-9b85-5aac914ef49f",
+    data: { label: "WMT 2014 English-to-German" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "307f76f5-1263-4638-b2e2-4851f2aef19c",
+    data: { label: "WMT 2014 English-to-French" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "48411ace-ccd2-427e-915f-84cb8b5d3084",
+    data: { label: "NIPS 2017" },
+    position: { x: 0, y: 0 },
+  },
+  {
+    id: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec",
+    data: { label: "Attention Is All You Need" },
+    position: { x: 0, y: 0 },
   },
 ];
 
 const MOCK_DOCS_EDGES = [
   {
-    id: "e1",
-    source: "1",
-    target: "2",
+    id: "bbf3c412-4164-4886-98a2-a1cb50a0aa45",
+    source: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec", // Work_1 → "Attention Is All You Need"
+    target: "48411ace-ccd2-427e-915f-84cb8b5d3084", // Event_1 → "NIPS 2017"
+    data: { label: "presented_at" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "427022da-6193-4354-bb12-0854b80b6e91",
+    source: "4d7c7350-980c-4c88-be1b-a7faa4caea7f", // Concept_1 → "Attention Mechanism"
+    target: "307f76f5-1263-4638-b2e2-4851f2aef19c", // Dataset_2 → "WMT 2014 English-to-French"
+    data: { label: "evaluated_on" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "75c48708-60bc-4c7d-8628-4813d4d88b43",
+    source: "4d7c7350-980c-4c88-be1b-a7faa4caea7f",
+    target: "8d1e8c94-0aa8-4735-9b85-5aac914ef49f", // Dataset_1 → "WMT 2014 English-to-German"
+    data: { label: "evaluated_on" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "2f4d1737-ea08-47f4-a209-770b228cc07d",
+    source: "4d7c7350-980c-4c88-be1b-a7faa4caea7f",
+    target: "b1ff39a5-dda4-4cb5-b73a-47cc0294f8a5", // Method_2 → "Multi-Head Attention"
     data: { label: "uses" },
+    type: "docCustomEdge",
   },
   {
-    id: "e2",
-    source: "1",
-    target: "3",
-    data: { label: "has" },
+    id: "8e915f3a-142b-403b-9000-830b0e43d629",
+    source: "4d7c7350-980c-4c88-be1b-a7faa4caea7f",
+    target: "5e4dacc9-2c3d-4b5e-9b4a-d56642294780", // Method_1 → "Scaled Dot-Product Attention"
+    data: { label: "uses" },
+    type: "docCustomEdge",
   },
   {
-    id: "e3",
-    source: "1",
-    target: "4",
-    data: { label: "has" },
+    id: "397f62f9-710f-4847-b021-bc7348673235",
+    source: "4d7c7350-980c-4c88-be1b-a7faa4caea7f",
+    target: "f119caf3-1451-44b8-88ef-10c44b4014b2", // Concept_2 → "Self-Attention"
+    data: { label: "uses" },
+    type: "docCustomEdge",
   },
   {
-    id: "e4",
-    source: "3",
-    target: "2",
-    data: { label: "applies" },
+    id: "92a346df-ccbf-4dec-b8c5-0f0823052ddc",
+    source: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec",
+    target: "4d7c7350-980c-4c88-be1b-a7faa4caea7f",
+    data: { label: "introduces" },
+    type: "docCustomEdge",
   },
   {
-    id: "e5",
-    source: "4",
-    target: "2",
-    data: { label: "applies" },
+    id: "dc46f3e9-48c9-4dae-9746-375bed28a06e",
+    source: "2d7a2be9-a643-4e15-9ee7-ba3aa2da854c", // Person_4 → "Łukasz Kaiser"
+    target: "e5703dca-6154-4faa-8d64-2b9d58b82b58", // Organization_2 → "Google Research"
+    data: { label: "affiliated_with" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "f663f89e-2039-4d1a-8fbd-a1346e507e1c",
+    source: "1b8923a8-307a-46f9-84d3-bf5635db2f38", // Person_3 → "Aidan N. Gomez"
+    target: "e5703dca-6154-4faa-8d64-2b9d58b82b58",
+    data: { label: "affiliated_with" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "3e6c481f-f8b4-44ce-8503-3cc7a9a4916e",
+    source: "01f90575-afdb-4cc4-afda-ad6703fbe82e", // Person_2 → "Niki Parmar"
+    target: "9da61faa-dc9c-4a89-9d65-75cd4f7982cf", // Organization_1 → "Google Brain"
+    data: { label: "affiliated_with" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "440ce1d6-32c6-47fd-abcb-fbfec7b84de4",
+    source: "dd5e7683-40e5-4a6e-9f06-c87f81063a66", // Person_1 → "Noam Shazeer"
+    target: "9da61faa-dc9c-4a89-9d65-75cd4f7982cf",
+    data: { label: "affiliated_with" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "a039dc26-3d36-4ba6-a95e-5b83772ed4ca",
+    source: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec",
+    target: "2d7a2be9-a643-4e15-9ee7-ba3aa2da854c",
+    data: { label: "authored_by" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "509d082a-ac45-4478-97b3-a12e3f596c3b",
+    source: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec",
+    target: "1b8923a8-307a-46f9-84d3-bf5635db2f38",
+    data: { label: "authored_by" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "a52e78f8-097d-4010-8339-abbfb99ae5bd",
+    source: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec",
+    target: "01f90575-afdb-4cc4-afda-ad6703fbe82e",
+    data: { label: "authored_by" },
+    type: "docCustomEdge",
+  },
+  {
+    id: "73d39d1a-70be-42d4-8811-f0fe39347fde",
+    source: "f21ed287-9da1-421c-9cf0-f6ba1b1d12ec",
+    target: "dd5e7683-40e5-4a6e-9f06-c87f81063a66",
+    data: { label: "authored_by" },
+    type: "docCustomEdge",
   },
 ];
 

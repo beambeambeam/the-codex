@@ -3,11 +3,14 @@ import {
   BackgroundVariant,
   Controls,
   Edge,
+  MiniMap,
   Node,
   ReactFlow,
   useEdgesState,
   useNodesState,
 } from "@xyflow/react";
+
+import CustomEdge from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/edge";
 
 interface DocCanvasProps {
   nodes: Node[];
@@ -26,9 +29,10 @@ function DocCanvas(props: DocCanvasProps) {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
-        defaultEdgeOptions={{ type: "straight" }}
+        edgeTypes={{ docCustomEdge: CustomEdge }}
       >
         <Controls />
+        <MiniMap />
         <Background variant={BackgroundVariant.Dots} />
       </ReactFlow>
     </div>

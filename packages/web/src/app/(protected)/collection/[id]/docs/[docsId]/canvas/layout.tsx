@@ -13,7 +13,9 @@ function DocCanvasLayout(props: DocCanvasLayoutProps) {
     props.nodes,
     props.edges,
     {
-      strength: 1000,
+      strength: 80,
+      radius: 100,
+      distance: 100,
     },
   );
 
