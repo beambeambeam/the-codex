@@ -1,8 +1,8 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Text, UserIcon } from "lucide-react";
+import { CheckCircleIcon, Text, UserIcon, XCircleIcon } from "lucide-react";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
-import { Pill, PillIcon } from "@/components/ui/pill";
+import { Pill, PillIcon, PillStatus } from "@/components/ui/pill";
 import { RelativeTimeCard } from "@/components/ui/relative-time-card";
 import { formatFileType } from "@/lib/files";
 
@@ -54,7 +54,7 @@ export const fileQueueColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="File Type" />
     ),
-    cell: ({ row }) => formatFileType(row.original.file_type),
+    cell: ({ row }) => <Pill>{formatFileType(row.original.file_type)}</Pill>,
     meta: {
       label: "File Type",
       placeholder: "Search file types...",
@@ -74,7 +74,18 @@ export const fileQueueColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Knowledge Graph" />
     ),
-    cell: (info) => (info.getValue() ? "Yes" : "No"),
+    cell: (info) => (
+      <Pill>
+        <PillStatus>
+          {info.getValue() ? (
+            <CheckCircleIcon className="text-emerald-500" size={12} />
+          ) : (
+            <XCircleIcon className="text-destructive" size={12} />
+          )}
+        </PillStatus>
+        {info.getValue() ? "Yes" : "No"}
+      </Pill>
+    ),
     meta: { label: "Graph Extracted", placeholder: "", variant: "boolean" },
     enableColumnFilter: true,
   }),

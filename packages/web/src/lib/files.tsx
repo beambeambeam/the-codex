@@ -56,7 +56,9 @@ export function formatFileType(fileType: string): string {
   const lower = fileType.toLowerCase();
 
   if (lower.includes("pdf")) return "PDF";
-  if (lower.includes("word") || lower.includes("doc")) return "Word";
+  if (lower.includes("ppt") || lower.includes("pptx")) return "PowerPoint";
+  if (lower.includes("word") || lower.includes("doc") || lower.includes("docx"))
+    return "Word";
   if (lower.includes("excel") || lower.includes("xls")) return "Excel";
   if (
     lower.includes("zip") ||
