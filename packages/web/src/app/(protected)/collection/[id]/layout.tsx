@@ -14,8 +14,8 @@ export default function CollectionIdLayout({
 }) {
   return (
     <CollectionIdProvider
-      initialTitle="LLM with SQL."
-      initialDescription="Large Language Models (LLMs)—like ChatGPT, GPT-4, Claude, or others—in combination with Structured Query Language (SQL)."
+      initialTitle="Attension is All you need"
+      initialDescription="A seminal paper introducing the Transformer architecture, which relies entirely on attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and sequence modeling."
     >
       <ClusteringProvider initialClusterings={[MOCK_CLUSTERING]}>
         <SidebarProvider>
