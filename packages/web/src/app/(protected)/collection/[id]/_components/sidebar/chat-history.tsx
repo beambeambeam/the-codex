@@ -37,7 +37,6 @@ function ChatHistorySidebar() {
                 key={`/chat/${chat.id}`}
               >
                 <div
-                  key={chat.id}
                   className={`hover:bg-muted inline-flex w-full cursor-pointer items-center rounded border border-dashed p-2 py-1.5 shadow-none transition-colors ${
                     isActive ? "bg-muted border border-solid" : ""
                   }`}
