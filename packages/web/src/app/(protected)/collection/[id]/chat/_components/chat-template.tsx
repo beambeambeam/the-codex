@@ -48,7 +48,7 @@ function ChatTemplate(props: ChatTemplateProps) {
   return (
     <Scroller
       ref={scrollerRef}
-      className="h-full max-h-[calc(100vh-380px)]"
+      className="h-full max-h-[calc(100vh-380px)] px-8"
       hideScrollbar
       withNavigation
     >

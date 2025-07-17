@@ -83,16 +83,6 @@ export const MOCK_CHAT_COLLECTION = [
     created_by: "User-Alpha",
     updated_by: "User-Alpha",
   },
-  {
-    title: "Meeting Notes",
-    description: "Summary of meeting held on July 12th.",
-    id: "49f312f3-d830-4b2c-bb60-376960df4d4e",
-    collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
-    created_at: "2025-07-12T14:00:00.000000",
-    updated_at: "2025-07-12T14:30:00.000000",
-    created_by: "User-Alpha",
-    updated_by: "User-Alpha",
-  },
 ];
 
 export const MOCK_CHAT_HISTORY = {
