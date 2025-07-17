@@ -1,8 +1,11 @@
+"use client";
+
 import {
   GitCompareArrowsIcon,
   HouseIcon,
   PanelsTopLeftIcon,
 } from "lucide-react";
+import { parseAsString, useQueryState } from "nuqs";
 
 import FilePreviwer from "@/components/file-previwer";
 import { Pill, PillIndicator, PillStatus } from "@/components/ui/pill";
@@ -16,6 +19,15 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function DocIdPage() {
+  const [tab, setTab] = useQueryState(
+    "tab",
+    parseAsString.withDefault("tab-1"),
+  );
+
+  const onTabChange = (value: string) => {
+    setTab(value);
+  };
+
   return (
     <div className="flex h-full w-full flex-col">
       <div className="border-b p-6 text-xl font-bold">
@@ -37,7 +49,7 @@ function DocIdPage() {
         <ResizableHandle withHandle />
         <ResizablePanel className="p-4">
           <div className="border-border h-full w-full rounded p-2">
-            <Tabs defaultValue="tab-1">
+            <Tabs defaultValue="tab-1" value={tab} onValueChange={onTabChange}>
               <ScrollArea>
                 <TabsList className="mb-3">
                   <TabsTrigger value="tab-1">
