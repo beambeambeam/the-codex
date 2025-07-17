@@ -1,6 +1,12 @@
-import { HouseIcon, PanelsTopLeftIcon } from "lucide-react";
+import {
+  GitCompareArrowsIcon,
+  HouseIcon,
+  PanelsTopLeftIcon,
+} from "lucide-react";
 
 import FilePreviwer from "@/components/file-previwer";
+import { Pill, PillIndicator, PillStatus } from "@/components/ui/pill";
+import { RelativeTimeCard } from "@/components/ui/relative-time-card";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -59,9 +65,17 @@ function DocIdPage() {
                 </p>
               </TabsContent>
               <TabsContent value="tab-2">
-                <p className="text-muted-foreground p-4 pt-1 text-center text-xs">
-                  Content for Tab 2
-                </p>
+                <div className="flex items-center gap-2">
+                  <GitCompareArrowsIcon />
+                  <p className="text-md font-bold">Knowledge Graph</p>
+                  <Pill>
+                    <PillStatus>
+                      <PillIndicator variant="success" />
+                      Lastest Update
+                    </PillStatus>
+                    <RelativeTimeCard date="2025-07-16T00:00:00.000Z" />
+                  </Pill>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
