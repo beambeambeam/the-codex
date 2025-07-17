@@ -65,7 +65,7 @@ function ChatTemplate(props: ChatTemplateProps) {
                 <div className="flex w-full flex-col gap-2">
                   <MessageContent
                     markdown
-                    className="border bg-transparent p-4"
+                    className="prose border bg-transparent p-4"
                   >
                     {msg.content}
                   </MessageContent>
