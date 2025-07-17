@@ -48,11 +48,11 @@ function ChatTemplate(props: ChatTemplateProps) {
   return (
     <Scroller
       ref={scrollerRef}
-      className="m-8 h-full max-h-[calc(100vh-330px)]"
+      className="h-full max-h-[calc(100vh-380px)]"
       hideScrollbar
       withNavigation
     >
-      <div className="flex flex-col gap-8 last:pb-5">
+      <div className="flex flex-col gap-8">
         {props.message.map((msg, index) =>
           msg.role === "user" ? (
             <Message key={msg.id} className="justify-end">
@@ -70,7 +70,7 @@ function ChatTemplate(props: ChatTemplateProps) {
                     {msg.content}
                   </MessageContent>
 
-                  <MessageActions className="self-end">
+                  <MessageActions className="self-start">
                     <MessageAction tooltip="Copy to clipboard">
                       <Button
                         variant="ghost"
