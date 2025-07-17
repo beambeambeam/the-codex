@@ -12,6 +12,7 @@ import {
   MessageContent,
 } from "@/components/ui/message";
 import { Scroller } from "@/components/ui/scroller";
+import { cn } from "@/lib/utils";
 
 interface ChatTemplateProps {
   message: {
@@ -79,7 +80,10 @@ function ChatTemplate(props: ChatTemplateProps) {
                         onClick={() => handleCopy(msg.content, msg.id)}
                       >
                         <CopyIcon
-                          className={`size-4 ${copied === msg.id ? "text-green-500" : ""}`}
+                          className={cn(
+                            "size-4",
+                            copied === msg.id && "text-green-500",
+                          )}
                         />
                       </Button>
                     </MessageAction>
