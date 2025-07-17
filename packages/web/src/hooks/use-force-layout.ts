@@ -8,7 +8,18 @@ export interface ForceNode extends Node, d3.SimulationNodeDatum {
 
 export type ForceEdge = Edge;
 
-export const useForceLayout = (initialNodes: Node[], initialEdges: Edge[]) => {
+export interface ForceLayoutOptions {
+  strength?: number;
+  radius?: number;
+  distance?: number;
+}
+
+export const useForceLayout = (
+  initialNodes: Node[],
+  initialEdges: Edge[],
+  options: ForceLayoutOptions = {},
+) => {
+  const { strength = -60000, radius = 100, distance = 100 } = options;
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges] = useState<Edge[]>(initialEdges);
 
@@ -29,10 +40,10 @@ export const useForceLayout = (initialNodes: Node[], initialEdges: Edge[]) => {
         d3
           .forceLink<ForceNode, ForceEdge>(forceEdges)
           .id((d) => d.id)
-          .distance(100),
+          .distance(distance),
       )
-      .force("charge", d3.forceManyBody().strength(-60000))
-      .force("collide", d3.forceCollide().radius(100))
+      .force("charge", d3.forceManyBody().strength(strength))
+      .force("collide", d3.forceCollide().radius(radius))
       .force(
         "center",
         d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2),
@@ -47,7 +58,7 @@ export const useForceLayout = (initialNodes: Node[], initialEdges: Edge[]) => {
     }));
 
     setNodes(layoutedNodes);
-  }, [initialNodes, initialEdges]);
+  }, [initialNodes, initialEdges, distance, radius, strength]);
 
   return { nodes, edges };
 };
