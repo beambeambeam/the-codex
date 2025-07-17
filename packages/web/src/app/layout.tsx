@@ -31,7 +31,14 @@ export default function RootLayout({
             themes={["light", "dark"]}
           >
             <QueryProvider>
-              <UserProvider>
+              <UserProvider
+                initialUser={{
+                  username: "User Alpha",
+                  created_at: "2001-09-11T00:00:00.000Z",
+                  email: "UserAlpha@Codex.com",
+                  id: "7a94c97f-3496-4d06-891f-af8921d368a6",
+                }}
+              >
                 {children}
                 <Toaster expand position="top-center" richColors />
                 <BreakpointIndicator />

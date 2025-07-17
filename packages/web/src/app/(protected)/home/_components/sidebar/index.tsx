@@ -34,11 +34,18 @@ function HomeSidebar() {
             <HomeSidebarRecentsSkeleton />
           ) : (
             <HomeSidebarRecents
-              links={collections.map((c) => ({
-                title: c.name,
-                href: `/collection/${c.id}`,
-                starred: false,
-              }))}
+              links={collections
+                .slice()
+                .sort(
+                  (a, b) =>
+                    new Date(b.updated_at).getTime() -
+                    new Date(a.updated_at).getTime(),
+                )
+                .map((c) => ({
+                  title: c.name,
+                  href: `/collection/${c.id}`,
+                  starred: false,
+                }))}
             />
           )}
         </SidebarGroup>

@@ -1,8 +1,10 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Text } from "lucide-react";
+import { CheckCircleIcon, Text, UserIcon, XCircleIcon } from "lucide-react";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Pill, PillIcon, PillStatus } from "@/components/ui/pill";
 import { RelativeTimeCard } from "@/components/ui/relative-time-card";
+import { formatFileType } from "@/lib/files";
 
 type FileQueue = {
   id: string;
@@ -52,6 +54,7 @@ export const fileQueueColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="File Type" />
     ),
+    cell: ({ row }) => <Pill>{formatFileType(row.original.file_type)}</Pill>,
     meta: {
       label: "File Type",
       placeholder: "Search file types...",
@@ -69,32 +72,55 @@ export const fileQueueColumns = [
   }),
   columnHelper.accessor("is_graph_extracted", {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Graph Extracted" />
+      <DataTableColumnHeader column={column} title="Knowledge Graph" />
+    ),
+    cell: (info) => (
+      <Pill>
+        <PillStatus>
+          {info.getValue() ? (
+            <CheckCircleIcon className="text-emerald-500" size={12} />
+          ) : (
+            <XCircleIcon className="text-destructive" size={12} />
+          )}
+        </PillStatus>
+        {info.getValue() ? "Yes" : "No"}
+      </Pill>
     ),
     meta: { label: "Graph Extracted", placeholder: "", variant: "boolean" },
     enableColumnFilter: true,
-    cell: (info) => (info.getValue() ? "Yes" : "No"),
   }),
   columnHelper.accessor("created_by", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created By" />
+    ),
+    cell: ({ row }) => (
+      <Pill>
+        <PillIcon icon={UserIcon} />
+        {row.original.updated_by}
+      </Pill>
     ),
     meta: {
       label: "Created By",
       placeholder: "Search creators...",
       variant: "text",
     },
+    enableColumnFilter: true,
   }),
   columnHelper.accessor("updated_by", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated By" />
+    ),
+    cell: ({ row }) => (
+      <Pill>
+        <PillIcon icon={UserIcon} />
+        {row.original.updated_by}
+      </Pill>
     ),
     meta: {
       label: "Updated By",
       placeholder: "Search updaters...",
       variant: "text",
     },
-    enableColumnFilter: true,
   }),
   columnHelper.accessor("created_at", {
     header: ({ column }) => (

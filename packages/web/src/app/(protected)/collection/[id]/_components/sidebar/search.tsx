@@ -27,7 +27,7 @@ function CollectionIdSidebarSearchbox() {
             <Input
               id={id}
               className="peer ps-9"
-              placeholder="Search for Library"
+              placeholder="Search in collections"
               type="text"
               onClick={() => setOpen(true)}
             />

@@ -43,14 +43,15 @@ def scaled_dot_product_attention(Q, K, V):
 
 export const MOCK_CHAT_COLLECTION = [
   {
-    title: "test",
-    description: "test",
+    title: "Attention is all you need related",
+    description:
+      "This chat log explores concepts related to attention mechanisms in artificial intelligence, including the seminal paper Attention Is All You Need and its impact on models like the Transformer.",
     id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
     collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
     created_at: "2025-07-10T15:00:56.338344",
     updated_at: "2025-07-10T15:00:56.338344",
-    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    created_by: "User-Alpha",
+    updated_by: "User-Alpha",
   },
   {
     title: "Sample Document A",
@@ -59,8 +60,8 @@ export const MOCK_CHAT_COLLECTION = [
     collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
     created_at: "2025-07-11T10:20:30.221000",
     updated_at: "2025-07-11T10:20:30.221000",
-    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    created_by: "User-Alpha",
+    updated_by: "User-Alpha",
   },
   {
     title: "Project Proposal",
@@ -69,8 +70,8 @@ export const MOCK_CHAT_COLLECTION = [
     collection_id: "fa172b9c-5ff1-4685-9703-334c9f2121f9",
     created_at: "2025-07-12T08:45:12.543000",
     updated_at: "2025-07-12T08:45:12.543000",
-    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    created_by: "User-Alpha",
+    updated_by: "User-Alpha",
   },
   {
     title: "Research Paper Draft",
@@ -79,30 +80,21 @@ export const MOCK_CHAT_COLLECTION = [
     collection_id: "a75e9c31-0c8c-493d-96c7-9f8f94565e5b",
     created_at: "2025-07-13T12:10:00.100000",
     updated_at: "2025-07-13T12:10:00.100000",
-    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-  },
-  {
-    title: "Meeting Notes",
-    description: "Summary of meeting held on July 12th.",
-    id: "49f312f3-d830-4b2c-bb60-376960df4d4e",
-    collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
-    created_at: "2025-07-12T14:00:00.000000",
-    updated_at: "2025-07-12T14:30:00.000000",
-    created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-    updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+    created_by: "User-Alpha",
+    updated_by: "User-Alpha",
   },
 ];
 
 export const MOCK_CHAT_HISTORY = {
-  title: "test",
-  description: "test",
+  title: "Attention is all you need related",
+  description:
+    "Chat history demonstrating user and assistant interactions about attention mechanisms, transformer models, and related research papers, including the seminal 'Attention Is All You Need' paper.",
   id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
   collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
   created_at: "2025-07-10T15:00:56.338344",
   updated_at: "2025-07-10T15:00:56.338344",
-  created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
-  updated_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+  created_by: "User-Alpha",
+  updated_by: "User-Alpha",
   history: [
     {
       role: "user",
@@ -110,7 +102,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "9b917733-803e-4c67-b7d7-3150c429a645",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:11:26.419081",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -119,7 +111,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "e130fe85-c0a9-45eb-95a5-98d29cc36874",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:11:31.058211",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "user",
@@ -127,7 +119,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "93a11c70-1f62-45ec-9dac-90b2a0327549",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:12:32.109372",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -136,7 +128,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "1e63fa82-1441-4b2f-8469-07db68bb3716",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:12:35.481213",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "user",
@@ -144,7 +136,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "a43a3737-4722-47ec-b96c-0c86dbeb94ac",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:15:25.597539",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -153,7 +145,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "f45e50c5-d467-44b1-97cc-55dc172a39ad",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:15:30.813111",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "user",
@@ -161,7 +153,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "88c7c783-f3a1-4b3e-854d-f3b05389a556",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:17:08.831961",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -170,7 +162,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "30bffe82-39d4-42d4-9892-61605f18d1da",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:17:12.083245",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "user",
@@ -178,7 +170,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "a58cb6fa-2c6c-4f24-8888-04b9bfd94e9c",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:18:08.282860",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -187,7 +179,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "958133ff-32f7-4662-b8da-aefde19522e3",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:18:12.215300",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "user",
@@ -195,7 +187,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "f3c0ef5c-f159-4556-a275-91a6280c5784",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:36:22.063043",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -204,7 +196,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "42553102-d65b-4526-b546-e3c4d418fc9a",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:36:22.273904",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "user",
@@ -212,7 +204,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "5ab758b8-1cf3-4f77-9eb9-72484408cc21",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:37:35.942155",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
     {
       role: "assistant",
@@ -221,7 +213,7 @@ export const MOCK_CHAT_HISTORY = {
       id: "4a472f88-9e59-4b48-b20f-176f3782ca2c",
       collection_chat_id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
       created_at: "2025-07-11T10:37:36.066071",
-      created_by: "0ea38322-4d8b-4a63-af9e-2dd31cf9db2e",
+      created_by: "User-Alpha",
     },
   ],
 };

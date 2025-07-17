@@ -1,4 +1,5 @@
-import { fileQueueColumns } from "@/app/(protected)/collection/[id]/documents/_components/documents-queue-table/columns";
+import { MOCK_DOCUMENT } from "@/app/(protected)/collection/[id]/__mock__/documents";
+import { fileQueueColumns } from "@/app/(protected)/collection/[id]/docs/_components/documents-queue-table/columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableFilterList } from "@/components/data-table/data-table-filter-list";
 import { DataTableSortList } from "@/components/data-table/data-table-sort-list";
@@ -7,30 +8,11 @@ import { useDataTable } from "@/hooks/use-data-table";
 
 function FileQueueTable() {
   const { table } = useDataTable({
-    data: [
-      {
-        id: "d",
-        file_name: "d",
-        source_file_path: "",
-        file_type: "",
-        is_vectorized: false,
-        is_graph_extracted: false,
-        created_at: new Date(),
-        updated_at: new Date(),
-        created_by: "",
-      },
-      {
-        id: "d2",
-        file_name: "d2",
-        source_file_path: "",
-        file_type: "",
-        is_vectorized: false,
-        is_graph_extracted: false,
-        created_at: new Date(),
-        updated_at: new Date(),
-        created_by: "",
-      },
-    ],
+    data: MOCK_DOCUMENT.map((doc) => ({
+      ...doc,
+      created_at: new Date(doc.created_at),
+      updated_at: new Date(doc.updated_at),
+    })),
     columns: fileQueueColumns,
     pageCount: 10,
     getRowId: (row) => row.id,
@@ -40,6 +22,7 @@ function FileQueueTable() {
         source_file_path: false,
         created_at: false,
         created_by: false,
+        is_vectorized: false,
       },
     },
   });
