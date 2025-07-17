@@ -10,8 +10,13 @@ function CollectionIdPage() {
   return (
     <>
       <div className="h-full w-full">
-        <header className="relative z-20 mb-4 border-b p-4">
-          {MOCK_CHAT_HISTORY.title}
+        <header className="relative z-20 mb-4 flex items-center justify-between border-b p-4">
+          <div className="h-full w-full">
+            <h1 className="text-xl">{MOCK_CHAT_HISTORY.title}</h1>
+            <p className="text-muted-foreground text-base">
+              {MOCK_CHAT_HISTORY.description}
+            </p>
+          </div>
         </header>
         <ChatTemplate message={MOCK_CHAT_HISTORY.history} />
       </div>

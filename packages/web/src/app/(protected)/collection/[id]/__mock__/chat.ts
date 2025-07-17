@@ -97,7 +97,8 @@ export const MOCK_CHAT_COLLECTION = [
 
 export const MOCK_CHAT_HISTORY = {
   title: "Attention is all you need related",
-  description: "test",
+  description:
+    "Chat history demonstrating user and assistant interactions about attention mechanisms, transformer models, and related research papers, including the seminal 'Attention Is All You Need' paper.",
   id: "e98a6169-75b8-43bf-805d-5b379b9f4a0d",
   collection_id: "d56d1ab5-f738-436e-9d76-d75d5da180df",
   created_at: "2025-07-10T15:00:56.338344",
