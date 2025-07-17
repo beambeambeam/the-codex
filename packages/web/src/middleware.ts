@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { fetchServer } from "@/lib/api/server";
+// import { fetchServer } from "@/lib/api/server";
 
-const authPages = ["/sign-in", "/register"];
-const protectedPages = ["/collections/*"];
+// const authPages = ["/sign-in", "/register"];
+// const protectedPages = ["/collections/*"];
 
 export async function middleware(request: NextRequest) {
   // const { pathname } = request.nextUrl;
