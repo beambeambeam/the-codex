@@ -1,8 +1,10 @@
 import { createColumnHelper } from "@tanstack/react-table";
-import { Text } from "lucide-react";
+import { Text, UserIcon } from "lucide-react";
 
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
+import { Pill, PillIcon } from "@/components/ui/pill";
 import { RelativeTimeCard } from "@/components/ui/relative-time-card";
+import { formatFileType } from "@/lib/files";
 
 type FileQueue = {
   id: string;
@@ -52,6 +54,7 @@ export const fileQueueColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="File Type" />
     ),
+    cell: ({ row }) => formatFileType(row.original.file_type),
     meta: {
       label: "File Type",
       placeholder: "Search file types...",
@@ -69,11 +72,11 @@ export const fileQueueColumns = [
   }),
   columnHelper.accessor("is_graph_extracted", {
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Graph Extracted" />
+      <DataTableColumnHeader column={column} title="Knowledge Graph" />
     ),
+    cell: (info) => (info.getValue() ? "Yes" : "No"),
     meta: { label: "Graph Extracted", placeholder: "", variant: "boolean" },
     enableColumnFilter: true,
-    cell: (info) => (info.getValue() ? "Yes" : "No"),
   }),
   columnHelper.accessor("created_by", {
     header: ({ column }) => (
@@ -89,12 +92,17 @@ export const fileQueueColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Updated By" />
     ),
+    cell: ({ row }) => (
+      <Pill>
+        <PillIcon icon={UserIcon} />
+        {row.original.updated_by}
+      </Pill>
+    ),
     meta: {
-      label: "Updated By",
-      placeholder: "Search updaters...",
-      variant: "text",
+      label: "Updated At",
+      placeholder: "",
+      variant: "date",
     },
-    enableColumnFilter: true,
   }),
   columnHelper.accessor("created_at", {
     header: ({ column }) => (

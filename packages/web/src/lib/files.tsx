@@ -50,3 +50,23 @@ const getFileIcon = (
 };
 
 export { getFileIcon };
+
+export function formatFileType(fileType: string): string {
+  if (!fileType) return "Unknown";
+  const lower = fileType.toLowerCase();
+
+  if (lower.includes("pdf")) return "PDF";
+  if (lower.includes("word") || lower.includes("doc")) return "Word";
+  if (lower.includes("excel") || lower.includes("xls")) return "Excel";
+  if (
+    lower.includes("zip") ||
+    lower.includes("archive") ||
+    lower.includes("rar")
+  )
+    return "Archive";
+  if (lower.startsWith("image/")) return "Image";
+  if (lower.startsWith("video/")) return "Video";
+  if (lower.startsWith("audio/")) return "Audio";
+  if (lower.includes("txt")) return "Text";
+  return lower.split("/").pop() || "Unknown";
+}
