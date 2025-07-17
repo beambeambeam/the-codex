@@ -78,7 +78,7 @@ function DocIdPage() {
               </TabsContent>
               <TabsContent value="tab-2">
                 <div className="flex items-center gap-2">
-                  <GitCompareArrowsIcon />
+                  <GitCompareArrowsIcon size={16} />
                   <p className="text-md font-bold">Knowledge Graph</p>
                   <Pill>
                     <PillStatus>
