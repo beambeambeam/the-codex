@@ -1,6 +1,13 @@
 "use client";
 
-import { Controls, ReactFlow, useNodesState } from "@xyflow/react";
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  ReactFlow,
+  useNodesState,
+} from "@xyflow/react";
 
 import ClusteringGroupLabelNode from "@/app/(protected)/collection/[id]/_components/clustering/canvas/label";
 import ClusteringCustomNode from "@/app/(protected)/collection/[id]/_components/clustering/canvas/node";
@@ -31,6 +38,8 @@ function ClusteringCanvas() {
         fitView
       >
         <Controls />
+        <MiniMap />
+        <Background variant={BackgroundVariant.Dots} />
       </ReactFlow>
     </div>
   );

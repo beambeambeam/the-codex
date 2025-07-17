@@ -1,6 +1,8 @@
 "use client";
 
 import {
+  Background,
+  BackgroundVariant,
   Controls,
   ReactFlow,
   useEdgesState,
@@ -37,6 +39,7 @@ function HomeCanvas(props: HomeCanvasProps) {
         fitView
       >
         <Controls />
+        <Background variant={BackgroundVariant.Dots} />
       </ReactFlow>
     </div>
   );
