@@ -14,7 +14,7 @@ interface ClusteringCustomNodeProps {
 
 function ClusteringCustomNode(props: ClusteringCustomNodeProps) {
   return (
-    <div>
+    <div className="group">
       <Handle
         type="target"
         position={Position.Left}
@@ -28,7 +28,7 @@ function ClusteringCustomNode(props: ClusteringCustomNodeProps) {
       />
 
       <div className="flex flex-col items-center justify-center">
-        <div className="flex items-center justify-center rounded-full border p-2.5">
+        <div className="group-hover:bg-accent flex items-center justify-center rounded-full border p-2.5 transition-colors">
           {getFileIcon({
             file: {
               name: props.data.label,
@@ -36,7 +36,7 @@ function ClusteringCustomNode(props: ClusteringCustomNodeProps) {
             },
           })}
         </div>
-        <p className="max-w-[200px] truncate text-center font-semibold text-wrap">
+        <p className="group-hover:text-primary max-w-[200px] truncate text-center font-semibold text-wrap transition-colors">
           {props.data.label.replace(/\.[^/.]+$/, "").replace(/_/g, " ")}
         </p>
       </div>
