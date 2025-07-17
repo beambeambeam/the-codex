@@ -74,9 +74,6 @@ export const HomeProvider = ({
   useEffect(() => {
     store.setState({
       collections: MOCK_HOME_COLLECTIONS,
-    });
-
-    store.setState({
       isPending: false,
     });
   }, [store]);
