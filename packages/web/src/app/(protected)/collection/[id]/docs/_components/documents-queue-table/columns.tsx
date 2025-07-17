@@ -93,11 +93,18 @@ export const fileQueueColumns = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Created By" />
     ),
+    cell: ({ row }) => (
+      <Pill>
+        <PillIcon icon={UserIcon} />
+        {row.original.updated_by}
+      </Pill>
+    ),
     meta: {
       label: "Created By",
       placeholder: "Search creators...",
       variant: "text",
     },
+    enableColumnFilter: true,
   }),
   columnHelper.accessor("updated_by", {
     header: ({ column }) => (
@@ -110,9 +117,9 @@ export const fileQueueColumns = [
       </Pill>
     ),
     meta: {
-      label: "Updated At",
-      placeholder: "",
-      variant: "date",
+      label: "Updated By",
+      placeholder: "Search updaters...",
+      variant: "text",
     },
   }),
   columnHelper.accessor("created_at", {
