@@ -1,21 +1,28 @@
 "use client";
 
+import { ClockFadingIcon } from "lucide-react";
+
 import { MOCK_CHAT_HISTORY } from "@/app/(protected)/collection/[id]/__mock__/chat";
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
+import { Pill, PillIcon } from "@/components/ui/pill";
+import { RelativeTimeCard } from "@/components/ui/relative-time-card";
 
 function CollectionIdPage() {
   return (
     <>
       <div className="h-full w-full">
-        <header className="relative z-20 mb-4 flex items-center justify-between border-b p-4">
-          <div className="h-full w-full">
-            <h1 className="text-xl">{MOCK_CHAT_HISTORY.title}</h1>
-            <p className="text-muted-foreground text-base">
-              {MOCK_CHAT_HISTORY.description}
-            </p>
+        <header className="relative z-20 mb-4 flex items-center justify-between border-b p-3">
+          <div className="flex h-full w-full flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg">{MOCK_CHAT_HISTORY.title}</h1>
+              <Pill>
+                <PillIcon icon={ClockFadingIcon} />
+                <RelativeTimeCard date={MOCK_CHAT_HISTORY.updated_at} />
+              </Pill>
+            </div>
           </div>
         </header>
         <ChatTemplate message={MOCK_CHAT_HISTORY.history} />
