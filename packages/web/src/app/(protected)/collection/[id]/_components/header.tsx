@@ -2,7 +2,6 @@
 
 import { useCollectionIdContext } from "@/app/(protected)/collection/[id]/_components/use-collection-id-context";
 import { ToggleThemeButton } from "@/components/button/toggle-theme";
-import SettingDialog from "@/components/settings/dialog";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 
 function CollectionIdHeader() {
@@ -16,10 +15,7 @@ function CollectionIdHeader() {
         {state == "collapsed" && <span>{context.title}</span>}
       </div>
 
-      <div className="flex items-center gap-4">
-        <ToggleThemeButton />
-        <SettingDialog />
-      </div>
+      <ToggleThemeButton />
     </div>
   );
 }

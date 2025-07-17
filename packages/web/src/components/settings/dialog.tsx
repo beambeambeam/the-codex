@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { Settings2Icon } from "lucide-react";
 
 import SettingPanel from "@/components/settings/panel";
@@ -11,13 +12,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-function SettingDialog() {
+interface SettingsDialogProps {
+  icon?: ReactNode;
+}
+
+function SettingDialog(props: SettingsDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Settings2Icon />
-        </Button>
+        {props.icon ? (
+          props.icon
+        ) : (
+          <Button variant="ghost" size="icon">
+            <Settings2Icon />
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-full md:min-w-4xl" clickOutside={false}>
         <DialogHeader>
