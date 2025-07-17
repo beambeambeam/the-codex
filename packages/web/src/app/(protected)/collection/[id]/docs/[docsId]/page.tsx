@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 
+import DocCanvas from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas";
 import FilePreviwer from "@/components/file-previwer";
 import { Label } from "@/components/ui/label";
 import { Markdown } from "@/components/ui/markdown";
@@ -161,16 +162,19 @@ function DocIdPage() {
                 </div>
               </TabsContent>
               <TabsContent value="tab-2">
-                <div className="flex items-center gap-2">
-                  <GitCompareArrowsIcon size={16} />
-                  <p className="text-md font-bold">Knowledge Graph</p>
-                  <Pill>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <GitCompareArrowsIcon size={16} />
+                    <p className="text-md font-bold">Knowledge Graph</p>
+                  </div>
+                  <Pill className="h-fit">
                     <PillStatus>
                       <PillIndicator variant="success" />
                       Lastest Update
                     </PillStatus>
                     <RelativeTimeCard date="2025-07-16T00:00:00.000Z" />
                   </Pill>
+                  <DocCanvas nodes={[]} edges={[]} />
                 </div>
               </TabsContent>
             </Tabs>
