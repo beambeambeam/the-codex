@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   expandAllFeature,
   hotkeysCoreFeature,
@@ -16,6 +18,7 @@ import {
 } from "lucide-react";
 
 import {
+  Item,
   useClusteringActions,
   useClusterings,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
@@ -23,14 +26,11 @@ import { Button } from "@/components/ui/button";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
 import { getFileIcon } from "@/lib/files";
 
-interface Item {
-  name: string;
-  children?: string[];
-}
-
 const indent = 20;
 
 function ClusteringTree() {
+  const params = useParams<{ id: string }>();
+
   const { clusteringToTree } = useClusteringActions();
   const clustering = useClusterings();
 
@@ -68,37 +68,48 @@ function ClusteringTree() {
       </div>
 
       <Tree indent={indent} tree={tree}>
-        {tree.getItems().map((item) => {
-          return (
+        {tree.getItems().map((item) =>
+          item.isFolder() ? (
             <TreeItem key={item.getId()} item={item}>
               <TreeItemLabel>
                 <span className="flex items-center gap-2">
-                  {item.isFolder() &&
-                    (item.isExpanded() ? (
-                      <FolderOpenIcon className="text-muted-foreground pointer-events-none size-4" />
-                    ) : (
-                      <FolderIcon className="text-muted-foreground pointer-events-none size-4" />
-                    ))}
-                  {!item.isFolder() &&
-                    getFileIcon({
+                  {item.isExpanded() ? (
+                    <FolderOpenIcon className="text-muted-foreground pointer-events-none size-4" />
+                  ) : (
+                    <FolderIcon className="text-muted-foreground pointer-events-none size-4" />
+                  )}
+                  <span className="max-w-40 truncate">
+                    {item.getItemName()}
+                  </span>
+                  <span className="text-muted-foreground -ms-1">
+                    {`(${item.getChildren().length})`}
+                  </span>
+                </span>
+              </TreeItemLabel>
+            </TreeItem>
+          ) : (
+            <Link
+              href={`/collection/${params.id}/docs/${item.getItemData().id}`}
+              key={item.getId()}
+            >
+              <TreeItem key={item.getId()} item={item}>
+                <TreeItemLabel>
+                  <span className="flex items-center gap-2">
+                    {getFileIcon({
                       file: {
                         name: item.getItemName(),
                         type: item.getItemName(),
                       },
                     })}
-                  <span className="max-w-40 truncate">
-                    {item.getItemName()}
-                  </span>
-                  {item.isFolder() && (
-                    <span className="text-muted-foreground -ms-1">
-                      {`(${item.getChildren().length})`}
+                    <span className="max-w-40 truncate">
+                      {item.getItemName()}
                     </span>
-                  )}
-                </span>
-              </TreeItemLabel>
-            </TreeItem>
-          );
-        })}
+                  </span>
+                </TreeItemLabel>
+              </TreeItem>
+            </Link>
+          ),
+        )}
       </Tree>
     </div>
   );

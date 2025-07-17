@@ -49,6 +49,7 @@ interface ClusteringActions {
 }
 // Item interface for tree transformation
 export interface Item {
+  id: string;
   name: string;
   children?: string[];
 }
@@ -102,6 +103,7 @@ export const ClusteringProvider = ({
         clusteringToTree: (clustering) => {
           const items: Record<string, Item> = {
             root: {
+              id: "root",
               name: "root",
               children: clustering.topics.map((t) => t.id),
             },
@@ -109,6 +111,7 @@ export const ClusteringProvider = ({
 
           for (const topic of clustering.topics) {
             items[topic.id] = {
+              id: `id-${topic.title}`,
               name: topic.title,
               children:
                 topic.documents.length > 0
@@ -118,6 +121,7 @@ export const ClusteringProvider = ({
 
             for (const doc of topic.documents) {
               items[doc.id] = {
+                id: doc.id,
                 name: doc.file_name || doc.id,
                 children: [],
               };
