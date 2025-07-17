@@ -86,7 +86,11 @@ function DocIdPage() {
                     />
                     Overview
                   </TabsTrigger>
-                  <TabsTrigger value="tab-2" className="group">
+                  <TabsTrigger
+                    value="tab-2"
+                    className="group"
+                    disabled={!MOCK_DOCS.is_graph_extracted}
+                  >
                     <PanelsTopLeftIcon
                       className="-ms-0.5 me-1.5 opacity-60"
                       size={16}
