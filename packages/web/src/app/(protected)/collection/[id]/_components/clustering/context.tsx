@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createStore, useStore } from "zustand";
 import type { StoreApi } from "zustand";
 
+import { generateGraphNodes } from "@/app/(protected)/collection/[id]/_components/clustering/canvas/generate";
 import { Document } from "@/types";
 
 interface TopicCluster {
@@ -124,43 +125,7 @@ export const ClusteringProvider = ({
           }
           return items;
         },
-        clusteringToGraph: (clustering) => {
-          const nodes: GraphNode[] = [];
-
-          clustering.topics.forEach((topic, i) => {
-            const topicNode: GraphNode = {
-              id: topic.id,
-              data: { label: topic.title },
-              position: { x: 100 + i * 250, y: 100 },
-              style: { width: 200, height: 120 + 40 * topic.documents.length },
-              type: "group",
-            };
-
-            nodes.push(topicNode);
-
-            const topicLabelNode: GraphNode = {
-              id: `${topic.id}-label`,
-              data: { label: topic.title },
-              position: { x: 0, y: -30 },
-              parentId: topic.id,
-              type: "groupLabel",
-            };
-
-            nodes.push(topicLabelNode);
-
-            topic.documents.forEach((doc, j) => {
-              nodes.push({
-                id: doc.id,
-                data: { label: doc.file_name },
-                position: { x: 10 + j * 100, y: 50 + j * 40 },
-                parentId: topic.id,
-                extent: "parent",
-                type: "groupChildren",
-              });
-            });
-          });
-          return nodes;
-        },
+        clusteringToGraph: generateGraphNodes,
       },
     })),
   );
