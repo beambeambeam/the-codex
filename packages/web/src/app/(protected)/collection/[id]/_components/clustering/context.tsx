@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { createStore, useStore } from "zustand";
 import type { StoreApi } from "zustand";
 
+import { generateGraphNodes } from "@/app/(protected)/collection/[id]/_components/clustering/canvas/generate";
 import { Document } from "@/types";
 
 interface TopicCluster {
@@ -48,6 +49,7 @@ interface ClusteringActions {
 }
 // Item interface for tree transformation
 export interface Item {
+  id: string;
   name: string;
   children?: string[];
 }
@@ -101,6 +103,7 @@ export const ClusteringProvider = ({
         clusteringToTree: (clustering) => {
           const items: Record<string, Item> = {
             root: {
+              id: "root",
               name: "root",
               children: clustering.topics.map((t) => t.id),
             },
@@ -108,6 +111,7 @@ export const ClusteringProvider = ({
 
           for (const topic of clustering.topics) {
             items[topic.id] = {
+              id: `id-${topic.title}`,
               name: topic.title,
               children:
                 topic.documents.length > 0
@@ -117,6 +121,7 @@ export const ClusteringProvider = ({
 
             for (const doc of topic.documents) {
               items[doc.id] = {
+                id: doc.id,
                 name: doc.file_name || doc.id,
                 children: [],
               };
@@ -124,43 +129,7 @@ export const ClusteringProvider = ({
           }
           return items;
         },
-        clusteringToGraph: (clustering) => {
-          const nodes: GraphNode[] = [];
-
-          clustering.topics.forEach((topic, i) => {
-            const topicNode: GraphNode = {
-              id: topic.id,
-              data: { label: topic.title },
-              position: { x: 100 + i * 250, y: 100 },
-              style: { width: 200, height: 120 + 40 * topic.documents.length },
-              type: "group",
-            };
-
-            nodes.push(topicNode);
-
-            const topicLabelNode: GraphNode = {
-              id: `${topic.id}-label`,
-              data: { label: topic.title },
-              position: { x: 0, y: -30 },
-              parentId: topic.id,
-              type: "groupLabel",
-            };
-
-            nodes.push(topicLabelNode);
-
-            topic.documents.forEach((doc, j) => {
-              nodes.push({
-                id: doc.id,
-                data: { label: doc.file_name },
-                position: { x: 10 + j * 100, y: 50 + j * 40 },
-                parentId: topic.id,
-                extent: "parent",
-                type: "groupChildren",
-              });
-            });
-          });
-          return nodes;
-        },
+        clusteringToGraph: generateGraphNodes,
       },
     })),
   );

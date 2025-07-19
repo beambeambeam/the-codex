@@ -1,48 +1,41 @@
-"use client";
-
 import {
   Background,
   BackgroundVariant,
   Controls,
+  Edge,
+  MiniMap,
+  Node,
   ReactFlow,
   useEdgesState,
   useNodesState,
-  type Edge,
-  type Node,
 } from "@xyflow/react";
 
-import CenterNode from "@/app/(protected)/home/_components/canvas/center-node";
-import CustomNode from "@/app/(protected)/home/_components/canvas/node";
+import CustomEdge from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/edge";
 
-const nodeTypes = {
-  customNode: CustomNode,
-  centerNode: CenterNode,
-};
-
-export interface HomeCanvasProps {
+interface DocCanvasProps {
   nodes: Node[];
   edges: Edge[];
 }
 
-function HomeCanvas(props: HomeCanvasProps) {
+function DocCanvas(props: DocCanvasProps) {
   const [nodes, , onNodesChange] = useNodesState(props.nodes);
   const [edges, , onEdgesChange] = useEdgesState(props.edges);
 
   return (
-    <div className="border-foreground/20 h-full w-full border">
+    <div className="border-foreground/20 h-[calc(100vh-350px)] w-full rounded border">
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         fitView
+        edgeTypes={{ docCustomEdge: CustomEdge }}
       >
         <Controls />
+        <MiniMap />
         <Background variant={BackgroundVariant.Dots} />
       </ReactFlow>
     </div>
   );
 }
-
-export default HomeCanvas;
+export default DocCanvas;

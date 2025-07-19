@@ -21,7 +21,7 @@ function FileQueueTable() {
         id: false,
         source_file_path: false,
         created_at: false,
-        created_by: false,
+        updated_by: false,
         is_vectorized: false,
       },
     },

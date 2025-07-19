@@ -42,7 +42,7 @@ function SignInPage() {
       <div className="hidden h-full flex-col items-center justify-center lg:flex">
         <div>
           <Logo size={250} />
-          <h1 className="text-3xl">Your’s Agentic Ai Librarians</h1>
+          <h1 className="text-3xl">Make every data, Askable</h1>
         </div>
       </div>
       <div className="flex h-full flex-col items-center justify-center gap-2.5">

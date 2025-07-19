@@ -1,6 +1,6 @@
 "use client";
 
-import HomeCanvas from "@/app/(protected)/home/_components/canvas";
+import HomeCanvasLayout from "@/app/(protected)/home/_components/canvas/layout";
 import { useHome } from "@/app/(protected)/home/_components/context";
 import { ToggleThemeButton } from "@/components/button/toggle-theme";
 import SettingDialog from "@/components/settings/dialog";
@@ -11,6 +11,15 @@ import { useUser } from "@/store/userStore";
 function HomePage() {
   const { username } = useUser();
   const { collections, isPending } = useHome();
+
+  console.log([
+    ...(collections ?? []).map((_, index) => ({
+      id: `${index + 1}`,
+      source: String(index + 1),
+      target: "center",
+      type: "straight",
+    })),
+  ]);
 
   return (
     <div className="flex h-full w-full flex-col items-start justify-center gap-4">
@@ -37,14 +46,36 @@ function HomePage() {
           />
         </div>
       ) : (
-        <HomeCanvas
-          nodes={(collections ?? []).map((item) => ({
-            data: {
-              header: item.name,
-              paragraph: item.description ?? "",
-              href: `/collection/${item.id}`,
+        <HomeCanvasLayout
+          nodes={[
+            {
+              id: "center",
+              type: "centerNode",
+              position: { x: 0, y: 0 },
+              data: {
+                title: username,
+                imageUrl: "",
+              },
             },
-          }))}
+            ...(collections ?? []).map((item, index) => ({
+              id: String(index + 1),
+              type: "customNode",
+              position: { x: 0, y: 0 },
+              data: {
+                header: item.name,
+                paragraph: item.description ?? "",
+                href: `/collection/${item.id}`,
+              },
+            })),
+          ]}
+          edges={[
+            ...(collections ?? []).map((_, index) => ({
+              id: `${index + 1}`,
+              source: String(index + 1),
+              target: "center",
+              type: "straight",
+            })),
+          ]}
         />
       )}
     </div>

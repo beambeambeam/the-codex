@@ -1,3 +1,6 @@
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+
 interface ClusteringGroupLabelNodeData {
   label: string;
 }
@@ -9,6 +12,10 @@ interface ClusteringGroupLabelNodeProps {
 }
 
 function ClusteringGroupLabelNode(props: ClusteringGroupLabelNodeProps) {
-  return <div className="nodrag">{props.data.label}</div>;
+  return (
+    <Card className={cn("nodrag p-2 text-sm", props.className)}>
+      {props.data.label}
+    </Card>
+  );
 }
 export default ClusteringGroupLabelNode;
