@@ -1,6 +1,5 @@
 "use client";
 
-import { MOCK_CLUSTERING } from "@/app/(protected)/collection/[id]/__mock__/clustering";
 import { ClusteringProvider } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import CollectionIdHeader from "@/app/(protected)/collection/[id]/_components/header";
 import CollectionIdSidebar from "@/app/(protected)/collection/[id]/_components/sidebar";
@@ -17,7 +16,7 @@ export default function CollectionIdLayout({
       initialTitle="Attension is All you need"
       initialDescription="A seminal paper introducing the Transformer architecture, which relies entirely on attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and sequence modeling."
     >
-      <ClusteringProvider initialClusterings={[MOCK_CLUSTERING]}>
+      <ClusteringProvider>
         <SidebarProvider>
           <CollectionIdSidebar />
           <SidebarInset>
