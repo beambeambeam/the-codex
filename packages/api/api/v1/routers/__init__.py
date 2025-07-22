@@ -7,6 +7,7 @@ from ...document.router import router as document_router
 from ...message_queue.router import router as queue_router
 from ...sse.router import router as sse_router
 from .health import router as health_router
+from ...chat.router import router as chat_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -16,3 +17,4 @@ api_router.include_router(document_router)
 api_router.include_router(agentic_router)
 api_router.include_router(queue_router)
 api_router.include_router(sse_router)
+api_router.include_router(chat_router)
