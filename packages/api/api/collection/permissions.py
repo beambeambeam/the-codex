@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Union
 
-from ..models.collection import Collection, CollectionChat, CollectionRelation
+from ..models.collection import Collection, CollectionRelation
 from ..models.user import User
 
 
@@ -39,29 +39,6 @@ class CollectionAccessControl:
         return collection.created_by == user.id
 
     @staticmethod
-    def can_read_chat(chat: CollectionChat, user: User) -> bool:
-        """Check if user can read a chat."""
-        return CollectionAccessControl.can_read_collection(chat.collection, user)
-
-    @staticmethod
-    def can_write_chat(chat: CollectionChat, user: User) -> bool:
-        """Check if user can write to a chat."""
-        # Chat creator or collection admin can write
-        return (
-            chat.created_by == user.id
-            or CollectionAccessControl.can_admin_collection(chat.collection, user)
-        )
-
-    @staticmethod
-    def can_admin_chat(chat: CollectionChat, user: User) -> bool:
-        """Check if user has admin access to a chat."""
-        # Chat creator or collection admin can admin
-        return (
-            chat.created_by == user.id
-            or CollectionAccessControl.can_admin_collection(chat.collection, user)
-        )
-
-    @staticmethod
     def can_read_relation(relation: CollectionRelation, user: User) -> bool:
         """Check if user can read a relation."""
         return CollectionAccessControl.can_read_collection(relation.collection, user)
@@ -86,7 +63,7 @@ class CollectionAccessControl:
 
     @staticmethod
     def get_user_permission_level(
-        resource: Union[Collection, CollectionChat, CollectionRelation], user: User
+        resource: Union[Collection, CollectionRelation], user: User
     ) -> CollectionPermission:
         """Get the highest permission level a user has for a resource."""
         if isinstance(resource, Collection):
@@ -95,13 +72,6 @@ class CollectionAccessControl:
             elif CollectionAccessControl.can_write_collection(resource, user):
                 return CollectionPermission.WRITE
             elif CollectionAccessControl.can_read_collection(resource, user):
-                return CollectionPermission.READ
-        elif isinstance(resource, CollectionChat):
-            if CollectionAccessControl.can_admin_chat(resource, user):
-                return CollectionPermission.ADMIN
-            elif CollectionAccessControl.can_write_chat(resource, user):
-                return CollectionPermission.WRITE
-            elif CollectionAccessControl.can_read_chat(resource, user):
                 return CollectionPermission.READ
         elif isinstance(resource, CollectionRelation):
             if CollectionAccessControl.can_admin_relation(resource, user):

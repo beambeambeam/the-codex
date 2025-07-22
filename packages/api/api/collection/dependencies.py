@@ -9,8 +9,6 @@ from ..auth.dependencies import get_current_user
 from ..database import get_db
 from ..models.collection import (
     Collection,
-    CollectionChat,
-    CollectionChatHistory,
     CollectionRelation,
 )
 from ..models.user import User
@@ -64,96 +62,6 @@ def get_collection_with_modify_permission(
         )
 
     return collection
-
-
-def get_collection_chat_or_404(
-    collection_chat_id: str,
-    current_user: User = Depends(get_current_user),
-    collection_service: CollectionService = Depends(get_collection_service),
-) -> CollectionChat:
-    """Get collection chat by ID or raise 404."""
-    chat = collection_service.get_collection_chat(collection_chat_id)
-    if not chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
-        )
-
-    # Check access permission through collection
-    if not collection_service._can_access_chat(chat, current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chat",
-        )
-
-    return chat
-
-
-def get_collection_chat_with_modify_permission(
-    collection_chat_id: str,
-    current_user: User = Depends(get_current_user),
-    collection_service: CollectionService = Depends(get_collection_service),
-) -> CollectionChat:
-    """Get collection chat with modify permission or raise error."""
-    chat = collection_service.get_collection_chat(collection_chat_id)
-    if not chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
-        )
-
-    # Check modify permission
-    if not collection_service._can_modify_chat(chat, current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to modify this chat",
-        )
-
-    return chat
-
-
-def get_collection_chat_history_or_404(
-    history_id: str,
-    current_user: User = Depends(get_current_user),
-    collection_service: CollectionService = Depends(get_collection_service),
-) -> CollectionChatHistory:
-    """Get collection chat history by ID or raise 404."""
-    history = collection_service.get_chat_history(history_id)
-
-    if not history:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="History not found"
-        )
-
-    # Check access permission through collection
-    if not collection_service._can_access_chat(history.chat, current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chat",
-        )
-
-    return history
-
-
-def get_collection_chat_history_with_modify_permission(
-    history_id: str,
-    current_user: User = Depends(get_current_user),
-    collection_service: CollectionService = Depends(get_collection_service),
-) -> CollectionChatHistory:
-    """Get collection chat history with modify permission or raise error."""
-    history = collection_service.get_chat_history(history_id)
-
-    if not history:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="History not found"
-        )
-
-    # Check modify permission
-    if not collection_service._can_modify_chat(history.chat, current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to modify this chat",
-        )
-
-    return history
 
 
 def get_collection_relation_or_404(
