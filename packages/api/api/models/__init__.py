@@ -1,6 +1,7 @@
 """Database models."""
 
 from .base import Base
+from .chat import CollectionChat, CollectionChatHistory, CollectionChatReference
 from .collection import (
     Collection,
     CollectionEdge,
@@ -15,7 +16,6 @@ from .document import (
     DocumentRelation,
 )
 from .user import User
-from .chat import CollectionChat, CollectionChatHistory, CollectionChatReference
 
 __all__ = [
     "Base",
