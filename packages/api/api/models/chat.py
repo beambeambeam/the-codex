@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
-from .enum import CollectionChatReferenceType
+from .enum import CollectionChatReferenceType, Role
 
 
 class CollectionChat(Base):
@@ -46,7 +46,7 @@ class CollectionChatHistory(Base):
     collection_chat_id: Mapped[str] = mapped_column(
         Text, ForeignKey("collection_chat.id", ondelete="CASCADE"), nullable=False
     )
-    agent: Mapped[str] = mapped_column(Text, nullable=False)  # User/Agent
+    agent: Mapped[str] = mapped_column(Enum(Role), nullable=False)
     system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     instruct: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     text: Mapped[str] = mapped_column(Text, nullable=False)

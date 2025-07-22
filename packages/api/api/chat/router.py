@@ -51,7 +51,14 @@ def update_chat(
     current_user: User = Depends(get_current_user),
     chat_service: ChatService = Depends(get_chat_service),
 ):
-    return chat_service.update_chat(chat_id, update_data, current_user)
+    updated_chat = chat_service.update_chat(chat_id, update_data, current_user)
+    if updated_chat is None:
+        from fastapi import HTTPException
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
+        )
+    return updated_chat
 
 
 @router.delete("/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -87,6 +94,19 @@ def list_histories(
     return chat_service.list_histories(chat_id)
 
 
-@router.get("/histories/{history_id}", response_model=CollectionChatHistoryResponse)
-def get_history(history=Depends(get_history_or_404)):
+@router.get(
+    "/{chat_id}/histories/{history_id}", response_model=CollectionChatHistoryResponse
+)
+def get_history(
+    chat_id: str,
+    history_id: str,
+    chat_service: ChatService = Depends(get_chat_service),
+):
+    history = chat_service.get_history(history_id)
+    if not history or history.collection_chat_id != chat_id:
+        from fastapi import HTTPException, status
+
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chat history not found"
+        )
     return history
