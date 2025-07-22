@@ -1,6 +1,6 @@
 """Collection API routes."""
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
@@ -11,9 +11,6 @@ from ..document.service import DocumentService
 from ..models.collection import CollectionRelation
 from ..models.user import User
 from .dependencies import (
-    get_collection_chat_history_or_404,
-    get_collection_chat_or_404,
-    get_collection_chat_with_modify_permission,
     get_collection_or_404,
     get_collection_relation_or_404,
     get_collection_relation_with_modify_permission,
@@ -21,12 +18,6 @@ from .dependencies import (
     get_collection_with_modify_permission,
 )
 from .schemas import (
-    CollectionChatCreate,
-    CollectionChatHistoryCreate,
-    CollectionChatHistoryResponse,
-    CollectionChatResponse,
-    CollectionChatUpdate,
-    CollectionChatWithHistory,
     CollectionCreate,
     CollectionDetailResponse,
     CollectionEdgeCreate,

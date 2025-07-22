@@ -8,17 +8,12 @@ from sqlalchemy.orm import Session, joinedload
 
 from ..models.collection import (
     Collection,
-    CollectionChat,
-    CollectionChatHistory,
     CollectionEdge,
     CollectionNode,
     CollectionRelation,
 )
 from ..models.user import User
 from .schemas import (
-    CollectionChatCreate,
-    CollectionChatHistoryCreate,
-    CollectionChatUpdate,
     CollectionCreate,
     CollectionEdgeCreate,
     CollectionNodeCreate,

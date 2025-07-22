@@ -5,8 +5,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ..models.enum import Role
-
 
 class CollectionBase(BaseModel):
     """Base collection schema."""

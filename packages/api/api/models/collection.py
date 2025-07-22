@@ -1,14 +1,13 @@
-"""Collection models including Chat and Chat History."""
+"""Collection models."""
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import TIMESTAMP, Enum, ForeignKey, Text
+from sqlalchemy import TIMESTAMP, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
-from .enum import Role
 
 if TYPE_CHECKING:
     from .document import Document

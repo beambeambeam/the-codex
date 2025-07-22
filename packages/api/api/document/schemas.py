@@ -122,79 +122,6 @@ class DocumentSearchResponse(DocumentResponse):
     )
 
 
-class DocumentChatBase(BaseModel):
-    """Base document chat schema."""
-
-    title: str = Field(..., min_length=1, max_length=255, description="Chat title")
-    description: Optional[str] = Field(
-        None, max_length=1000, description="Chat description"
-    )
-
-
-class DocumentChatCreate(DocumentChatBase):
-    """Schema for creating a document chat."""
-
-    document_id: str = Field(..., description="Document ID this chat belongs to")
-
-
-class DocumentChatUpdate(BaseModel):
-    """Schema for updating a document chat."""
-
-    title: Optional[str] = Field(
-        None, min_length=1, max_length=255, description="Chat title"
-    )
-    description: Optional[str] = Field(
-        None, max_length=1000, description="Chat description"
-    )
-
-
-class DocumentChatResponse(DocumentChatBase):
-    """Schema for document chat response."""
-
-    id: str
-    document_id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
-
-    class Config:
-        from_attributes = True
-
-
-class DocumentChatHistoryBase(BaseModel):
-    """Base document chat history schema."""
-
-    role: Role = Field(
-        ..., description="Role of the message sender (user, assistant, system)"
-    )
-    content: Optional[str] = Field(..., description="message content")
-
-
-class DocumentChatHistoryCreate(DocumentChatHistoryBase):
-    """Schema for creating document chat history."""
-
-    document_chat_id: str = Field(..., description="Chat ID this history belongs to")
-
-
-class DocumentChatHistoryResponse(DocumentChatHistoryBase):
-    """Schema for document chat history response."""
-
-    id: str
-    document_chat_id: str
-    created_at: datetime
-    created_by: Optional[str]
-
-    class Config:
-        from_attributes = True
-
-
-class DocumentChatWithHistory(DocumentChatResponse):
-    """Schema for document chat with history."""
-
-    history: list[DocumentChatHistoryResponse] = []
-
-
 class DocumentRelationBase(BaseModel):
     """Base document relation schema."""
 
@@ -330,5 +257,4 @@ class DocumentDetailResponse(DocumentResponse):
     """Schema for document with all details."""
 
     chunks: list[ChunkResponse] = []
-    chats: list[DocumentChatResponse] = []
     relations: list[DocumentRelationWithNodes] = []

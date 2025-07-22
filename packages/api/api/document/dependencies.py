@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..auth.dependencies import get_current_user
 from ..database import get_db
-from ..models.document import Document, DocumentChat, DocumentRelation
+from ..models.document import Document, DocumentRelation
 from ..models.user import User
 from .service import DocumentServiceSearch as DocumentService
 
@@ -57,50 +57,6 @@ def get_document_with_modify_permission(
         )
 
     return document
-
-
-def get_document_chat_or_404(
-    chat_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> DocumentChat:
-    """Get document chat by ID or raise 404."""
-    chat = db.query(DocumentChat).filter(DocumentChat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document chat not found"
-        )
-
-    # Check if user has permission to view chat
-    if chat.created_by != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this chat",
-        )
-
-    return chat
-
-
-def get_document_chat_with_modify_permission(
-    chat_id: str,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> DocumentChat:
-    """Get document chat with modify permission or raise 403."""
-    chat = db.query(DocumentChat).filter(DocumentChat.id == chat_id).first()
-    if not chat:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document chat not found"
-        )
-
-    # Check if user has permission to modify chat
-    if chat.created_by != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to modify this chat",
-        )
-
-    return chat
 
 
 def get_document_relation_or_404(

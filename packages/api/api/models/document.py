@@ -4,12 +4,11 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import TIMESTAMP, Boolean, Enum, ForeignKey, Integer, Text
+from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
-from .enum import Role
 
 if TYPE_CHECKING:
     from .user import User
