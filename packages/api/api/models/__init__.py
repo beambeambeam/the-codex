@@ -15,6 +15,7 @@ from .document import (
     DocumentRelation,
 )
 from .user import User
+from .chat import CollectionChat, CollectionChatHistory, CollectionChatReference
 
 __all__ = [
     "Base",
@@ -28,4 +29,7 @@ __all__ = [
     "DocumentNode",
     "DocumentRelation",
     "User",
+    "CollectionChat",
+    "CollectionChatHistory",
+    "CollectionChatReference",
 ]
