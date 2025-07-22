@@ -5,7 +5,6 @@ from ..models.user import User
 from .dependencies import (
     get_chat_or_404,
     get_chat_service,
-    get_history_or_404,
 )
 from .schemas import (
     CollectionChatCreate,

@@ -6,6 +6,7 @@
     "dev": "pnpm dlx nx run-many -t dev",
     "build": "pnpm dlx nx run-many -t build",
     "lint": "pnpm dlx nx run-many -t lint",
+    "lint:fix": "pnpm dlx nx run-many -t lint -- --fix",
     "commitlint": "commitlint --edit",
     "prepare": "husky",
     "api:gen": "tsx ./packages/web/src/lib/api/generate.ts"
