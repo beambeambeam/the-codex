@@ -6,16 +6,8 @@ from ..models.user import User
 from .core import (
     TextEmbedder,
 )
-from .node import (
-    EmbedQueryNode,
-    GenerateResponseNode,
-    GetInputAppendHistoryNode,
-    SearchPgvectorNode,
-)
 from .pocketflow_custom import Flow  # PocketFlow custom components
 from .schemas import (
-    ChatHistory,
-    ChatMessage,
     SharedStore,  # Adjust relative import
 )
 
@@ -63,32 +55,12 @@ class rag_agent(agentic_base):
         This method initializes the shared data and runs the flow.
         """
         self.reset_shared_data()
-        self.shared_data.chat_history = self.get_current_chat(collection_chat_id)
-        self.shared_data.chat_session = self.collection_service.get_collection_chat(
-            collection_chat_id=collection_chat_id
-        )
         self.shared_data.current_user = self.current_user
 
         self.shared_data.user_question = user_question
         self.flow.run(shared=self.shared_data)
 
         return self.shared_data
-
-    def get_current_chat(self, collection_chat_id: str) -> ChatHistory:
-        """
-        Get the current chat based on the provided chat ID.
-        This method can be used to retrieve the chat context for the agent.
-        """
-        chat_history = self.collection_service.get_chat_history_list(
-            collection_chat_id=collection_chat_id, limit=100
-        )
-
-        # format into a list of ChatMessage objects
-        return ChatHistory(
-            messages=[
-                ChatMessage(role=msg.role, content=msg.content) for msg in chat_history
-            ]
-        )
 
     def reset_shared_data(self):
         """
@@ -103,25 +75,3 @@ class rag_agent(agentic_base):
         """
         self.shared_data.collection_id = collection_id
         print(f"Collection ID changed to: {collection_id}")
-
-    def create_online_rag_flow(self) -> Flow:
-        """
-        Creates and returns a PocketFlow for the online RAG process.
-        """
-        input_node = GetInputAppendHistoryNode(
-            collection_service=self.collection_service
-        )
-        embed_q_node = EmbedQueryNode(embedding_model=self.embedding_model)
-        search_db_node = SearchPgvectorNode(
-            document_service=self.document_service, TOP_K=5
-        )
-        generate_ans_node = GenerateResponseNode(
-            collection_service=self.collection_service
-        )
-
-        input_node >> embed_q_node
-        embed_q_node >> search_db_node
-        search_db_node >> generate_ans_node
-
-        online_flow = Flow(start=input_node, name="Online_RAG_Query_Flow", debug=True)
-        return online_flow

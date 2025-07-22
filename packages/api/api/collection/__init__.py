@@ -1,1 +1,1 @@
-"""Collection module for managing collections, chats, and relationships."""
+"""Collection module for managing collections and relationships."""

@@ -10,8 +10,6 @@ from sqlalchemy.orm import Session, joinedload
 from ..models.document import (
     Chunk,
     Document,
-    DocumentChat,
-    DocumentChatHistory,
     DocumentEdge,
     DocumentNode,
     DocumentRelation,
@@ -23,9 +21,6 @@ from .schemas import (
     ChunkResponse,
     ChunkSearchResponse,
     ChunkUpdate,
-    DocumentChatCreate,
-    DocumentChatHistoryCreate,
-    DocumentChatUpdate,
     DocumentCreate,
     DocumentEdgeCreate,
     DocumentNodeCreate,
@@ -135,7 +130,6 @@ class DocumentService:
             self.db.query(Document)
             .options(
                 joinedload(Document.chunks),
-                joinedload(Document.chats).joinedload(DocumentChat.history),
                 joinedload(Document.relations).joinedload(DocumentRelation.nodes),
                 joinedload(Document.relations).joinedload(DocumentRelation.edges),
             )
@@ -214,103 +208,6 @@ class DocumentService:
         self.db.delete(chunk)
         self.db.commit()
         return True
-
-    # Document Chat CRUD operations
-    def create_document_chat(
-        self, chat_data: DocumentChatCreate, user: User
-    ) -> DocumentChat:
-        """Create a new document chat."""
-        chat = DocumentChat(
-            id=str(uuid4()),
-            document_id=chat_data.document_id,
-            title=chat_data.title,
-            description=chat_data.description,
-            created_by=user.id,
-            updated_by=user.id,
-        )
-
-        self.db.add(chat)
-        self.db.commit()
-        self.db.refresh(chat)
-        return chat
-
-    def get_document_chats(self, document_id: str) -> list[DocumentChat]:
-        """Get all chats for a document."""
-        return (
-            self.db.query(DocumentChat)
-            .filter(DocumentChat.document_id == document_id)
-            .order_by(DocumentChat.created_at.desc())
-            .all()
-        )
-
-    def get_document_chat(self, chat_id: str) -> Optional[DocumentChat]:
-        """Get a document chat by ID."""
-        return self.db.query(DocumentChat).filter(DocumentChat.id == chat_id).first()
-
-    def update_document_chat(
-        self, chat_id: str, update_data: DocumentChatUpdate, user: User
-    ) -> DocumentChat:
-        """Update a document chat."""
-        chat = self.get_document_chat(chat_id)
-        if not chat:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Document chat not found"
-            )
-
-        # Update fields if provided
-        if update_data.title is not None:
-            chat.title = update_data.title
-        if update_data.description is not None:
-            chat.description = update_data.description
-
-        chat.updated_by = user.id
-
-        self.db.commit()
-        self.db.refresh(chat)
-        return chat
-
-    def delete_document_chat(self, chat_id: str, user: User) -> bool:
-        """Delete a document chat."""
-        chat = self.get_document_chat(chat_id)
-        if not chat:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Document chat not found"
-            )
-
-        self.db.delete(chat)
-        self.db.commit()
-        return True
-
-    # Chat History operations
-    def add_chat_history(
-        self, history_data: DocumentChatHistoryCreate, user: User
-    ) -> DocumentChatHistory:
-        """Add a message to chat history."""
-        history = DocumentChatHistory(
-            id=str(uuid4()),
-            document_chat_id=history_data.document_chat_id,
-            role=history_data.role,
-            instruct=history_data.instruct,
-            created_by=user.id,
-        )
-
-        self.db.add(history)
-        self.db.commit()
-        self.db.refresh(history)
-        return history
-
-    def get_chat_history(
-        self, chat_id: str, limit: int = 100, offset: int = 0
-    ) -> list[DocumentChatHistory]:
-        """Get chat history for a document chat."""
-        return (
-            self.db.query(DocumentChatHistory)
-            .filter(DocumentChatHistory.document_chat_id == chat_id)
-            .order_by(DocumentChatHistory.created_at.asc())
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
 
     # Document Relation CRUD operations
     def create_document_relation(

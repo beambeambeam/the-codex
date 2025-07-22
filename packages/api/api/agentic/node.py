@@ -1,81 +1,19 @@
 from enum import Enum
 from typing import Any, Optional
 
-from ..collection.schemas import CollectionChatHistoryCreate
-from ..collection.service import CollectionService
 from ..document.schemas import ChunkSearchResponse
 from ..document.service import DocumentServiceSearch as DocumentService
-from ..models.user import User
 from .core import TextEmbedder, call_llm
-from .core.prompts import render_collection_rag_agent_prompt
 from .pocketflow_custom import Node
-from .schemas import ChatHistory, ChatMessage, SharedStore
+from .schemas import SharedStore
 
-# Order: GetUserInputNode -> EmbedQueryNode -> SearchPgvectorNode -> GenerateResponseNode
+# Order: EmbedQueryNode -> SearchPgvectorNode -> GenerateResponseNode
 
 
 class NodeStatus(str, Enum):
     DEFAULT = "default"  # Default status for nodes
     RETRY = "retry"  # Status to indicate a retry is needed
     ERROR = "error"  # Status to indicate an error occurred
-
-
-class CollectionNode(Node):
-    """
-    Node to save data to the collection service.
-    This node can be used to save any data that needs to be persisted across nodes.
-    """
-
-    def __init__(
-        self, collection_service: CollectionService, name="", max_retries=1, wait=0
-    ):
-        super().__init__(name, max_retries, wait)
-        self.collection_service = collection_service
-
-    def save_chat_history(
-        self, collection_chat_id: str, current_user: User, message: ChatMessage
-    ):
-        """
-        Save the current chat history to the database.
-        This method can be used to persist the chat history after processing.
-        """
-        chat_message = CollectionChatHistoryCreate(
-            role=message.role,
-            content=message.content,
-            collection_chat_id=collection_chat_id,
-        )
-        return self.collection_service.add_chat_history(chat_message, current_user)
-
-
-class GetInputAppendHistoryNode(CollectionNode):
-    """
-    Node to get user input and append it to chat history if available.
-    """
-
-    def prep(self, shared: SharedStore) -> Optional[str]:
-        user_question = shared.user_question
-        if not user_question:
-            print("GetUserInputNode: No user question found in shared store.")
-            return None
-        return user_question
-
-    def exec(self, user_question: Any) -> str:
-        return user_question
-
-    def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
-        shared.user_question = exec_res
-        shared.chat_history.messages.append(ChatMessage(role="user", content=exec_res))
-        print(
-            f"{shared.chat_session.collection_id} - GetUserInputNode: Appended user question to chat history."
-        )
-        self.save_chat_history(
-            collection_chat_id=shared.chat_session.id,
-            current_user=shared.current_user,
-            message=ChatMessage(role="user", content=exec_res),
-        )
-
-        print(f"GetUserInputNode: Received question: '{exec_res}'")
-        return NodeStatus.DEFAULT.value
 
 
 class EmbedQueryNode(Node):
@@ -163,12 +101,11 @@ class SearchPgvectorNode(Node):
         return NodeStatus.DEFAULT.value
 
 
-class GenerateResponseNode(CollectionNode):
+class GenerateResponseNode(Node):
     def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
         retrieved_contexts: list[ChunkSearchResponse] = shared.retrieved_contexts
 
         return {
-            "chat_history": shared.chat_history.model_copy(deep=True),
             "contexts": retrieved_contexts,
         }
 
@@ -176,21 +113,15 @@ class GenerateResponseNode(CollectionNode):
         if not inputs.get("contexts"):
             return "I'm sorry, I couldn't process your request due to missing contexts."
 
-        chat_history: ChatHistory = inputs.get("chat_history")
         contexts: list[ChunkSearchResponse] = inputs["contexts"]
 
         context_str_parts = []
         for ctx_chunk in contexts:
             context_str_parts.append(f"Content: {ctx_chunk.chunk_text}")
 
-        chat_history.messages[-1].content = render_collection_rag_agent_prompt(
-            question=chat_history.messages[-1].content,
-            contexts=context_str_parts,
-        )
-
         print(f"GenerateResponseNode: Calling LLM with {len(contexts)} contexts.")
         try:
-            llm_answer = call_llm(chat_history)
+            llm_answer = call_llm(context_str_parts)
             return llm_answer
         except Exception as e:
             print(f"GenerateResponseNode: Error calling LLM: {e}")
@@ -199,12 +130,4 @@ class GenerateResponseNode(CollectionNode):
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.llm_answer = exec_res
         print(f"GenerateResponseNode: LLM response generated: {exec_res[:50]}...")
-        shared.chat_history.messages.append(
-            ChatMessage(role="assistant", content=exec_res)
-        )
-        self.save_chat_history(
-            collection_chat_id=shared.chat_session.id,
-            current_user=shared.current_user,
-            message=ChatMessage(role="assistant", content=exec_res),
-        )
         return NodeStatus.DEFAULT.value

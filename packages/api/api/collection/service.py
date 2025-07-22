@@ -8,17 +8,12 @@ from sqlalchemy.orm import Session, joinedload
 
 from ..models.collection import (
     Collection,
-    CollectionChat,
-    CollectionChatHistory,
     CollectionEdge,
     CollectionNode,
     CollectionRelation,
 )
 from ..models.user import User
 from .schemas import (
-    CollectionChatCreate,
-    CollectionChatHistoryCreate,
-    CollectionChatUpdate,
     CollectionCreate,
     CollectionEdgeCreate,
     CollectionNodeCreate,
@@ -111,215 +106,6 @@ class CollectionService:
         self.db.delete(collection)
         self.db.commit()
         return True
-
-    # Collection Chat CRUD operations
-    def create_collection_chat(
-        self, chat_data: CollectionChatCreate, user: User
-    ) -> CollectionChat:
-        """Create a new collection chat."""
-        # Verify collection exists and user has access
-        collection = self.get_collection(chat_data.collection_id)
-        if not collection:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
-            )
-
-        if not self._can_access_collection(collection, user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this collection",
-            )
-
-        chat = CollectionChat(
-            id=str(uuid4()),
-            collection_id=chat_data.collection_id,
-            title=chat_data.title,
-            description=chat_data.description,
-            created_by=user.id,
-            updated_by=user.id,
-        )
-
-        self.db.add(chat)
-        self.db.commit()
-        self.db.refresh(chat)
-        return chat
-
-    def get_collection_chat(self, collection_chat_id: str) -> Optional[CollectionChat]:
-        """Get a collection chat by ID."""
-        return (
-            self.db.query(CollectionChat)
-            .filter(CollectionChat.id == collection_chat_id)
-            .first()
-        )
-
-    def get_collection_chats(self, collection_id: str) -> list[CollectionChat]:
-        """Get all chats for a collection."""
-        return (
-            self.db.query(CollectionChat)
-            .filter(CollectionChat.collection_id == collection_id)
-            .order_by(CollectionChat.created_at.desc())
-            .all()
-        )
-
-    def update_collection_chat(
-        self, collection_chat_id: str, update_data: CollectionChatUpdate, user: User
-    ) -> CollectionChat:
-        """Update a collection chat."""
-        chat = self.get_collection_chat(collection_chat_id)
-        if not chat:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
-            )
-
-        if not self._can_modify_chat(chat, user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to update this chat",
-            )
-
-        if update_data.title is not None:
-            chat.title = update_data.title
-        if update_data.description is not None:
-            chat.description = update_data.description
-
-        chat.updated_by = user.id
-
-        self.db.commit()
-        self.db.refresh(chat)
-        return chat
-
-    def delete_collection_chat(self, collection_chat_id: str, user: User) -> bool:
-        """Delete a collection chat."""
-        chat = self.get_collection_chat(collection_chat_id)
-        if not chat:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
-            )
-
-        if not self._can_modify_chat(chat, user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to delete this chat",
-            )
-
-        self.db.delete(chat)
-        self.db.commit()
-        return True
-
-    # Collection Chat History operations
-    def add_chat_history(
-        self, history_data: CollectionChatHistoryCreate, user: User
-    ) -> CollectionChatHistory:
-        """Add a message to chat history."""
-        chat = self.get_collection_chat(history_data.collection_chat_id)
-        if not chat:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
-            )
-
-        if not self._can_access_chat(chat, user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this chat",
-            )
-
-        history = CollectionChatHistory(
-            id=str(uuid4()),
-            collection_chat_id=history_data.collection_chat_id,
-            role=history_data.role,
-            content=history_data.content,
-            created_by=user.id,
-        )
-
-        self.db.add(history)
-        self.db.commit()
-        self.db.refresh(history)
-        return history
-
-    def get_chat_history_list(
-        self, collection_chat_id: str, limit: int = 100, offset: int = 0
-    ) -> list[CollectionChatHistory]:
-        """Get chat history for a chat."""
-        return (
-            self.db.query(CollectionChatHistory)
-            .filter(CollectionChatHistory.collection_chat_id == collection_chat_id)
-            .order_by(CollectionChatHistory.created_at.asc())
-            .offset(offset)
-            .limit(limit)
-            .all()
-        )
-
-    def get_chat_history(self, history_id: str) -> CollectionChatHistory:
-        """Get a specific chat history entry by ID."""
-        return (
-            self.db.query(CollectionChatHistory)
-            .filter(CollectionChatHistory.id == history_id)
-            .first()
-        )
-
-    def delete_chat_history(self, history_id: str, user: User) -> bool:
-        """Delete chat history for a single chat."""
-        chat_history = (
-            self.db.query(CollectionChatHistory)
-            .filter(CollectionChatHistory.id == history_id)
-            .first()
-        )
-
-        if not chat_history:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Chat history not found"
-            )
-
-        if not self._can_access_chat(chat_history.chat, user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to delete this chat history",
-            )
-
-        self.db.delete(chat_history)
-        self.db.commit()
-        return True
-
-    def clear_chat_history(self, collection_chat_id: str, user: User) -> bool:
-        """Clear all chat history for a specific chat."""
-        try:
-            self.db.query(CollectionChatHistory).filter(
-                CollectionChatHistory.collection_chat_id == collection_chat_id
-            ).delete()
-            self.db.commit()
-            return True
-
-        except Exception as e:
-            self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to clear chat history: {str(e)}",
-            ) from e
-
-    def edit_chat_history(
-        self, history_id: str, user: User, new_history_data: CollectionChatHistoryCreate
-    ) -> bool:
-        """Delete chat history after chat creation and create a new chat history entry."""
-        chat = self.get_chat_history(history_id)
-        try:
-            # Delete histories after chat.created_at
-            self.db.query(CollectionChatHistory).filter(
-                CollectionChatHistory.collection_chat_id == chat.collection_chat_id,
-                CollectionChatHistory.created_at >= chat.created_at,
-            ).delete()
-
-            # Add the new chat history entry
-            history = self.add_chat_history(new_history_data, user)
-
-            self.db.commit()
-            return history
-
-        except Exception as e:
-            self.db.rollback()
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Failed to modify chat history: {str(e)}",
-            ) from e
 
     # Collection Relation operations
     def create_collection_relation(
@@ -439,16 +225,6 @@ class CollectionService:
         # For now, only the creator can modify
         return collection.created_by == user.id
 
-    def _can_access_chat(self, chat: CollectionChat, user: User) -> bool:
-        """Check if user can access a chat."""
-        return self._can_access_collection(chat.collection, user)
-
-    def _can_modify_chat(self, chat: CollectionChat, user: User) -> bool:
-        """Check if user can modify a chat."""
-        return chat.created_by == user.id or self._can_modify_collection(
-            chat.collection, user
-        )
-
     def _can_modify_relation(self, relation: CollectionRelation, user: User) -> bool:
         """Check if user can modify a relation."""
         return relation.created_by == user.id or self._can_modify_collection(
@@ -460,7 +236,6 @@ class CollectionService:
         return (
             self.db.query(Collection)
             .options(
-                joinedload(Collection.chats).joinedload(CollectionChat.history),
                 joinedload(Collection.relations).joinedload(CollectionRelation.nodes),
                 joinedload(Collection.relations).joinedload(CollectionRelation.edges),
             )

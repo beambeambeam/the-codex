@@ -1,10 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
-from ..collection.dependencies import get_collection_chat_with_modify_permission
 from ..document.schemas import DocumentCreate, DocumentResponse
-from ..models.collection import CollectionChat
 from ..storage import storage_service
-from .agent import rag_agent
 from .core.clustering.schemas import (
     ClusteringResult,
 )  # TODO: This is for quick use future will be use with database
@@ -18,9 +15,7 @@ from .dependencies import (
     get_document_clustering_service,
     get_document_ingestor,
     get_document_service,
-    get_rag_agent,
 )
-from .schemas import AgentResponse
 from .utils import normalize_file_input
 
 router = APIRouter(prefix="/agentic", tags=["agentic"])
@@ -194,33 +189,4 @@ def cluster_documents(
         collection_id=collection_id,
         cluster_title_top_n_topics=5,
         cluster_title_top_n_words=50,
-    )
-
-
-@router.post(
-    "/rag_query",
-    response_model=AgentResponse,
-    tags=["agentic"],
-    status_code=status.HTTP_200_OK,
-)
-async def rag_query(
-    user_question: str,
-    collection_chat: CollectionChat = Depends(
-        get_collection_chat_with_modify_permission
-    ),
-    rag_agent: rag_agent = Depends(get_rag_agent),
-):
-    """
-    Query the RAG agent with a user question and return the answer.
-    """
-    if not user_question:
-        raise HTTPException(status_code=400, detail="User question cannot be empty")
-
-    shared_store = rag_agent.run(
-        user_question=user_question,
-        collection_chat_id=collection_chat.id,
-    )
-    return AgentResponse(
-        chat_history=shared_store.chat_history,
-        retrieved_contexts=shared_store.retrieved_contexts,
     )

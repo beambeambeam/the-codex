@@ -2,7 +2,6 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PlusIcon } from "lucide-react";
 
-import { MOCK_CHAT_COLLECTION } from "@/app/(protected)/collection/[id]/__mock__/chat";
 import { Scroller } from "@/components/ui/scroller";
 
 function ChatHistorySidebar() {
@@ -22,7 +21,7 @@ function ChatHistorySidebar() {
 
       <p className="text-foreground/60 pb-2 text-sm font-bold">Recents</p>
       <Scroller hideScrollbar className="flex h-full flex-col gap-2">
-        {[...MOCK_CHAT_COLLECTION]
+        {/* {[]
           .sort(
             (a, b) =>
               new Date(b.updated_at).getTime() -
@@ -47,7 +46,7 @@ function ChatHistorySidebar() {
                 </div>
               </Link>
             );
-          })}
+          })} */}
       </Scroller>
     </div>
   );

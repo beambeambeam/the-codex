@@ -1,14 +1,13 @@
-"""Collection models including Chat and Chat History."""
+"""Collection models."""
 
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import TIMESTAMP, Enum, ForeignKey, Text
+from sqlalchemy import TIMESTAMP, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
-from .enum import Role
 
 if TYPE_CHECKING:
     from .document import Document
@@ -42,9 +41,6 @@ class Collection(Base):
     )
     updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
 
-    chats: Mapped[list["CollectionChat"]] = relationship(
-        "CollectionChat", back_populates="collection", cascade="all, delete-orphan"
-    )
     relations: Mapped[list["CollectionRelation"]] = relationship(
         "CollectionRelation", back_populates="collection", cascade="all, delete-orphan"
     )
@@ -57,64 +53,6 @@ class Collection(Base):
             f"<Collection(id='{self.id}', name='{self.name}', "
             f"created_by='{self.created_by}')>"
         )
-
-
-class CollectionChat(Base):
-    __tablename__ = "collection_chat"
-
-    id: Mapped[str] = mapped_column(Text, primary_key=True)
-    collection_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("collection.id", ondelete="CASCADE"), nullable=False
-    )
-    title: Mapped[str] = mapped_column(Text, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_by: Mapped[Optional[str]] = mapped_column(
-        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
-    )
-    updated_by: Mapped[Optional[str]] = mapped_column(
-        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, nullable=False, server_default=func.current_timestamp()
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP,
-        nullable=False,
-        server_default=func.current_timestamp(),
-        onupdate=func.current_timestamp(),
-    )
-
-    collection: Mapped["Collection"] = relationship(
-        "Collection", back_populates="chats"
-    )
-    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
-    updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
-
-    history: Mapped[list["CollectionChatHistory"]] = relationship(
-        "CollectionChatHistory", back_populates="chat", cascade="all, delete-orphan"
-    )
-
-
-class CollectionChatHistory(Base):
-    __tablename__ = "collection_chat_history"
-
-    id: Mapped[str] = mapped_column(Text, primary_key=True)
-    collection_chat_id: Mapped[str] = mapped_column(
-        Text, ForeignKey("collection_chat.id", ondelete="CASCADE"), nullable=False
-    )
-    role: Mapped[Role] = mapped_column(Enum(Role, native_enum=False), nullable=False)
-    content: Mapped[str] = mapped_column(Text, nullable=False)
-    created_by: Mapped[Optional[str]] = mapped_column(
-        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, nullable=False, server_default=func.current_timestamp()
-    )
-
-    chat: Mapped["CollectionChat"] = relationship(
-        "CollectionChat", back_populates="history"
-    )
-    creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
 
 
 class CollectionRelation(Base):
