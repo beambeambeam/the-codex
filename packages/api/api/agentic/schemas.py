@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Union
 
 from pydantic import BaseModel, Field
@@ -13,6 +14,60 @@ from ..document.schemas import (
 )
 from ..models.user import User
 from .pocketflow_custom import ShareStoreBase
+
+
+class NodeStatus(str, Enum):
+    DEFAULT = "default"  # Default status for nodes
+    RETRY = "retry"  # Status to indicate a retry is needed
+    ERROR = "error"  # Status to indicate an error occurred
+
+
+class INTENT(str, Enum):
+    DOCUMENT_QA = "document_qa"  # Intent for document question answering
+    GENERIC_QA = "generic_qa"  # Intent for generic question answering
+    SUMMARIZATION = "summarization"  # Intent for summarization tasks
+
+
+class UserIntent(BaseModel):
+    """Schema for user intent in the RAG system."""
+
+    intent: INTENT = Field(
+        ...,
+        description="""
+        The intent of the user's query, e.g., 'document_qa', 'generic_qa', 'summarization'
+        - document_qa: For questions related to specific documents
+
+        Example:
+        Q: "What does the document say about climate change?"
+        A: "document_qa"
+
+        Q: "What are the key findings in the report?"
+        A: "document_qa"
+
+        - generic_qa: For general questions not tied to specific documents
+
+        Example:
+        Q: "What is the capital of France?"
+        A: "generic_qa"
+
+        Q: "How does photosynthesis work?"
+        A: "generic_qa"
+        
+        - summarization: For requests to summarize information
+
+        Example:
+        Q: "Summarize the key points of this article."
+        A: "summarization"
+
+        Q: "Can you provide overview of this document?"
+        A: "summarization"
+
+        if the intent is not recognized, it should be classified as 'generic_qa'
+    """,
+    )
+    confidence: float = Field(
+        1.0, description="Confidence score of the identified intent (0.0 to 1.0)"
+    )
 
 
 class ChatMessage(CollectionChatHistoryBase, DocumentChatHistoryBase):
@@ -98,6 +153,10 @@ class SharedStore(ShareStoreBase):
     # Node Status
     current_node: str = Field(
         None, description="Name of the current node being executed in the flow"
+    )
+    user_intent: UserIntent = Field(
+        None,
+        description="User's intent for the current query, e.g., 'document_qa', 'generic_qa'",
     )
 
     # Session

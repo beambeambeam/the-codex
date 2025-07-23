@@ -6,18 +6,12 @@ from ..collection.service import CollectionService
 from ..document.schemas import ChunkSearchResponse
 from ..document.service import DocumentServiceSearch as DocumentService
 from ..models.user import User
-from .core import TextEmbedder, call_llm
+from .core import TextEmbedder, call_llm, call_structured_llm
 from .core.prompts import render_collection_rag_agent_prompt
 from .pocketflow_custom import Node
-from .schemas import ChatHistory, ChatMessage, SharedStore
+from .schemas import ChatHistory, ChatMessage, NodeStatus, SharedStore, UserIntent
 
 # Order: GetUserInputNode -> EmbedQueryNode -> SearchPgvectorNode -> GenerateResponseNode
-
-
-class NodeStatus(str, Enum):
-    DEFAULT = "default"  # Default status for nodes
-    RETRY = "retry"  # Status to indicate a retry is needed
-    ERROR = "error"  # Status to indicate an error occurred
 
 
 class CollectionNode(Node):
@@ -76,6 +70,35 @@ class GetInputAppendHistoryNode(CollectionNode):
 
         print(f"GetUserInputNode: Received question: '{exec_res}'")
         return NodeStatus.DEFAULT.value
+
+
+class GetUserIntentNode(Node):
+    """
+    Node to determine the user's intent based on the question.
+    This node can be used to classify the user's query into predefined intents.
+    """
+
+    def prep(self, shared: SharedStore) -> Optional[str]:
+        user_question = shared.user_question
+        if not user_question:
+            print("GetUserIntentNode: No user question found in shared store.")
+            return None
+        return user_question
+
+    def exec(self, user_question: str) -> UserIntent:
+        user_intent = call_structured_llm(
+            prompt=f"You are an intent classifier. Classify the following question: {user_question}",
+            model=UserIntent,
+            max_retries=3,
+        )
+        return user_intent
+
+    def post(self, shared: SharedStore, prep_res: Any, exec_res: UserIntent):
+        shared.user_intent = exec_res
+        print(
+            f"GetUserIntentNode: Identified intent: {exec_res.intent.value} with confidence {exec_res.confidence}"
+        )
+        return exec_res.intent
 
 
 class EmbedQueryNode(Node):
@@ -164,6 +187,36 @@ class SearchPgvectorNode(Node):
 
 
 class GenerateResponseNode(CollectionNode):
+    """
+    Node to generate a generic answer based on the user's question.
+    This node can be used to provide a response when no specific intent is identified.
+    """
+
+    def prep(self, shared: SharedStore) -> Optional[str]:
+        user_question = shared.user_question
+        if not user_question:
+            print("GenericAnswerNode: No user question found in shared store.")
+            return None
+        return user_question
+
+    def exec(self, user_question: str) -> str:
+        return call_llm(user_question)
+
+    def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
+        shared.llm_answer = exec_res
+        print(f"GenericAnswerNode: Generated answer: {exec_res[:50]}...")
+        shared.chat_history.messages.append(
+            ChatMessage(role="assistant", content=exec_res)
+        )
+        self.save_chat_history(
+            collection_chat_id=shared.chat_session.id,
+            current_user=shared.current_user,
+            message=ChatMessage(role="assistant", content=exec_res),
+        )
+        return NodeStatus.DEFAULT.value
+
+
+class GenerateResponseFromContextNode(CollectionNode):
     def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
         retrieved_contexts: list[ChunkSearchResponse] = shared.retrieved_contexts
 

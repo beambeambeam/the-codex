@@ -1,4 +1,9 @@
-from .call_llm import call_llm, call_llm_async
+from .call_llm import (
+    call_llm,
+    call_llm_async,
+    call_structured_llm,
+    call_structured_llm_async,
+)
 from .clustering.service import DocumentClusteringService
 from .embedding.embedding import TextEmbedder
 from .graph.graph_extract import KnowledgeGraphExtractor
@@ -13,4 +18,6 @@ __all__ = [
     "DocumentChunk",
     "call_llm",
     "call_llm_async",
+    "call_structured_llm",
+    "call_structured_llm_async",
 ]

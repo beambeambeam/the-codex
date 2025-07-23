@@ -82,7 +82,7 @@ class AuthService:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired"
             ) from exc
-        except jwt.JWTError as exc:
+        except Exception as exc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid session token"
             ) from exc

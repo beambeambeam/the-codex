@@ -8,12 +8,15 @@ from .core import (
 )
 from .node import (
     EmbedQueryNode,
+    GenerateResponseFromContextNode,
     GenerateResponseNode,
     GetInputAppendHistoryNode,
+    GetUserIntentNode,
     SearchPgvectorNode,
 )
 from .pocketflow_custom import Flow  # PocketFlow custom components
 from .schemas import (
+    INTENT,
     ChatHistory,
     ChatMessage,
     SharedStore,  # Adjust relative import
@@ -104,24 +107,44 @@ class rag_agent(agentic_base):
         self.shared_data.collection_id = collection_id
         print(f"Collection ID changed to: {collection_id}")
 
-    def create_online_rag_flow(self) -> Flow:
+    def create_online_rag_flow(self, intent: INTENT = None) -> Flow:
         """
         Creates and returns a PocketFlow for the online RAG process.
         """
         input_node = GetInputAppendHistoryNode(
             collection_service=self.collection_service
         )
+        get_intent_node = GetUserIntentNode()
         embed_q_node = EmbedQueryNode(embedding_model=self.embedding_model)
-        search_db_node = SearchPgvectorNode(
-            document_service=self.document_service, TOP_K=5
-        )
+        search_db_node = SearchPgvectorNode(document_service=self.document_service)
         generate_ans_node = GenerateResponseNode(
             collection_service=self.collection_service
         )
+        generate_ans_based_on_context_node = GenerateResponseFromContextNode(
+            collection_service=self.collection_service
+        )
 
-        input_node >> embed_q_node
-        embed_q_node >> search_db_node
-        search_db_node >> generate_ans_node
+        # if intent:
+        #     print(f"Creating flow for intent: {intent}")
+        #     input_node >> embed_q_node
+        #     embed_q_node >> search_db_node
+        #     search_db_node >> generate_ans_node
+
+        # else:
+        input_node >> get_intent_node
+        (
+            get_intent_node - INTENT.DOCUMENT_QA
+            >> embed_q_node
+            >> search_db_node
+            >> generate_ans_based_on_context_node
+        )
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        (
+            get_intent_node - INTENT.SUMMARIZATION
+            >> embed_q_node
+            >> search_db_node
+            >> generate_ans_based_on_context_node
+        )
 
         online_flow = Flow(start=input_node, name="Online_RAG_Query_Flow", debug=True)
         return online_flow

@@ -51,7 +51,9 @@ dependencies = [
   "bertopic>=0.17.0",
   "umap-learn>=0.5.9.post2",
   "numpy>=1.26.4",
-  "numba>=0.56.4"
+  "numba>=0.56.4",
+  "eval-type-backport>=0.2.2",
+  "instructor[litellm]>=1.10.0",
 ]
 
 [tool.hatch.build.targets.wheel]
