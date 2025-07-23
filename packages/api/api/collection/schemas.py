@@ -5,8 +5,6 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ..models.enum import Role
-
 
 class CollectionBase(BaseModel):
     """Base collection schema."""
@@ -42,73 +40,6 @@ class CollectionResponse(CollectionBase):
     updated_at: datetime
     created_by: Optional[str]
     updated_by: Optional[str]
-
-    class Config:
-        from_attributes = True
-
-
-class CollectionChatBase(BaseModel):
-    """Base collection chat schema."""
-
-    title: str = Field(..., min_length=1, max_length=255, description="Chat title")
-    description: Optional[str] = Field(
-        None, max_length=1000, description="Chat description"
-    )
-
-
-class CollectionChatCreate(CollectionChatBase):
-    """Schema for creating a collection chat."""
-
-    collection_id: str = Field(..., description="Collection ID this chat belongs to")
-
-
-class CollectionChatUpdate(BaseModel):
-    """Schema for updating a collection chat."""
-
-    title: Optional[str] = Field(
-        None, min_length=1, max_length=255, description="Chat title"
-    )
-    description: Optional[str] = Field(
-        None, max_length=1000, description="Chat description"
-    )
-
-
-class CollectionChatResponse(CollectionChatBase):
-    """Schema for collection chat response."""
-
-    id: str
-    collection_id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
-
-    class Config:
-        from_attributes = True
-
-
-class CollectionChatHistoryBase(BaseModel):
-    """Base collection chat history schema."""
-
-    role: Role = Field(
-        ..., description="Role of the message sender (user, assistant, system)"
-    )
-    content: Optional[str] = Field(..., description="message content")
-
-
-class CollectionChatHistoryCreate(CollectionChatHistoryBase):
-    """Schema for creating chat history."""
-
-    collection_chat_id: str = Field(..., description="Chat ID this history belongs to")
-
-
-class CollectionChatHistoryResponse(CollectionChatHistoryBase):
-    """Schema for chat history response."""
-
-    id: str
-    collection_chat_id: str
-    created_at: datetime
-    created_by: Optional[str]
 
     class Config:
         from_attributes = True
@@ -247,12 +178,6 @@ class CollectionEdgeResponse(CollectionEdgeBase):
 
 
 # Detailed response schemas with nested relationships
-class CollectionChatWithHistory(CollectionChatResponse):
-    """Collection chat with history included."""
-
-    history: list[CollectionChatHistoryResponse] = []
-
-
 class CollectionRelationWithNodes(CollectionRelationResponse):
     """Collection relation with nodes and edges."""
 
@@ -263,5 +188,4 @@ class CollectionRelationWithNodes(CollectionRelationResponse):
 class CollectionDetailResponse(CollectionResponse):
     """Detailed collection response with all nested data."""
 
-    chats: list[CollectionChatWithHistory] = []
     relations: list[CollectionRelationWithNodes] = []

@@ -4,7 +4,6 @@ from typing import TypeVar, Union
 import instructor
 import litellm
 from dotenv import load_dotenv
-from instructor.cache import AutoCache
 from pydantic import BaseModel
 
 from ..schemas import ChatHistory
@@ -114,6 +113,7 @@ def call_structured_llm_async(
                 for msg in prompt.messages
             ],
             model=structured_model,
+            api_key=api_key,
             response_model=model,
             max_retries=max_retries,
         )

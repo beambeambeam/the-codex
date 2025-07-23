@@ -1,11 +1,14 @@
 from fastapi import Depends
 
-from ..auth.dependencies import get_current_user
-from ..collection.dependencies import get_collection_service
-from ..collection.service import CollectionService
-from ..document.dependencies import get_document_service
-from ..document.service import DocumentService
-from ..models.user import User
+from api.auth.dependencies import get_current_user
+from api.chat.dependencies import get_chat_service
+from api.chat.service import ChatService
+from api.collection.dependencies import get_collection_service
+from api.collection.service import CollectionService
+from api.document.dependencies import get_document_service
+from api.document.service import DocumentService
+from api.models.user import User
+
 from .agent import rag_agent
 from .core import (
     DocumentClusteringService,
@@ -78,7 +81,7 @@ def get_rag_agent(
     user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
-    collection_service: CollectionService = Depends(get_collection_service),
+    chat_service: ChatService = Depends(get_chat_service),
 ) -> rag_agent:
     """
     Returns an instance of rag_agent with the necessary dependencies.
@@ -86,6 +89,6 @@ def get_rag_agent(
     return rag_agent(
         current_user=user,
         document_service=document_service,
-        collection_service=collection_service,
+        chat_service=chat_service,
         embedding_model=text_embedder,
     )

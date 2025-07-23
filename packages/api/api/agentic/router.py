@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
 
-from ..collection.dependencies import get_collection_chat_with_modify_permission
-from ..document.schemas import DocumentCreate, DocumentResponse
-from ..models.collection import CollectionChat
-from ..storage import storage_service
-from .agent import rag_agent
+from api.agentic.agent import rag_agent
+from api.agentic.schemas import AgentResponse
+from api.chat.dependencies import get_chat_or_404
+from api.document.schemas import DocumentCreate, DocumentResponse
+from api.models.chat import CollectionChat
+from api.storage import storage_service
+
 from .core.clustering.schemas import (
     ClusteringResult,
 )  # TODO: This is for quick use future will be use with database
@@ -20,7 +22,6 @@ from .dependencies import (
     get_document_service,
     get_rag_agent,
 )
-from .schemas import AgentResponse
 from .utils import normalize_file_input
 
 router = APIRouter(prefix="/agentic", tags=["agentic"])
@@ -205,9 +206,7 @@ def cluster_documents(
 )
 async def rag_query(
     user_question: str,
-    collection_chat: CollectionChat = Depends(
-        get_collection_chat_with_modify_permission
-    ),
+    collection_chat: CollectionChat = Depends(get_chat_or_404),
     rag_agent: rag_agent = Depends(get_rag_agent),
 ):
     """

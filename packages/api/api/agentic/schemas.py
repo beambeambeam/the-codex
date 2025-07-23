@@ -3,14 +3,10 @@ from typing import Union
 
 from pydantic import BaseModel, Field
 
-from ..collection.schemas import (
-    CollectionChatHistoryBase,
-    CollectionChatResponse,
-)
+from api.chat.schemas import CollectionChatHistoryBase, CollectionChatResponse
+
 from ..document.schemas import (
     ChunkSearchResponse,
-    DocumentChatHistoryBase,
-    DocumentChatResponse,
 )
 from ..models.user import User
 from .pocketflow_custom import ShareStoreBase
@@ -70,8 +66,10 @@ class UserIntent(BaseModel):
     )
 
 
-class ChatMessage(CollectionChatHistoryBase, DocumentChatHistoryBase):
+class ChatMessage(CollectionChatHistoryBase):
     """Schema for chat messages in the RAG system."""
+
+    collection_chat_id: str = Field(None, description="Collection Chat ID")
 
     pass
 
@@ -160,7 +158,7 @@ class SharedStore(ShareStoreBase):
     )
 
     # Session
-    chat_session: Union[CollectionChatResponse, DocumentChatResponse] = Field(
+    chat_session: CollectionChatResponse = Field(
         None, description="Chat collection for storing conversation history"
     )
     current_user: User = Field(

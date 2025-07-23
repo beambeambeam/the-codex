@@ -72,6 +72,6 @@ export const useUserStore = <T,>(selector: (state: UserStore) => T): T => {
 };
 
 export const useUser = () =>
-  useUserStore(useShallow((state) => ({ ...state })));
+  useUserStore(useShallow(({ actions, ...state }) => ({ ...state })));
 
 export const useUserActions = () => useUserStore((state) => state.actions);

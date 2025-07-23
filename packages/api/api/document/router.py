@@ -6,12 +6,10 @@ from sqlalchemy.orm import Session, joinedload
 from ..agentic.dependencies import TextEmbedder, get_text_embedder
 from ..auth.dependencies import get_current_user
 from ..database import get_db
-from ..models.document import Document, DocumentChat, DocumentRelation
+from ..models.document import Document, DocumentRelation
 from ..models.user import User
 from ..storage import storage_service
 from .dependencies import (
-    get_document_chat_or_404,
-    get_document_chat_with_modify_permission,
     get_document_or_404,
     get_document_relation_or_404,
     get_document_relation_with_modify_permission,
@@ -22,12 +20,6 @@ from .schemas import (
     ChunkCreate,
     ChunkResponse,
     ChunkSearchResponse,
-    DocumentChatCreate,
-    DocumentChatHistoryCreate,
-    DocumentChatHistoryResponse,
-    DocumentChatResponse,
-    DocumentChatUpdate,
-    DocumentChatWithHistory,
     DocumentCreate,
     DocumentDetailResponse,
     DocumentEdgeCreate,
@@ -245,101 +237,6 @@ def search_collection_documents(
     return document_service.search_collection_documents(
         collection_id=collection_id, query_embedding=query_embedding, top_k=10
     )
-
-
-# Document Chat routes
-@router.post(
-    "/chats", response_model=DocumentChatResponse, status_code=status.HTTP_201_CREATED
-)
-def create_document_chat(
-    chat_data: DocumentChatCreate,
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-):
-    """Create a new document chat."""
-    return document_service.create_document_chat(chat_data, current_user)
-
-
-@router.get("/{document_id}/chats", response_model=list[DocumentChatResponse])
-def list_document_chats(
-    document: Document = Depends(get_document_or_404),
-    document_service: DocumentService = Depends(get_document_service),
-):
-    """List all chats for a document."""
-    return document_service.get_document_chats(document.id)
-
-
-@router.get("/chats/{chat_id}", response_model=DocumentChatWithHistory)
-def get_document_chat(
-    chat: DocumentChat = Depends(get_document_chat_or_404),
-    document_service: DocumentService = Depends(get_document_service),
-    limit: int = Query(
-        100, ge=1, le=1000, description="Number of history items to return"
-    ),
-    offset: int = Query(0, ge=0, description="Number of history items to skip"),
-):
-    """Get a document chat with history."""
-    history = document_service.get_chat_history(chat.id, limit, offset)
-
-    # Convert to response model
-    chat_response = DocumentChatWithHistory.model_validate(chat)
-    chat_response.history = [
-        DocumentChatHistoryResponse.model_validate(h) for h in history
-    ]
-
-    return chat_response
-
-
-@router.put("/chats/{chat_id}", response_model=DocumentChatResponse)
-def update_document_chat(
-    update_data: DocumentChatUpdate,
-    chat: DocumentChat = Depends(get_document_chat_with_modify_permission),
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-):
-    """Update a document chat."""
-    return document_service.update_document_chat(chat.id, update_data, current_user)
-
-
-@router.delete("/chats/{chat_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_document_chat(
-    chat: DocumentChat = Depends(get_document_chat_with_modify_permission),
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-):
-    """Delete a document chat."""
-    document_service.delete_document_chat(chat.id, current_user)
-
-
-# Chat History routes
-@router.post(
-    "/chats/{chat_id}/history",
-    response_model=DocumentChatHistoryResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def add_chat_history(
-    history_data: DocumentChatHistoryCreate,
-    chat: DocumentChat = Depends(get_document_chat_or_404),
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-):
-    """Add a message to chat history."""
-    # Ensure the chat_id in the data matches the URL parameter
-    history_data.document_chat_id = chat.id
-    return document_service.add_chat_history(history_data, current_user)
-
-
-@router.get(
-    "/chats/{chat_id}/history", response_model=list[DocumentChatHistoryResponse]
-)
-def get_chat_history(
-    chat: DocumentChat = Depends(get_document_chat_or_404),
-    document_service: DocumentService = Depends(get_document_service),
-    limit: int = Query(100, ge=1, le=1000, description="Number of messages"),
-    offset: int = Query(0, ge=0, description="Number of messages to skip"),
-):
-    """Get chat history for a document chat."""
-    return document_service.get_chat_history(chat.id, limit, offset)
 
 
 # Document Relation routes
