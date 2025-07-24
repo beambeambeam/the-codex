@@ -74,6 +74,10 @@ class ChatMessage(CollectionChatHistoryBase):
     """Schema for chat messages in the RAG system."""
 
     collection_chat_id: str = Field(None, description="Collection Chat ID")
+    retrieved_contexts: list[ChunkSearchResponse] = Field(
+        default_factory=list,
+        description="List of context references retrieved for the chat message",
+    )
 
     class Config:
         from_attributes = True

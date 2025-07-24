@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from api.chat.schemas import CollectionChatHistoryCreate, CollectionChatReferenceCreate
 from api.chat.service import ChatService
@@ -26,6 +26,28 @@ class CollectionNode(Node):
         super().__init__(name, max_retries, wait)
         self.chat_service = chat_service
 
+    def _save_context_references(
+        self,
+        collection_chat_history_id: str,
+        context_references: list[ChunkSearchResponse],
+        context_type: Literal["chunk", "graph"] = "chunk",
+    ) -> list[CollectionChatReference]:
+        """
+        Save context references to the database.
+        This method can be used to persist context references after processing.
+        """
+        saved_references = []
+        for context in context_references:
+            reference_data = CollectionChatReferenceCreate(
+                collection_chat_history_id=collection_chat_history_id,
+                document_id=context.document_id,
+                chunk_id=context.id,
+                type=context_type,
+            )
+            reference = self.chat_service.create_reference(reference_data)
+            saved_references.append(reference)
+        return saved_references
+
     def _save_chat_message(
         self,
         collection_chat_id: str,
@@ -41,7 +63,15 @@ class CollectionNode(Node):
             content=message.content,
             collection_chat_id=collection_chat_id,
         )
-        return self.chat_service.create_history(chat_message, current_user)
+
+        created_message = self.chat_service.create_history(chat_message, current_user)
+        if message.retrieved_contexts:
+            self._save_context_references(
+                collection_chat_history_id=created_message.id,
+                context_references=message.retrieved_contexts,
+            )
+
+        return created_message
 
     def save_chat_history(
         self,
@@ -56,16 +86,6 @@ class CollectionNode(Node):
                 message=message,
             )
         return chat_history
-
-    def save_context_references(
-        self,
-        context_references: list[CollectionChatReferenceCreate],
-    ) -> list[CollectionChatReference]:
-        """
-        Save context references to the database.
-        This method can be used to persist context references after processing.
-        """
-        return [self.chat_service.create_reference(ref) for ref in context_references]
 
 
 class GetInputAppendHistoryNode(Node):
@@ -181,7 +201,6 @@ class SearchPgvectorNode(Node):
         }
 
     def exec(self, inputs: dict[str, Any]) -> list[ChunkSearchResponse]:
-        print(inputs)
         if inputs.get("embedding") is None:
             return []
         try:
@@ -204,7 +223,6 @@ class SearchPgvectorNode(Node):
         prep_res: Any,
         exec_res: list[ChunkSearchResponse],
     ):
-        print("EXEC RES:", exec_res)
         shared.retrieved_contexts = exec_res
 
         if exec_res is None:
@@ -213,15 +231,6 @@ class SearchPgvectorNode(Node):
             print(
                 f"SearchPgvectorNode: Stored {len(exec_res)} retrieved contexts in shared store."
             )
-            for chunk in exec_res:
-                shared.new_retrieved_contexts.append(
-                    CollectionChatReferenceCreate(
-                        collection_chat_history_id=shared.chat_session.id,
-                        document_id=chunk.document_id,
-                        chunk_id=chunk.id,
-                        type="chunk",
-                    )
-                )
         return NodeStatus.DEFAULT.value
 
 
@@ -307,6 +316,7 @@ class GenerateResponseFromContextNode(Node):
             collection_chat_id=shared.chat_session.id,
             role="user",
             content=exec_res,
+            retrieved_contexts=shared.retrieved_contexts,
         )
         shared.new_chat_history.messages.append(new_message)
         shared.chat_history.messages.append(new_message)
@@ -323,7 +333,6 @@ class SaveChatHistoryNode(CollectionNode):
     def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
         return {
             "chat_history": shared.new_chat_history,
-            "context_references": shared.new_retrieved_contexts,
             "collection_chat_id": shared.chat_session.id,
             "current_user": shared.current_user,
         }
@@ -334,8 +343,6 @@ class SaveChatHistoryNode(CollectionNode):
             current_user=inputs["current_user"],
             chat_history=inputs["chat_history"],
         )
-        if inputs.get("context_references"):
-            self.save_context_references(inputs["context_references"])
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: None):
         print("SaveChatHistoryNode: Chat history and context references saved.")

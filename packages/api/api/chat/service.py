@@ -129,6 +129,12 @@ class ChatService:
     def create_reference(
         self, reference_data: CollectionChatReferenceCreate
     ) -> CollectionChatReference:
+        history = self.db.get(
+            CollectionChatHistory, reference_data.collection_chat_history_id
+        )
+        if not history:
+            raise ValueError("Referenced chat history not found")
+
         reference = CollectionChatReference(
             id=str(uuid4()),
             collection_chat_history_id=reference_data.collection_chat_history_id,
