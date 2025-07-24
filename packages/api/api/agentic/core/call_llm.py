@@ -6,7 +6,7 @@ import litellm
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from ..schemas import ChatHistory
+from ..schemas import ChatHistory, ChatMessage
 
 # utils/call_llm.py
 # litellm._turn_on_debug()
@@ -28,101 +28,81 @@ async_client = instructor.from_litellm(
 
 def call_llm(prompt: Union[str, ChatHistory], api_key=api_key) -> str:
     """Calls the LLM with the provided prompt and returns the response."""
-    try:
-        response = litellm.completion(
-            model=model,
-            messages=[{"role": "user", "content": prompt}]
-            if isinstance(prompt, str)
-            else [
-                {"role": msg.role.value, "content": msg.content}
-                for msg in prompt.messages
-            ],
-            api_key=api_key,
-        )
+    response = litellm.completion(
+        model=model,
+        messages=[{"role": "user", "content": prompt}]
+        if isinstance(prompt, str)
+        else [
+            {"role": msg.role.value, "content": msg.content} for msg in prompt.messages
+        ],
+        api_key=api_key,
+    )
 
-        if response.choices[0].message.content:
-            return response.choices[0].message.content
-        else:
-            return f"Error: Could not extract message content from LLM response. Response: {response}"  # noqa: E501
-
-    except Exception as e:
-        return f"Error calling LLM: {e}"
+    if response.choices[0].message.content:
+        return response.choices[0].message.content
+    else:
+        return f"Error: Could not extract message content from LLM response. Response: {response}"  # noqa: E501
 
 
 async def call_llm_async(prompt: Union[str, ChatHistory], api_key=api_key) -> str:
     """Asynchronously calls the LLM with the provided prompt and returns the response."""
-    try:
-        response = await litellm.acompletion(
-            model=model,
-            messages=[{"role": "user", "content": prompt}]
-            if isinstance(prompt, str)
-            else [
-                {"role": msg.role.value, "content": msg.content}
-                for msg in prompt.messages
-            ],
-            api_key=api_key,
-        )
+    response = await litellm.acompletion(
+        model=model,
+        messages=[{"role": "user", "content": prompt}]
+        if isinstance(prompt, str)
+        else [
+            {"role": msg.role.value, "content": msg.content} for msg in prompt.messages
+        ],
+        api_key=api_key,
+    )
 
-        if response.choices[0].message.content:
-            return response.choices[0].message.content
-        else:
-            return f"Error: Could not extract message content from LLM response. Response: {response}"  # noqa: E501
-
-    except Exception as e:
-        return f"Error calling LLM: {e}"
+    if response.choices[0].message.content:
+        return response.choices[0].message.content
+    else:
+        return f"Error: Could not extract message content from LLM response. Response: {response}"  # noqa: E501
 
 
 def call_structured_llm(
     prompt: Union[str, ChatHistory], model: type[T], max_retries: int = 3
 ) -> T:
     """Calls the LLM with a structured prompt and returns the response."""
-    try:
-        response = client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}]
-            if isinstance(prompt, str)
-            else [
-                {"role": msg.role.value, "content": msg.content}
-                for msg in prompt.messages
-            ],
-            model=structured_model,
-            api_key=api_key,
-            response_model=model,
-            max_retries=max_retries,
-        )
+    response = client.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}]
+        if isinstance(prompt, str)
+        else [
+            {"role": msg.role.value, "content": msg.content} for msg in prompt.messages
+        ],
+        model=structured_model,
+        api_key=api_key,
+        response_model=model,
+        max_retries=max_retries,
+    )
 
-        if response:
-            return response
+    if response:
+        return response
 
-        else:
-            raise f"Error: Could not extract message content from LLM response. Response: {response}"
-
-    except Exception as e:
-        raise f"Error calling LLM: {e}" from e
+    else:
+        raise f"Error: Could not extract message content from LLM response. Response: {response}"
 
 
 def call_structured_llm_async(
     prompt: Union[str, ChatHistory], model: type[T], max_retries: int = 3
 ) -> T:
     """Asynchronously calls the LLM with a structured prompt and returns the response."""
-    try:
-        response = async_client.chat.completions.create(
-            messages=[{"role": "user", "content": prompt}]
-            if isinstance(prompt, str)
-            else [
-                {"role": msg.role.value, "content": msg.content}
-                for msg in prompt.messages
-            ],
-            model=structured_model,
-            api_key=api_key,
-            response_model=model,
-            max_retries=max_retries,
-        )
+    response = async_client.chat.completions.create(
+        messages=[{"role": "user", "content": prompt}]
+        if isinstance(prompt, str)
+        else [
+            {"role": msg.role.value, "content": msg.content} for msg in prompt.messages
+        ],
+        model=structured_model,
+        api_key=api_key,
+        response_model=model,
+        max_retries=max_retries,
+    )
 
-        if response:
-            return response
+    if response:
+        return response
 
-        else:
-            raise f"Error: Could not extract message content from LLM response. Response: {response}"
-
-    except Exception as e:
-        raise f"Error calling LLM: {e}" from e
+    else:
+        raise f"Error: Could not extract message content from LLM response. Response: {response}"

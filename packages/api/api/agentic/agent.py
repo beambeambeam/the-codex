@@ -19,6 +19,8 @@ from .node import (
 from .pocketflow_custom import Flow  # PocketFlow custom components
 from .schemas import (
     INTENT,
+    ChatHistory,
+    ChatMessage,
     SharedStore,  # Adjust relative import
 )
 
@@ -60,6 +62,16 @@ class rag_agent(agentic_base):
         self.shared_data: SharedStore = SharedStore()
         self.flow: Flow = self.create_online_rag_flow()
 
+    def get_current_chat_history(self, collection_chat_id: str) -> ChatHistory:
+        """
+        Retrieve the current chat history for the given collection chat ID.
+        This method fetches the chat history from the chat service.
+        """
+        chat_history = self.chat_service.list_histories(collection_chat_id)
+        return ChatHistory(
+            messages=[ChatMessage.model_validate(history) for history in chat_history]
+        )
+
     def run(self, collection_chat_id: str, user_question: str) -> SharedStore:
         """
         Run the RAG agent with the provided user question.
@@ -70,6 +82,9 @@ class rag_agent(agentic_base):
 
         self.shared_data.user_question = user_question
         self.shared_data.chat_session = self.chat_service.get_chat(collection_chat_id)
+        self.shared_data.chat_history = self.get_current_chat_history(
+            collection_chat_id
+        )
         self.flow.run(shared=self.shared_data)
 
         return self.shared_data

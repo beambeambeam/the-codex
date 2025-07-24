@@ -26,12 +26,17 @@ class CollectionNode(Node):
         self.chat_service = chat_service
 
     def save_chat_history(
-        self, collection_chat_id: str, current_user: User, message: ChatMessage
+        self,
+        collection_chat_id: str,
+        current_user: User,
+        chat_history: ChatHistory,
+        message: ChatMessage,
     ):
         """
         Save the current chat history to the database.
         This method can be used to persist the chat history after processing.
         """
+        chat_history.messages.append(message)
         chat_message = CollectionChatHistoryCreate(
             role=message.role,
             content=message.content,
@@ -57,14 +62,14 @@ class GetInputAppendHistoryNode(CollectionNode):
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.user_question = exec_res
-        shared.chat_history.messages.append(ChatMessage(role="user", content=exec_res))
-        print(
-            f"{shared.chat_session.collection_id} - GetUserInputNode: Appended user question to chat history."
-        )
+
         self.save_chat_history(
             collection_chat_id=shared.chat_session.id,
             current_user=shared.current_user,
-            message=ChatMessage(role="user", content=exec_res),
+            chat_history=shared.chat_history,
+            message=ChatMessage(
+                collection_chat_id=shared.chat_session.id, role="user", content=exec_res
+            ),
         )
 
         print(f"GetUserInputNode: Received question: '{exec_res}'")
@@ -192,25 +197,28 @@ class GenerateResponseNode(CollectionNode):
     """
 
     def prep(self, shared: SharedStore) -> Optional[str]:
-        user_question = shared.user_question
-        if not user_question:
+        chat_history = shared.chat_history
+        if not chat_history:
             print("GenericAnswerNode: No user question found in shared store.")
             return None
-        return user_question
+        return chat_history
 
-    def exec(self, user_question: str) -> str:
-        return call_llm(user_question)
+    def exec(self, chat_history: ChatHistory) -> str:
+        return call_llm(chat_history)
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.llm_answer = exec_res
         print(f"GenericAnswerNode: Generated answer: {exec_res[:50]}...")
-        shared.chat_history.messages.append(
-            ChatMessage(role="assistant", content=exec_res)
-        )
+
         self.save_chat_history(
             collection_chat_id=shared.chat_session.id,
             current_user=shared.current_user,
-            message=ChatMessage(role="assistant", content=exec_res),
+            chat_history=shared.chat_history,
+            message=ChatMessage(
+                collection_chat_id=shared.chat_session.id,
+                role="assistant",
+                content=exec_res,
+            ),
         )
         return NodeStatus.DEFAULT.value
 
@@ -221,6 +229,9 @@ class GenerateResponseFromContextNode(CollectionNode):
 
         return {
             "contexts": retrieved_contexts,
+            "chat_history": shared.chat_history.model_copy(deep=True),
+            "question": shared.user_question,
+            "collection_chat_id": shared.chat_session.id,
         }
 
     def exec(self, inputs: dict[str, Any]) -> str:
@@ -229,23 +240,27 @@ class GenerateResponseFromContextNode(CollectionNode):
 
         contexts: list[ChunkSearchResponse] = inputs["contexts"]
 
-        messages: list[ChatMessage] = []
+        context_str_parts = []
+        for ctx_chunk in contexts:
+            context_str_parts.append(ctx_chunk.chunk_text)
 
-        # Optionally add a system prompt
-        messages.append(
+        prompt = render_collection_rag_agent_prompt(
+            question=inputs["question"],
+            contexts=context_str_parts,
+        )
+
+        # Temporarily append the user question to the chat history
+        chat_history: ChatHistory = inputs["chat_history"]
+
+        chat_history.messages.append(
             ChatMessage(
-                role="system",
-                content="You are a helpful assistant answering based on context.",
+                collection_chat_id=inputs["collection_chat_id"],
+                role="user",
+                content=prompt,
             )
         )
 
-        for ctx_chunk in contexts:
-            messages.append(ChatMessage(role="user", content=ctx_chunk.chunk_text))
-
-        chat_history = ChatHistory(messages=messages)
-
-        print(f"GenerateResponseNode: Calling LLM with {len(messages)} messages.")
-
+        print(f"GenerateResponseNode: Calling LLM with {len(contexts)} contexts.")
         try:
             llm_answer = call_llm(chat_history)
             return llm_answer
@@ -256,4 +271,15 @@ class GenerateResponseFromContextNode(CollectionNode):
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.llm_answer = exec_res
         print(f"GenerateResponseNode: LLM response generated: {exec_res[:1000]}...")
+
+        self.save_chat_history(
+            collection_chat_id=shared.chat_session.id,
+            current_user=shared.current_user,
+            chat_history=shared.chat_history,
+            message=ChatMessage(
+                collection_chat_id=shared.chat_session.id,
+                role="assistant",
+                content=exec_res,
+            ),
+        )
         return NodeStatus.DEFAULT.value

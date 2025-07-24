@@ -71,7 +71,8 @@ class ChatMessage(CollectionChatHistoryBase):
 
     collection_chat_id: str = Field(None, description="Collection Chat ID")
 
-    pass
+    class Config:
+        from_attributes = True
 
 
 class ChatHistory(BaseModel):
@@ -86,7 +87,7 @@ class ChatHistory(BaseModel):
         Convert the ChatMessageList to a list of dictionaries.
         This is useful for serialization or further processing.
         """
-        return [message.model.dump() for message in self.messages]
+        return [message.model_dump() for message in self.messages]
 
 
 # NodeTypes = Literal["EmbedChunksNode", "StoreInPgvectorNode", "SearchPgvectorNode", "GenerateResponseNode"]
