@@ -3,12 +3,16 @@ from typing import Union
 
 from pydantic import BaseModel, Field
 
-from api.chat.schemas import CollectionChatHistoryBase, CollectionChatResponse
-
-from ..document.schemas import (
+from api.chat.schemas import (
+    CollectionChatHistoryBase,
+    CollectionChatReferenceCreate,
+    CollectionChatResponse,
+)
+from api.document.schemas import (
     ChunkSearchResponse,
 )
-from ..models.user import User
+from api.models.user import User
+
 from .pocketflow_custom import ShareStoreBase
 
 
@@ -128,7 +132,7 @@ class SharedStore(ShareStoreBase):
         None, description="User's question or query for the RAG system"
     )
     query_embedding: list[float] = Field(
-        None, description="Embedding vector of the user's question"
+        default_factory=list, description="Embedding vector of the user's question"
     )
     retrieved_contexts: list[ChunkSearchResponse] = Field(
         default_factory=list,
@@ -147,6 +151,16 @@ class SharedStore(ShareStoreBase):
     system_instructions: str = Field(
         None,
         description="System instructions or context to guide the LLM's responses",
+    )
+
+    # Saving Data
+    new_chat_history: ChatHistory = Field(
+        default_factory=ChatHistory,
+        description="New chat history to be appended to the existing conversation",
+    )
+    new_retrieved_contexts: list[CollectionChatReferenceCreate] = Field(
+        default_factory=list,
+        description="New retrieved contexts to be appended to the existing conversation",
     )
 
     # Node Status

@@ -221,12 +221,13 @@ async def rag_query(
     )
 
     # Clear chunks text to avoid sending large data back
-    for context in shared_store.retrieved_contexts:
-        context.chunk_text = (
-            context.chunk_text[:100] + "..."
-            if len(context.chunk_text) > 100
-            else context.chunk_text
-        )
+    if shared_store.retrieved_contexts:
+        for context in shared_store.retrieved_contexts:
+            context.chunk_text = (
+                context.chunk_text[:100] + "..."
+                if len(context.chunk_text) > 100
+                else context.chunk_text
+            )
 
     return AgentResponse(
         chat_history=shared_store.chat_history,

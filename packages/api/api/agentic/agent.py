@@ -14,6 +14,7 @@ from .node import (
     GenerateResponseNode,
     GetInputAppendHistoryNode,
     GetUserIntentNode,
+    SaveChatHistoryNode,
     SearchPgvectorNode,
 )
 from .pocketflow_custom import Flow  # PocketFlow custom components
@@ -100,19 +101,21 @@ class rag_agent(agentic_base):
         """
         Creates and returns a PocketFlow for the online RAG process.
         """
-        input_node = GetInputAppendHistoryNode(chat_service=self.chat_service)
+        input_node = GetInputAppendHistoryNode()
         get_intent_node = GetUserIntentNode()
         embed_q_node = EmbedQueryNode(embedding_model=self.embedding_model)
         search_db_node = SearchPgvectorNode(document_service=self.document_service)
-        generate_ans_node = GenerateResponseNode(chat_service=self.chat_service)
-        generate_ans_based_on_context_node = GenerateResponseFromContextNode(
-            chat_service=self.chat_service
+        generate_ans_node = GenerateResponseNode()
+        generate_ans_based_on_context_node = GenerateResponseFromContextNode()
+        save_chat_node = SaveChatHistoryNode(
+            chat_service=self.chat_service,
         )
 
         if intent:
             input_node >> embed_q_node
             embed_q_node >> search_db_node
             search_db_node >> generate_ans_node
+            generate_ans_node >> save_chat_node
 
         else:
             input_node >> get_intent_node
@@ -121,6 +124,7 @@ class rag_agent(agentic_base):
                 >> embed_q_node
                 >> search_db_node
                 >> generate_ans_based_on_context_node
+                >> save_chat_node
             )
             get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
             (
@@ -128,6 +132,7 @@ class rag_agent(agentic_base):
                 >> embed_q_node
                 >> search_db_node
                 >> generate_ans_based_on_context_node
+                >> save_chat_node
             )
 
         online_flow = Flow(start=input_node, name="Online_RAG_Query_Flow", debug=True)

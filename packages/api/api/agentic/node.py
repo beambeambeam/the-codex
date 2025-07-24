@@ -1,10 +1,11 @@
 from typing import Any, Optional
 
-from api.chat.schemas import CollectionChatHistoryCreate
+from api.chat.schemas import CollectionChatHistoryCreate, CollectionChatReferenceCreate
 from api.chat.service import ChatService
 from api.collection.service import CollectionService
 from api.document.schemas import ChunkSearchResponse
 from api.document.service import DocumentServiceSearch as DocumentService
+from api.models.chat import CollectionChatReference
 from api.models.user import User
 
 from .core import TextEmbedder, call_llm, call_structured_llm
@@ -25,18 +26,16 @@ class CollectionNode(Node):
         super().__init__(name, max_retries, wait)
         self.chat_service = chat_service
 
-    def save_chat_history(
+    def _save_chat_message(
         self,
         collection_chat_id: str,
         current_user: User,
-        chat_history: ChatHistory,
         message: ChatMessage,
     ):
         """
         Save the current chat history to the database.
         This method can be used to persist the chat history after processing.
         """
-        chat_history.messages.append(message)
         chat_message = CollectionChatHistoryCreate(
             role=message.role,
             content=message.content,
@@ -44,8 +43,32 @@ class CollectionNode(Node):
         )
         return self.chat_service.create_history(chat_message, current_user)
 
+    def save_chat_history(
+        self,
+        collection_chat_id: str,
+        current_user: User,
+        chat_history: ChatHistory,
+    ) -> CollectionChatHistoryCreate:
+        for message in chat_history.messages:
+            self._save_chat_message(
+                collection_chat_id=collection_chat_id,
+                current_user=current_user,
+                message=message,
+            )
+        return chat_history
 
-class GetInputAppendHistoryNode(CollectionNode):
+    def save_context_references(
+        self,
+        context_references: list[CollectionChatReferenceCreate],
+    ) -> list[CollectionChatReference]:
+        """
+        Save context references to the database.
+        This method can be used to persist context references after processing.
+        """
+        return [self.chat_service.create_reference(ref) for ref in context_references]
+
+
+class GetInputAppendHistoryNode(Node):
     """
     Node to get user input and append it to chat history if available.
     """
@@ -62,15 +85,13 @@ class GetInputAppendHistoryNode(CollectionNode):
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.user_question = exec_res
-
-        self.save_chat_history(
+        new_message = ChatMessage(
             collection_chat_id=shared.chat_session.id,
-            current_user=shared.current_user,
-            chat_history=shared.chat_history,
-            message=ChatMessage(
-                collection_chat_id=shared.chat_session.id, role="user", content=exec_res
-            ),
+            role="user",
+            content=exec_res,
         )
+        shared.new_chat_history.messages.append(new_message)
+        shared.chat_history.messages.append(new_message)
 
         print(f"GetUserInputNode: Received question: '{exec_res}'")
         return NodeStatus.DEFAULT.value
@@ -135,7 +156,9 @@ class EmbedQueryNode(Node):
                 "EmbedQueryNode: Embedding generation failed or no question provided."
             )
         else:
-            print("EmbedQueryNode: Query embedding stored in shared store.")
+            print(
+                f"EmbedQueryNode: Embedding vector length: {len(exec_res)} Query embedding stored in shared store."
+            )
         return NodeStatus.DEFAULT.value
 
 
@@ -158,6 +181,7 @@ class SearchPgvectorNode(Node):
         }
 
     def exec(self, inputs: dict[str, Any]) -> list[ChunkSearchResponse]:
+        print(inputs)
         if inputs.get("embedding") is None:
             return []
         try:
@@ -180,17 +204,28 @@ class SearchPgvectorNode(Node):
         prep_res: Any,
         exec_res: list[ChunkSearchResponse],
     ):
+        print("EXEC RES:", exec_res)
         shared.retrieved_contexts = exec_res
+
         if exec_res is None:
             print("SearchPgvectorNode: No relevant contexts retrieved.")
         else:
             print(
                 f"SearchPgvectorNode: Stored {len(exec_res)} retrieved contexts in shared store."
             )
+            for chunk in exec_res:
+                shared.new_retrieved_contexts.append(
+                    CollectionChatReferenceCreate(
+                        collection_chat_history_id=shared.chat_session.id,
+                        document_id=chunk.document_id,
+                        chunk_id=chunk.id,
+                        type="chunk",
+                    )
+                )
         return NodeStatus.DEFAULT.value
 
 
-class GenerateResponseNode(CollectionNode):
+class GenerateResponseNode(Node):
     """
     Node to generate a generic answer based on the user's question.
     This node can be used to provide a response when no specific intent is identified.
@@ -210,25 +245,21 @@ class GenerateResponseNode(CollectionNode):
         shared.llm_answer = exec_res
         print(f"GenericAnswerNode: Generated answer: {exec_res[:50]}...")
 
-        self.save_chat_history(
+        new_message = ChatMessage(
             collection_chat_id=shared.chat_session.id,
-            current_user=shared.current_user,
-            chat_history=shared.chat_history,
-            message=ChatMessage(
-                collection_chat_id=shared.chat_session.id,
-                role="assistant",
-                content=exec_res,
-            ),
+            role="user",
+            content=exec_res,
         )
+        shared.new_chat_history.messages.append(new_message)
+        shared.chat_history.messages.append(new_message)
+
         return NodeStatus.DEFAULT.value
 
 
-class GenerateResponseFromContextNode(CollectionNode):
+class GenerateResponseFromContextNode(Node):
     def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
-        retrieved_contexts: list[ChunkSearchResponse] = shared.retrieved_contexts
-
         return {
-            "contexts": retrieved_contexts,
+            "contexts": shared.retrieved_contexts,
             "chat_history": shared.chat_history.model_copy(deep=True),
             "question": shared.user_question,
             "collection_chat_id": shared.chat_session.id,
@@ -272,14 +303,40 @@ class GenerateResponseFromContextNode(CollectionNode):
         shared.llm_answer = exec_res
         print(f"GenerateResponseNode: LLM response generated: {exec_res[:1000]}...")
 
-        self.save_chat_history(
+        new_message = ChatMessage(
             collection_chat_id=shared.chat_session.id,
-            current_user=shared.current_user,
-            chat_history=shared.chat_history,
-            message=ChatMessage(
-                collection_chat_id=shared.chat_session.id,
-                role="assistant",
-                content=exec_res,
-            ),
+            role="user",
+            content=exec_res,
         )
+        shared.new_chat_history.messages.append(new_message)
+        shared.chat_history.messages.append(new_message)
+
+        return NodeStatus.DEFAULT.value
+
+
+class SaveChatHistoryNode(CollectionNode):
+    """
+    Node to save the chat history and context references after processing.
+    This node can be used to persist the chat history and context references.
+    """
+
+    def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
+        return {
+            "chat_history": shared.new_chat_history,
+            "context_references": shared.new_retrieved_contexts,
+            "collection_chat_id": shared.chat_session.id,
+            "current_user": shared.current_user,
+        }
+
+    def exec(self, inputs: dict[str, Any]) -> None:
+        self.save_chat_history(
+            collection_chat_id=inputs["collection_chat_id"],
+            current_user=inputs["current_user"],
+            chat_history=inputs["chat_history"],
+        )
+        if inputs.get("context_references"):
+            self.save_context_references(inputs["context_references"])
+
+    def post(self, shared: SharedStore, prep_res: Any, exec_res: None):
+        print("SaveChatHistoryNode: Chat history and context references saved.")
         return NodeStatus.DEFAULT.value

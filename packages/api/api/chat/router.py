@@ -109,3 +109,15 @@ def get_history(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chat history not found"
         )
     return history
+
+
+@router.put("/{chat_id}/clear", status_code=status.HTTP_204_NO_CONTENT)
+def clear_chat_history(
+    chat_id: str,
+    chat_service: ChatService = Depends(get_chat_service),
+):
+    """
+    Clear all chat history for the specified chat ID.
+    This endpoint removes all messages associated with the chat.
+    """
+    chat_service.clear_history(chat_id)

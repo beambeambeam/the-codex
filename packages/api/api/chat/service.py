@@ -119,6 +119,12 @@ class ChatService:
             self.db.delete(history)
             self.db.commit()
 
+    def clear_history(self, chat_id: str):
+        histories = self.list_histories(chat_id)
+        for history in histories:
+            self.db.delete(history)
+        self.db.commit()
+
     # CollectionChatReference CRUD
     def create_reference(
         self, reference_data: CollectionChatReferenceCreate
