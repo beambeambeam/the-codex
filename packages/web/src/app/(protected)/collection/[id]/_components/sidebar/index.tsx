@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import { FilePlus2Icon, UserIcon } from "lucide-react";
 
 import ClusteringTree from "@/app/(protected)/collection/[id]/_components/clustering/tree";
-import ChatHistorySidebar from "@/app/(protected)/collection/[id]/_components/sidebar/chat-history";
 import CollectionIdSidebarSearchbox from "@/app/(protected)/collection/[id]/_components/sidebar/search";
 import CollectionIdSidebarSettings from "@/app/(protected)/collection/[id]/_components/sidebar/settings";
 import { useCollectionIdContext } from "@/app/(protected)/collection/[id]/_components/use-collection-id-context";
@@ -23,7 +22,6 @@ import {
 
 function CollectionIdSidebar() {
   const context = useCollectionIdContext();
-  const pathname = usePathname();
 
   const params = useParams<{ id: string }>();
 
@@ -65,11 +63,7 @@ function CollectionIdSidebar() {
           </Link>
         </div>
         <SidebarGroup className="p-0">
-          {pathname.match(/\/chat(\/.*)?$/) ? (
-            <ChatHistorySidebar />
-          ) : (
-            <ClusteringTree />
-          )}
+          <ClusteringTree />
         </SidebarGroup>
       </div>
     </Sidebar>
