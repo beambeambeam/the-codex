@@ -3,6 +3,17 @@ import { MoreHorizontalIcon, TrashIcon } from "lucide-react";
 
 import { FileQueue } from "@/app/(protected)/collection/[id]/docs/_components/documents-queue-table/columns";
 import useRemoveDocument from "@/app/(protected)/collection/[id]/docs/_lib/use-remove-document";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,18 +38,40 @@ function FileQueueDropdown(props: { row: Row<FileQueue> }) {
         <DropdownMenuLabel>
           Manage {props.row.original.file_name}
         </DropdownMenuLabel>
-        <DropdownMenuItem
-          onClick={() =>
-            remove({
-              params: { path: { document_id: props.row.original.id } },
-            })
-          }
-          disabled={isPending}
-          variant="destructive"
-        >
-          <TrashIcon />
-          Delete
-        </DropdownMenuItem>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <DropdownMenuItem
+              disabled={isPending}
+              variant="destructive"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <TrashIcon />
+              Delete
+            </DropdownMenuItem>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your
+                document and remove your data from servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() =>
+                  remove({
+                    params: { path: { document_id: props.row.original.id } },
+                  })
+                }
+                disabled={isPending}
+              >
+                Continue
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DropdownMenuContent>
     </DropdownMenu>
   );
