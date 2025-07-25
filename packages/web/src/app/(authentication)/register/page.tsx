@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { toast } from "sonner";
 
 import RegisterForm, {
@@ -23,7 +22,7 @@ function RegisterPage() {
     {
       onSuccess() {
         toast.success("Registration successful! Please sign in to continue.");
-        redirect("/sign-in");
+        window.location.href = "/sign-in";
       },
       onError(error: unknown) {
         const message =
