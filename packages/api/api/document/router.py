@@ -1,6 +1,6 @@
 """Document API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..agentic.dependencies import TextEmbedder, get_text_embedder
@@ -20,7 +20,6 @@ from .schemas import (
     ChunkCreate,
     ChunkResponse,
     ChunkSearchResponse,
-    DocumentCreate,
     DocumentDetailResponse,
     DocumentEdgeCreate,
     DocumentEdgeResponse,
@@ -38,40 +37,6 @@ from .service import DocumentServiceSearch as DocumentService
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
-@router.post(
-    "/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED
-)
-async def upload_document(
-    collection_id: str,
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-    *,
-    file: UploadFile,
-):
-    """Upload a document file and create a document record."""
-    try:
-        object_name, file_type = DocumentService.prepare_file_upload(
-            file, current_user.id, collection_id
-        )
-
-        stored_path = await storage_service.upload_file_to_storage(file, object_name)
-
-        document_data = DocumentCreate(
-            file_name=file.filename or "uploaded_file",
-            source_file_path=stored_path,
-            file_type=file_type,
-            collection_id=collection_id,
-        )
-
-        return document_service.create_document(document_data, current_user)
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload document: {str(e)}",
-        ) from e
-
-
 @router.get("/", response_model=list[DocumentResponse])
 def list_user_documents(
     current_user: User = Depends(get_current_user),
@@ -87,7 +52,10 @@ def get_document(
     document_service: DocumentService = Depends(get_document_service),
 ):
     """Get a document with all details."""
-    return document_service.get_document_with_details(document.id)
+    doc_details = document_service.get_document_with_details(document.id)
+    if not doc_details:
+        return None
+    return DocumentDetailResponse(**doc_details)
 
 
 @router.put("/{document_id}", response_model=DocumentResponse)

@@ -3,6 +3,7 @@
 import io
 import json
 from typing import Optional
+from datetime import timedelta
 
 from fastapi import HTTPException, UploadFile, status
 from fastapi.responses import Response
@@ -329,7 +330,7 @@ class StorageService:
             url = self.client.presigned_get_object(
                 bucket_name=bucket_name,
                 object_name=object_name,
-                expires=expires_in,
+                expires=timedelta(seconds=expires_in),
             )
             return url
 

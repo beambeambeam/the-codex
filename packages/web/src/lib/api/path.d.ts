@@ -368,26 +368,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/documents/upload": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Upload Document
-     * @description Upload a document file and create a document record.
-     */
-    post: operations["upload_document_documents_upload_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/documents/": {
     parameters: {
       query?: never;
@@ -1003,14 +983,6 @@ export interface components {
     Body_upload_and_ingest_documents_agentic_upload_ingest_post: {
       /** Input Files */
       input_files: File[];
-    };
-    /** Body_upload_document_documents_upload_post */
-    Body_upload_document_documents_upload_post: {
-      /**
-       * File
-       * Format: binary
-       */
-      file: File;
     };
     /**
      * ChunkCreate
@@ -1683,6 +1655,11 @@ export interface components {
       /** Updated By */
       updated_by: string | null;
       /**
+       * Minio File Url
+       * @description Presigned MinIO file URL for iframe usage
+       */
+      minio_file_url?: string | null;
+      /**
        * Chunks
        * @default []
        */
@@ -1988,6 +1965,11 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /**
+       * Minio File Url
+       * @description Presigned MinIO file URL for iframe usage
+       */
+      minio_file_url?: string | null;
     };
     /**
      * DocumentSearchResponse
@@ -2031,6 +2013,11 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /**
+       * Minio File Url
+       * @description Presigned MinIO file URL for iframe usage
+       */
+      minio_file_url?: string | null;
       /**
        * Chunk
        * @description List of chunks with search results
@@ -2889,43 +2876,6 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CollectionEdgeResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  upload_document_documents_upload_post: {
-    parameters: {
-      query: {
-        collection_id: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody: {
-      content: {
-        "multipart/form-data": components["schemas"]["Body_upload_document_documents_upload_post"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DocumentResponse"];
         };
       };
       /** @description Validation Error */

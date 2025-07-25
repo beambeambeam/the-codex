@@ -139,9 +139,9 @@ class DocumentService:
         self.db.commit()
         return True
 
-    def get_document_with_details(self, document_id: str) -> Optional[Document]:
-        """Get document with all related data."""
-        return (
+    def get_document_with_details(self, document_id: str) -> Optional[dict]:
+        """Get document with all related data and MinIO file URL."""
+        document = (
             self.db.query(Document)
             .options(
                 joinedload(Document.chunks),
@@ -151,6 +151,16 @@ class DocumentService:
             .filter(Document.id == document_id)
             .first()
         )
+        if not document:
+            return None
+        # Convert to dict (or use model_dump if using pydantic models)
+        doc_dict = document.__dict__.copy()
+        # Add related fields if needed (chunks, relations)
+        doc_dict["chunks"] = getattr(document, "chunks", [])
+        doc_dict["relations"] = getattr(document, "relations", [])
+        # Generate MinIO file URL
+        doc_dict["minio_file_url"] = self.get_file_url(document.source_file_path, None)
+        return doc_dict
 
     # Chunk CRUD operations
     def create_chunk(self, chunk_data: ChunkCreate, user: User) -> Chunk:

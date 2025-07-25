@@ -12,6 +12,7 @@ import {
 import { parseAsString, useQueryState } from "nuqs";
 
 import DocCanvasLayout from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/layout";
+import FilePreviwer from "@/components/file-previwer";
 import { Label } from "@/components/ui/label";
 import {
   Pill,
@@ -30,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBytes } from "@/hooks/use-file-upload";
 import { $api } from "@/lib/api/client";
 import { formatFileType, getFileIcon } from "@/lib/files";
+import { getFallbackUsername } from "@/lib/utils";
 
 function DocIdPage() {
   const params = useParams<{ docsId: string }>();
@@ -60,15 +62,15 @@ function DocIdPage() {
       <ResizablePanelGroup direction="horizontal" className="h-full">
         <ResizablePanel className="flex flex-col gap-2 p-4" defaultSize={7}>
           <p className="text-md font-bold">Preview</p>
-          {/* <FilePreviwer
+          <FilePreviwer
             file={{
               name: "",
               size: 0,
-              type: "pdf",
-              url: MOCK_DOCS.,
+              type: data.file_type,
+              url: data.minio_file_url ?? "",
               id: "",
             }}
-          /> */}
+          />
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel className="p-4" defaultSize={3}>
@@ -98,14 +100,20 @@ function DocIdPage() {
               <TabsContent value="tab-1">
                 <div className="flex h-full w-full flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <p className="text-xl font-bold">{data.file_name}</p>
                       <div className="flex flex-col gap-1"></div>
                       <div className="flex items-center gap-1">
-                        <Pill>
-                          <PillAvatar fallback="UA" />
-                          User Alpha
-                        </Pill>
+                        {data.created_by ?? (
+                          <Pill>
+                            <PillAvatar
+                              fallback={getFallbackUsername(
+                                data.created_by ?? "",
+                              )}
+                            />
+                            {data.created_by}
+                          </Pill>
+                        )}
                         <Pill>
                           <PillStatus>
                             <PillIndicator variant="success" />
