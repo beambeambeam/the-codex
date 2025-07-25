@@ -1,5 +1,10 @@
+import Link from "next/link";
 import { Row } from "@tanstack/react-table";
-import { MoreHorizontalIcon, TrashIcon } from "lucide-react";
+import {
+  ArrowUpRightFromCircleIcon,
+  MoreHorizontalIcon,
+  TrashIcon,
+} from "lucide-react";
 
 import { FileQueue } from "@/app/(protected)/collection/[id]/docs/_components/documents-queue-table/columns";
 import useRemoveDocument from "@/app/(protected)/collection/[id]/docs/_lib/use-remove-document";
@@ -72,6 +77,14 @@ function FileQueueDropdown(props: { row: Row<FileQueue> }) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        <Link
+          href={`/collection/${props.row.original.collection_id}/docs/${props.row.original.id}`}
+        >
+          <DropdownMenuItem>
+            <ArrowUpRightFromCircleIcon className="text-foreground" />
+            Checkout
+          </DropdownMenuItem>
+        </Link>
       </DropdownMenuContent>
     </DropdownMenu>
   );
