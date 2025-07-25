@@ -1,5 +1,5 @@
 import { Row } from "@tanstack/react-table";
-import { FileCogIcon, TrashIcon } from "lucide-react";
+import { MoreHorizontalIcon, TrashIcon } from "lucide-react";
 
 import { FileQueue } from "@/app/(protected)/collection/[id]/docs/_components/documents-queue-table/columns";
 import useRemoveDocument from "@/app/(protected)/collection/[id]/docs/_lib/use-remove-document";
@@ -18,8 +18,9 @@ function FileQueueDropdown(props: { row: Row<FileQueue> }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <FileCogIcon className="size-5" />
+        <Button variant="ghost" size="icon">
+          <MoreHorizontalIcon className="h-4 w-4" />
+          <span className="sr-only">Open menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
