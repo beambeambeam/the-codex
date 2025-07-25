@@ -122,7 +122,7 @@ function ClusteringTree() {
         </Tree>
       ) : (
         <Link href={`/collection/${params.id}/docs`}>
-          <Card className="text-muted-foreground flex h-[14rem] items-center justify-center gap-1 border border-dashed text-xs">
+          <Card className="text-muted-foreground hover:text-foreground border-muted-foreground hover:border-foreground flex h-[14rem] items-center justify-center gap-1 border border-dashed text-xs transition-colors">
             <div className="flex flex-col items-center justify-center gap-0">
               <CloudUploadIcon className="size-7" />
               <p>Upload Files!</p>
