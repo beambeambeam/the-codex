@@ -1,10 +1,13 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import {
   BadgeQuestionMarkIcon,
+  CheckCircleIcon,
   GitCompareArrowsIcon,
   HouseIcon,
   PanelsTopLeftIcon,
+  XCircleIcon,
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
 
@@ -25,8 +28,12 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBytes } from "@/hooks/use-file-upload";
+import { $api } from "@/lib/api/client";
+import { formatFileType, getFileIcon } from "@/lib/files";
 
 function DocIdPage() {
+  const params = useParams<{ docsId: string }>();
+
   const [tab, setTab] = useQueryState(
     "tab",
     parseAsString.withDefault("tab-1"),
@@ -36,11 +43,20 @@ function DocIdPage() {
     setTab(value);
   };
 
+  const { data } = $api.useQuery("get", "/documents/{document_id}", {
+    params: {
+      path: {
+        document_id: params.docsId,
+      },
+    },
+  });
+
+  if (!data) {
+    return null;
+  }
+
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="border-b p-6 text-xl font-bold">
-        Attention Is All You Need
-      </div>
       <ResizablePanelGroup direction="horizontal" className="h-full">
         <ResizablePanel className="flex flex-col gap-2 p-4" defaultSize={7}>
           <p className="text-md font-bold">Preview</p>
@@ -49,7 +65,7 @@ function DocIdPage() {
               name: "",
               size: 0,
               type: "pdf",
-              url: MOCK_DOCS.source_file_path,
+              url: MOCK_DOCS.,
               id: "",
             }}
           /> */}
@@ -83,7 +99,7 @@ function DocIdPage() {
                 <div className="flex h-full w-full flex-col gap-6">
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center gap-2">
-                      <p className="text-xl font-bold">PLACE HOLDER</p>
+                      <p className="text-xl font-bold">{data.file_name}</p>
                       <div className="flex flex-col gap-1"></div>
                       <div className="flex items-center gap-1">
                         <Pill>
@@ -100,8 +116,8 @@ function DocIdPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <Pill>
-                          {/* <PillStatus>
-                            {MOCK_DOCS.is_graph_extracted ? (
+                          <PillStatus>
+                            {data.is_graph_extracted ? (
                               <CheckCircleIcon
                                 className="text-emerald-500"
                                 size={12}
@@ -112,16 +128,21 @@ function DocIdPage() {
                                 size={12}
                               />
                             )}
-                            {MOCK_DOCS.is_graph_extracted ? "Yes" : "No"}
-                          </PillStatus> */}
-                          Knowledge Graph Extracted
+                            {data.is_graph_extracted ? "Yes" : "No"}
+                          </PillStatus>
+                          Knowledge Graph
                         </Pill>
                       </div>
                       <div className="flex items-center gap-2">
-                        {/* <Pill>
-                          {getFileIcon({ file: MOCK_DOCS.file })}{" "}
-                          {formatFileType(MOCK_DOCS.file.type)}
-                        </Pill> */}
+                        <Pill>
+                          {getFileIcon({
+                            file: {
+                              name: data.file_name,
+                              type: data.file_type,
+                            },
+                          })}{" "}
+                          {formatFileType(data.file_name)}
+                        </Pill>
                         <Pill>{formatBytes(10000000)}</Pill>
                       </div>
                     </div>
@@ -134,6 +155,7 @@ function DocIdPage() {
                     {/* <Markdown className="prose border-border w-full rounded border p-2">
                       {MOCK_DOCS.description}
                     </Markdown> */}
+                    No description yet!
                   </div>
                 </div>
               </TabsContent>
