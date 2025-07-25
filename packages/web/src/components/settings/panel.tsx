@@ -1,14 +1,37 @@
 import { LogOutIcon, UserIcon, UserPenIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Scroller } from "@/components/ui/scroller";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { $api } from "@/lib/api/client";
+import { useUserActions } from "@/store/userStore";
 
 function SettingPanel() {
   const TABS_TRIGGER_CLASSNAME =
     "hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none";
+
+  const { reset } = useUserActions();
+  const { mutate: logout, isPending } = $api.useMutation(
+    "post",
+    "/auth/logout",
+    {
+      onSuccess: () => {
+        reset();
+        toast.success("Logged out successfully.");
+        window.location.href = "/sign-in";
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(message || "Logout failed. Please try again.");
+      },
+    },
+  );
 
   return (
     <Tabs
@@ -42,7 +65,11 @@ function SettingPanel() {
             </div>
           </div>
           <div className="">
-            <Button variant="destructive">
+            <Button
+              variant="destructive"
+              onClick={() => logout({})}
+              disabled={isPending}
+            >
               <LogOutIcon />
               <span>Logout</span>
             </Button>
