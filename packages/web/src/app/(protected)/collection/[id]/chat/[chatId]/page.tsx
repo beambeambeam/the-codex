@@ -1,29 +1,42 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { ClockFadingIcon } from "lucide-react";
 
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
-import { Pill, PillIcon } from "@/components/ui/pill";
-import { RelativeTimeCard } from "@/components/ui/relative-time-card";
+import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/header";
+import { $api } from "@/lib/api/client";
 
 function CollectionIdPage() {
+  const params = useParams<{ id: string; chatId: string }>();
+
+  const { data, isPending, isError } = $api.useQuery(
+    "get",
+    "/chats/{chat_id}",
+    {
+      params: {
+        path: {
+          chat_id: "",
+        },
+      },
+    },
+  );
+
+  if (isPending) {
+    return null;
+  }
+
+  if (!data || isError) {
+    return null;
+  }
+
   return (
     <>
       <div className="h-full w-full">
-        <header className="relative z-20 mb-4 flex items-center justify-between border-b p-3">
-          <div className="flex h-full w-full flex-col gap-2">
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg">PLACE HOLDER</h1>
-              <Pill>
-                <PillIcon icon={ClockFadingIcon} />
-                <RelativeTimeCard date={new Date()} />
-              </Pill>
-            </div>
-          </div>
-        </header>
+        <ChatHeader title={""} />
         <ChatTemplate message={[]} />
       </div>
       <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10">
