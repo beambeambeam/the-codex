@@ -39,6 +39,7 @@ function FileQueueTable() {
         is_vectorized: false,
       },
     },
+    manualPagination: true,
   });
 
   if (isPending) {

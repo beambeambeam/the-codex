@@ -89,7 +89,7 @@ export const fileQueueColumns = [
     cell: ({ row }) => (
       <Pill>
         <PillIcon icon={UserIcon} />
-        {row.original.updated_by}
+        {row.original.created_by}
       </Pill>
     ),
     meta: {

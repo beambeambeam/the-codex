@@ -50,30 +50,12 @@ async def upload_document(
 ):
     """Upload a document file and create a document record."""
     try:
-        from uuid import uuid4
-
-        # Get file extension from original filename
-        file_extension = ""
-        if file.filename and "." in file.filename:
-            file_extension = "." + file.filename.split(".")[-1].lower()
-
-        # Generate UUID-based filename for storage
-        uuid_filename = str(uuid4()) + file_extension
-        object_name = (
-            f"users/{current_user.id}/collections/{collection_id}/{uuid_filename}"
+        object_name, file_type = DocumentService.prepare_file_upload(
+            file, current_user.id, collection_id
         )
 
-        # Upload file to MinIO with UUID filename
         stored_path = await storage_service.upload_file_to_storage(file, object_name)
 
-        # Determine file type from original filename
-        file_type = (
-            file.filename.split(".")[-1].lower()
-            if file.filename and "." in file.filename
-            else "unknown"
-        )
-
-        # Create document record with original filename for display
         document_data = DocumentCreate(
             file_name=file.filename or "uploaded_file",
             source_file_path=stored_path,

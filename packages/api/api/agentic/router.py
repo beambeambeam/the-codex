@@ -42,36 +42,23 @@ async def upload_and_ingest_documents(
     This endpoint allows users to upload documents for processing and storage.
     """
 
-    file_name = file_name or input_file.filename
-
     try:
-        # Read the file content once and store it
-        file_content = await input_file.read()
-
-        # Validate that content is not empty
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Uploaded file is empty")
-
-        formatted_input = FileInput(
-            name=file_name,
-            file_name=file_name,
-            content=file_content,
-            type=input_file.content_type or "application/octet-stream",
-            is_path=False,
+        # Use utility to prepare file upload (object_name, file_type, file_extension)
+        object_name, file_type, _ = DocumentService.prepare_file_upload(
+            input_file, current_user.id, collection_id
         )
 
+        # Upload file to storage
         stored_path = await storage_service.upload_file_to_storage(
-            file=input_file,
+            input_file, object_name
         )
-
-        # Normalize input using Pydantic model
-        input_file: FileInput = normalize_file_input(formatted_input)
+        await input_file.seek(0)  # Reset pointer to start for subsequent read
 
         # Create document record
         document = document_service.create_document(
             document_data=DocumentCreate(
-                file_name=input_file.name,
-                file_type=input_file.type,
+                file_name=input_file.filename or "uploaded_file",
+                file_type=file_type,
                 source_file_path=stored_path,
                 collection_id=collection_id,
             ),
@@ -80,12 +67,28 @@ async def upload_and_ingest_documents(
 
         if not document:
             raise RuntimeError(
-                f"Failed to create document record for {input_file.name}"
+                f"Failed to create document record for {input_file.filename}"
             )
+
+        # Read file content for ingestion
+        file_content = await input_file.read()
+        if not file_content:
+            raise HTTPException(status_code=400, detail="Uploaded file is empty")
+
+        formatted_input = FileInput(
+            name=input_file.filename or "uploaded_file",
+            file_name=input_file.filename or "uploaded_file",
+            content=file_content,
+            type=file_type,
+            is_path=False,
+        )
+
+        # Normalize input using Pydantic model
+        input_file_model: FileInput = normalize_file_input(formatted_input)
 
         try:
             await document_ingestor.ingest_file(
-                input_file=formatted_input,
+                input_file=input_file_model,
                 document=document,
                 graph_extract=graph_extract,
                 user=current_user,
@@ -98,7 +101,7 @@ async def upload_and_ingest_documents(
             )
             raise HTTPException(
                 status_code=500,
-                detail=f"Error ingesting file {input_file.name}: {str(e)}",
+                detail=f"Error ingesting file {input_file.filename}: {str(e)}",
             ) from e
 
         return document
