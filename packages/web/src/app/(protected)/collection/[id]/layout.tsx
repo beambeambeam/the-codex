@@ -1,20 +1,51 @@
 "use client";
 
+import React from "react";
+import { useParams } from "next/navigation";
+
 import { ClusteringProvider } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import CollectionIdHeader from "@/app/(protected)/collection/[id]/_components/header";
 import CollectionIdSidebar from "@/app/(protected)/collection/[id]/_components/sidebar";
 import { CollectionIdProvider } from "@/app/(protected)/collection/[id]/_components/use-collection-id-context";
+import CollectionIdSkeleton from "@/app/(protected)/collection/[id]/skeleton";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { $api } from "@/lib/api/client";
 
 export default function CollectionIdLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const params = useParams<{ id: string }>();
+
+  const { isPending, isError, data } = $api.useQuery(
+    "get",
+    "/collections/{collection_id}",
+    {
+      params: {
+        path: {
+          collection_id: params.id,
+        },
+      },
+    },
+  );
+
+  if (isPending) {
+    return <CollectionIdSkeleton />;
+  }
+
+  if (!data || isError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <span>Error loading collection.</span>
+      </div>
+    );
+  }
+
   return (
     <CollectionIdProvider
-      initialTitle="Attension is All you need"
-      initialDescription="A seminal paper introducing the Transformer architecture, which relies entirely on attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and sequence modeling."
+      initialTitle={data?.name}
+      initialDescription={data?.description ?? ""}
     >
       <ClusteringProvider>
         <SidebarProvider>

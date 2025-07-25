@@ -15,7 +15,7 @@ const CollectionIdContext = createContext<CollectionIdContextProps | undefined>(
 
 export function CollectionIdProvider({
   initialTitle = "",
-  initialDescription = "",
+  initialDescription,
   children,
 }: {
   initialTitle?: string;
@@ -23,7 +23,9 @@ export function CollectionIdProvider({
   children: ReactNode;
 }) {
   const [title, setTitle] = useState(initialTitle);
-  const [description, setDescription] = useState(initialDescription);
+  const [description, setDescription] = useState(
+    initialDescription ?? "No description yet!",
+  );
 
   return (
     <CollectionIdContext.Provider
