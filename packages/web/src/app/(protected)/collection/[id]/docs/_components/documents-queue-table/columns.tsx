@@ -1,13 +1,15 @@
 import { createColumnHelper } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
 import { CheckCircleIcon, Text, UserIcon, XCircleIcon } from "lucide-react";
 
+import FileQueueDropdown from "@/app/(protected)/collection/[id]/docs/_components/documents-queue-table/actions";
 import { DataTableColumnHeader } from "@/components/data-table/data-table-column-header";
 import { Pill, PillIcon, PillStatus } from "@/components/ui/pill";
 import { RelativeTimeCard } from "@/components/ui/relative-time-card";
 import { components } from "@/lib/api/path";
 import { formatFileType } from "@/lib/files";
 
-type FileQueue = Omit<
+export type FileQueue = Omit<
   components["schemas"]["DocumentDetailResponse"],
   "chunks" | "relations"
 >;
@@ -129,5 +131,13 @@ export const fileQueueColumns = [
     meta: { label: "Updated At", placeholder: "", variant: "date" },
     enableColumnFilter: true,
     cell: ({ cell }) => <RelativeTimeCard date={cell.getValue()} />,
+  }),
+  columnHelper.display({
+    id: "actions",
+    header: () => <span className="sr-only">Actions</span>,
+    cell: ({ row }: { row: Row<FileQueue> }) => <FileQueueDropdown row={row} />,
+    meta: { label: "Actions" },
+    enableColumnFilter: false,
+    enableSorting: false,
   }),
 ];
