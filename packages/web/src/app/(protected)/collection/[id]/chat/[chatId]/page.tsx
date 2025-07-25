@@ -1,16 +1,18 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ClockFadingIcon } from "lucide-react";
 
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/header";
+import ChatIdPageSkeleton from "@/app/(protected)/collection/[id]/chat/[chatId]/skeleton";
+import { Button } from "@/components/ui/button";
 import { $api } from "@/lib/api/client";
 
-function CollectionIdPage() {
+function ChatIdPage() {
   const params = useParams<{ id: string; chatId: string }>();
 
   const { data, isPending, isError } = $api.useQuery(
@@ -19,18 +21,32 @@ function CollectionIdPage() {
     {
       params: {
         path: {
-          chat_id: "",
+          chat_id: params.id,
         },
       },
     },
   );
 
   if (isPending) {
-    return null;
+    return <ChatIdPageSkeleton />;
   }
 
   if (!data || isError) {
-    return null;
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center p-10">
+        <div className="text-destructive mb-2 text-2xl font-semibold">
+          Something went wrong
+        </div>
+        <div className="text-muted-foreground mb-6">
+          We couldn&apos;t load this chat. Please try again later.
+        </div>
+        <Link href={`/collection/${params.id}/chat`}>
+          <Button type="button" variant="outline">
+            Start a New conversation
+          </Button>
+        </Link>
+      </div>
+    );
   }
 
   return (
@@ -55,4 +71,4 @@ function CollectionIdPage() {
     </>
   );
 }
-export default CollectionIdPage;
+export default ChatIdPage;
