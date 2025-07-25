@@ -113,62 +113,6 @@ async def upload_and_ingest_documents(
 
 
 @router.post(
-    "/ingest",
-    response_model=DocumentResponse,
-    tags=["agentic"],
-    status_code=status.HTTP_201_CREATED,
-)
-async def ingest_documents(
-    document_id: str,
-    graph_extract: bool = True,
-    document_ingestor: DocumentIngestorService = Depends(get_document_ingestor),
-    document_service: DocumentService = Depends(get_document_service),
-    current_user: User = Depends(get_current_user),
-):
-    """
-    Ingest documents into the system.
-    This endpoint allows users to upload documents for processing and storage.
-    """
-    document = document_service.get_document(document_id=document_id)
-    file_content = storage_service.download_file_from_storage(
-        object_name=document.source_file_path
-    )
-    if not file_content:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="File not found in storage"
-        )
-
-    # Normalize input using Pydantic model
-    input_file = FileInput(
-        name=document.file_name,
-        file_name=document.file_name,
-        content=file_content,
-        type=document.file_type,
-        is_path=False,
-    )
-
-    if not document:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
-        )
-
-    try:
-        await document_ingestor.ingest_file(
-            input_file=input_file,
-            document=document,
-            graph_extract=graph_extract,
-            user=current_user,
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error ingesting document: {str(e)}",
-        ) from e
-
-    return document
-
-
-@router.post(
     "/cluster_topic",
     response_model=ClusteringResult,
     tags=["agentic"],
