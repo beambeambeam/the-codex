@@ -7,13 +7,14 @@ import { Scroller } from "@/components/ui/scroller";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { $api } from "@/lib/api/client";
-import { useUserActions } from "@/store/userStore";
+import { useUser, useUserActions } from "@/store/userStore";
 
 function SettingPanel() {
   const TABS_TRIGGER_CLASSNAME =
     "hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none";
 
   const { reset } = useUserActions();
+  const { email, username } = useUser();
   const { mutate: logout, isPending } = $api.useMutation(
     "post",
     "/auth/logout",
@@ -60,8 +61,8 @@ function SettingPanel() {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2">
-              <h4 className="text-4xl font-bold">Username</h4>
-              <p className="text-base">Email@email.com</p>
+              <h4 className="text-4xl font-bold">{username}</h4>
+              <p className="text-base">{email}</p>
             </div>
           </div>
           <div className="">
