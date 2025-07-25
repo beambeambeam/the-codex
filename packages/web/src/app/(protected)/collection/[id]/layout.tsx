@@ -35,11 +35,10 @@ export default function CollectionIdLayout({
   }
 
   if (!data || isError) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <span>Error loading collection.</span>
-      </div>
-    );
+    if (typeof window !== "undefined") {
+      window.location.replace("/404");
+      return null;
+    }
   }
 
   return (
