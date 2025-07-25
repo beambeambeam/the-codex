@@ -1,4 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+import asyncio
+
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    UploadFile,
+    status,
+)
 
 from ..document.schemas import DocumentCreate, DocumentResponse
 from ..storage import storage_service
@@ -23,7 +31,7 @@ router = APIRouter(prefix="/agentic", tags=["agentic"])
 
 @router.post(
     "/upload_ingest",
-    response_model=DocumentResponse,
+    response_model=list[DocumentResponse],
     tags=["agentic"],
     status_code=status.HTTP_201_CREATED,
 )
@@ -34,82 +42,65 @@ async def upload_and_ingest_documents(
     document_service: DocumentService = Depends(get_document_service),
     current_user: User = Depends(get_current_user),
     *,
-    input_file: UploadFile,
-    file_name: str = None,
+    input_files: list[UploadFile],
 ):
     """
-    Ingest documents into the system.
-    This endpoint allows users to upload documents for processing and storage.
+    Ingest multiple documents into the system.
+    This endpoint allows users to upload multiple documents for processing and storage.
+    Returns as soon as document records are created; ingestion continues in the background.
     """
-
-    try:
-        # Use utility to prepare file upload (object_name, file_type, file_extension)
-        object_name, file_type, _ = DocumentService.prepare_file_upload(
-            input_file, current_user.id, collection_id
-        )
-
-        # Upload file to storage
-        stored_path = await storage_service.upload_file_to_storage(
-            input_file, object_name
-        )
-        await input_file.seek(0)  # Reset pointer to start for subsequent read
-
-        # Create document record
-        document = document_service.create_document(
-            document_data=DocumentCreate(
-                file_name=input_file.filename or "uploaded_file",
-                file_type=file_type,
-                source_file_path=stored_path,
-                collection_id=collection_id,
-            ),
-            user=current_user,
-        )
-
-        if not document:
-            raise RuntimeError(
-                f"Failed to create document record for {input_file.filename}"
-            )
-
-        # Read file content for ingestion
-        file_content = await input_file.read()
-        if not file_content:
-            raise HTTPException(status_code=400, detail="Uploaded file is empty")
-
-        formatted_input = FileInput(
-            name=input_file.filename or "uploaded_file",
-            file_name=input_file.filename or "uploaded_file",
-            content=file_content,
-            type=file_type,
-            is_path=False,
-        )
-
-        # Normalize input using Pydantic model
-        input_file_model: FileInput = normalize_file_input(formatted_input)
-
+    created_documents = []
+    errors = []
+    for input_file in input_files:
         try:
-            await document_ingestor.ingest_file(
-                input_file=input_file_model,
-                document=document,
-                graph_extract=graph_extract,
+            object_name, file_type, _ = DocumentService.prepare_file_upload(
+                input_file, current_user.id, collection_id
+            )
+            stored_path = await storage_service.upload_file_to_storage(
+                input_file, object_name
+            )
+            await input_file.seek(0)
+            document = document_service.create_document(
+                document_data=DocumentCreate(
+                    file_name=input_file.filename or "uploaded_file",
+                    file_type=file_type,
+                    source_file_path=stored_path,
+                    collection_id=collection_id,
+                ),
                 user=current_user,
             )
-        except Exception as e:
-            # Fallback: delete document and storage file if ingestion fails
-            document_service.delete_document(document_id=document.id)
-            storage_service.delete_file_from_storage(
-                object_name=document.source_file_path
+            if not document:
+                raise RuntimeError(
+                    f"Failed to create document record for {input_file.filename}"
+                )
+            file_content = await input_file.read()
+            if not file_content:
+                raise HTTPException(status_code=400, detail="Uploaded file is empty")
+            formatted_input = FileInput(
+                name=input_file.filename or "uploaded_file",
+                file_name=input_file.filename or "uploaded_file",
+                content=file_content,
+                type=file_type,
+                is_path=False,
             )
-            raise HTTPException(
-                status_code=500,
-                detail=f"Error ingesting file {input_file.filename}: {str(e)}",
-            ) from e
-
-        return document
-
-    except Exception as e:
+            input_file_model: FileInput = normalize_file_input(formatted_input)
+            # Schedule ingestion concurrently using asyncio
+            asyncio.create_task(
+                document_ingestor.ingest_file(
+                    input_file=input_file_model,
+                    document=document,
+                    graph_extract=graph_extract,
+                    user=current_user,
+                )
+            )
+            created_documents.append(document)
+        except Exception as e:
+            errors.append({"file": input_file.filename, "error": str(e)})
+    if not created_documents:
         raise HTTPException(
-            status_code=500, detail=f"Error processing file: {str(e)}"
-        ) from e
+            status_code=500, detail=f"No documents created. Errors: {errors}"
+        )
+    return created_documents
 
 
 @router.post(
