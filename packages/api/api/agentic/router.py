@@ -37,7 +37,6 @@ router = APIRouter(prefix="/agentic", tags=["agentic"])
 )
 async def upload_and_ingest_documents(
     collection_id: str,
-    graph_extract: bool = True,
     document_ingestor: DocumentIngestorService = Depends(get_document_ingestor),
     document_service: DocumentService = Depends(get_document_service),
     current_user: User = Depends(get_current_user),
@@ -89,7 +88,7 @@ async def upload_and_ingest_documents(
                 document_ingestor.ingest_file(
                     input_file=input_file_model,
                     document=document,
-                    graph_extract=graph_extract,
+                    graph_extract=False,
                     user=current_user,
                 )
             )

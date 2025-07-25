@@ -651,31 +651,11 @@ export interface paths {
     put?: never;
     /**
      * Upload And Ingest Documents
-     * @description Ingest documents into the system.
-     *     This endpoint allows users to upload documents for processing and storage.
+     * @description Ingest multiple documents into the system.
+     *     This endpoint allows users to upload multiple documents for processing and storage.
+     *     Returns as soon as document records are created; ingestion continues in the background.
      */
     post: operations["upload_and_ingest_documents_agentic_upload_ingest_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/agentic/ingest": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Ingest Documents
-     * @description Ingest documents into the system.
-     *     This endpoint allows users to upload documents for processing and storage.
-     */
-    post: operations["ingest_documents_agentic_ingest_post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1021,11 +1001,8 @@ export interface components {
     };
     /** Body_upload_and_ingest_documents_agentic_upload_ingest_post */
     Body_upload_and_ingest_documents_agentic_upload_ingest_post: {
-      /**
-       * Input File
-       * Format: binary
-       */
-      input_file: File;
+      /** Input Files */
+      input_files: File[];
     };
     /** Body_upload_document_documents_upload_post */
     Body_upload_document_documents_upload_post: {
@@ -3484,8 +3461,6 @@ export interface operations {
     parameters: {
       query: {
         collection_id: string;
-        graph_extract?: boolean;
-        file_name?: string;
       };
       header?: never;
       path?: never;
@@ -3505,41 +3480,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  ingest_documents_agentic_ingest_post: {
-    parameters: {
-      query: {
-        document_id: string;
-        graph_extract?: boolean;
-      };
-      header?: never;
-      path?: never;
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["DocumentResponse"];
+          "application/json": components["schemas"]["DocumentResponse"][];
         };
       };
       /** @description Validation Error */
