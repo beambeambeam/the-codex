@@ -3,8 +3,6 @@ from fastapi import Depends
 from api.auth.dependencies import get_current_user
 from api.chat.dependencies import get_chat_service
 from api.chat.service import ChatService
-from api.collection.dependencies import get_collection_service
-from api.collection.service import CollectionService
 from api.document.dependencies import get_document_service
 from api.document.service import DocumentService
 from api.models.user import User

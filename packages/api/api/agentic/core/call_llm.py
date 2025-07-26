@@ -6,7 +6,7 @@ import litellm
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from ..schemas import ChatHistory, ChatMessage
+from ..schemas import ChatHistory
 
 # utils/call_llm.py
 # litellm._turn_on_debug()

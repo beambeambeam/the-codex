@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 
 from api.chat.service import ChatService
+from api.document.service import DocumentServiceSearch as DocumentService
+from api.models.user import User
 
-from ..collection.dependencies import CollectionService
-from ..document.service import DocumentServiceSearch as DocumentService
-from ..models.user import User
 from .core import (
     TextEmbedder,
 )

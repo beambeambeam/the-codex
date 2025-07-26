@@ -2,7 +2,6 @@ from typing import Any, Literal, Optional
 
 from api.chat.schemas import CollectionChatHistoryCreate, CollectionChatReferenceCreate
 from api.chat.service import ChatService
-from api.collection.service import CollectionService
 from api.document.schemas import ChunkSearchResponse
 from api.document.service import DocumentServiceSearch as DocumentService
 from api.models.chat import CollectionChatReference
