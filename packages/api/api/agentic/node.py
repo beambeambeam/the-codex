@@ -313,7 +313,7 @@ class GenerateResponseFromContextNode(Node):
 
         new_message = ChatMessage(
             collection_chat_id=shared.chat_session.id,
-            role="user",
+            role="assistant",
             content=exec_res,
             retrieved_contexts=shared.retrieved_contexts,
         )
