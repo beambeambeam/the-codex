@@ -21,7 +21,7 @@ function ChatIdPage() {
     {
       params: {
         path: {
-          chat_id: params.id,
+          chat_id: params.chatId,
         },
       },
     },
