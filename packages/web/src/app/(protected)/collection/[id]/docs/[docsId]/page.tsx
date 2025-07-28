@@ -116,15 +116,17 @@ function DocIdPage() {
                       )}
                       <div className="flex flex-col gap-1"></div>
                       <div className="flex items-center gap-1">
-                        {data.created_by ?? (
+                        {data.created_by ? (
                           <Pill>
                             <PillAvatar
-                              fallback={getFallbackUsername(
-                                data.created_by ?? "",
-                              )}
+                              fallback={getFallbackUsername(data.created_by)}
                             />
                             {data.created_by}
                           </Pill>
+                        ) : (
+                          <p className="text-muted-foreground text-sm">
+                            Unknown user
+                          </p>
                         )}
                         <Pill>
                           <PillStatus>

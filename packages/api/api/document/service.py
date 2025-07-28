@@ -176,25 +176,40 @@ class DocumentService:
 
     def get_document_with_details(self, document_id: str) -> Optional[dict]:
         """Get document with all related data and MinIO file URL."""
+        creator_alias = aliased(User)
+        updater_alias = aliased(User)
+
         document = (
-            self.db.query(Document)
+            self.db.query(
+                Document,
+                creator_alias.username.label("creator_username"),
+                updater_alias.username.label("updater_username"),
+            )
             .options(
                 joinedload(Document.chunks),
                 joinedload(Document.relations).joinedload(DocumentRelation.nodes),
                 joinedload(Document.relations).joinedload(DocumentRelation.edges),
             )
+            .outerjoin(creator_alias, Document.created_by == creator_alias.id)
+            .outerjoin(updater_alias, Document.updated_by == updater_alias.id)
             .filter(Document.id == document_id)
             .first()
         )
         if not document:
             return None
+
+        doc, creator_username, updater_username = document
+
         # Convert to dict (or use model_dump if using pydantic models)
-        doc_dict = document.__dict__.copy()
+        doc_dict = doc.__dict__.copy()
         # Add related fields if needed (chunks, relations)
-        doc_dict["chunks"] = getattr(document, "chunks", [])
-        doc_dict["relations"] = getattr(document, "relations", [])
+        doc_dict["chunks"] = getattr(doc, "chunks", [])
+        doc_dict["relations"] = getattr(doc, "relations", [])
+        # Replace UUIDs with usernames
+        doc_dict["created_by"] = creator_username
+        doc_dict["updated_by"] = updater_username
         # Generate MinIO file URL
-        doc_dict["minio_file_url"] = self.get_file_url(document.source_file_path, None)
+        doc_dict["minio_file_url"] = self.get_file_url(doc.source_file_path, None)
         return doc_dict
 
     # Chunk CRUD operations
