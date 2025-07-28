@@ -6,7 +6,7 @@ import { ArrowUpRightIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { TextareaAutosize } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -78,16 +78,6 @@ export function ChatInputWithMentions({
   useEffect(() => {
     setInternalValue(value);
   }, [value]);
-
-  // Auto-resize textarea
-  useEffect(() => {
-    if (!textareaRef.current) return;
-    textareaRef.current.style.height = "auto";
-    textareaRef.current.style.height =
-      typeof maxHeight === "number"
-        ? `${Math.min(textareaRef.current.scrollHeight, maxHeight)}px`
-        : `min(${textareaRef.current.scrollHeight}px, ${maxHeight})`;
-  }, [internalValue, maxHeight]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
@@ -190,15 +180,16 @@ export function ChatInputWithMentions({
           )}
           onClick={() => textareaRef.current?.focus()}
         >
-          <Textarea
+          <TextareaAutosize
             ref={textareaRef}
             value={internalValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled}
-            className="text-primary min-h-[44px] w-full resize-none border-none bg-transparent shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            rows={1}
+            className="text-primary min-h-[44px] w-full resize-none border-none bg-transparent break-words whitespace-pre-wrap shadow-none outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+            minRows={1}
+            maxRows={10}
           />
 
           {/* Mention Dropdown */}
