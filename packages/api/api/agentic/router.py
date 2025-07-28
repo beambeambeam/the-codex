@@ -47,9 +47,7 @@ async def upload_and_ingest_documents(
     document_service: DocumentService = Depends(get_document_service),
     current_user: User = Depends(get_current_user),
     *,
-    input_file: UploadFile,
-    file_name: str = None,
-    description: str = None,
+    input_files: list[UploadFile],
 ):
     """
     Ingest multiple documents into the system.
@@ -72,18 +70,8 @@ async def upload_and_ingest_documents(
                     detail=f"Uploaded file is empty: {input_file.filename}",
                 )
 
-        # Create document record
-        document = document_service.create_document(
-            document_data=DocumentCreate(
-                file_name=input_file.name,
-                description=description,
-                file_type=input_file.type,
-                file_size=len(input_file.content),
-                source_file_path=stored_path,
-                collection_id=collection_id,
-            ),
-            user=current_user,
-        )
+            # Rewind the file to be read again by the storage service
+            await input_file.seek(0)
 
             stored_path = await storage_service.upload_file_to_storage(
                 input_file, object_name
@@ -93,6 +81,7 @@ async def upload_and_ingest_documents(
                 document_data=DocumentCreate(
                     file_name=input_file.filename or "uploaded_file",
                     file_type=file_type,
+                    file_size=len(input_file.content),
                     source_file_path=stored_path,
                     collection_id=collection_id,
                 ),
@@ -153,6 +142,7 @@ def cluster_documents(
         collection_id=collection_id,
         cluster_title_top_n_topics=5,
         cluster_title_top_n_words=50,
+        title_generated_methods="by_summaries",
     )
 
 
