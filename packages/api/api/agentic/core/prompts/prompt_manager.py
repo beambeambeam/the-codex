@@ -141,6 +141,27 @@ def render_keyword_to_topic_extraction(keywords: Union[str, list[str]]) -> str:
     return manager.render_template("keyword_to_topic_extraction.j2", keywords=keywords)
 
 
+def render_summary_to_topic_extraction(
+    summaries: Union[str, list[str]], text_limit: int = 15000
+) -> str:
+    """
+    Convenience function to render the summary to topic extraction prompt.
+
+    Args:
+        summaries: The summaries to extract topics from
+        text_limit: Maximum characters to include from the text
+
+    Returns:
+        Rendered prompt string
+    """
+    if isinstance(summaries, list):
+        summaries = "\n\n---\n\n".join(summaries)
+    manager = get_prompt_manager()
+    return manager.render_template(
+        "summary_to_topic_extraction.j2", summaries=summaries, text_limit=text_limit
+    )
+
+
 def render_collection_rag_agent_prompt(
     question: str, contexts: Union[str, list[str]] = None
 ) -> str:

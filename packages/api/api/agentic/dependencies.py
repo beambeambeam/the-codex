@@ -20,7 +20,6 @@ from .core import (
 from .core.embedding.embedding import MODEL_BACKEND_MAP
 from .core.prompts.prompt_manager import (
     render_knowledge_graph_extraction_prompt,
-    render_summary_generate_prompt,
 )
 
 
@@ -84,12 +83,14 @@ def get_document_ingestor(
 
 def get_document_clustering_service(
     document_service: DocumentService = Depends(get_document_service),
+    text_embedder: TextEmbedder = Depends(get_text_embedder),
 ) -> DocumentClusteringService:
     """
     Returns an instance of DocumentClusteringService with the necessary dependencies.
     """
     return DocumentClusteringService(
         document_service=document_service,
+        embedding_model=text_embedder,
     )
 
 
