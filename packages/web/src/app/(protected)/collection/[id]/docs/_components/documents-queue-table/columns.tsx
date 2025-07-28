@@ -43,7 +43,7 @@ export const fileQueueColumns = [
       const title = row.original.title;
       const fileName = row.original.file_name;
       if (!title || title === fileName) {
-        return <span className="text-muted-foreground">-</span>;
+        return <span className="text-muted-foreground">No title yet.</span>;
       }
       return <span>{title}</span>;
     },

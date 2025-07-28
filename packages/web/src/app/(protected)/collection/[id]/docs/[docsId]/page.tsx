@@ -109,6 +109,11 @@ function DocIdPage() {
                           ({data.file_name})
                         </p>
                       )}
+                      {!data.title && (
+                        <p className="text-muted-foreground text-sm">
+                          No title yet.
+                        </p>
+                      )}
                       <div className="flex flex-col gap-1"></div>
                       <div className="flex items-center gap-1">
                         {data.created_by ?? (
@@ -180,10 +185,13 @@ function DocIdPage() {
                       <BadgeQuestionMarkIcon size={16} />
                       Description
                     </Label>
-                    {/* <Markdown className="prose border-border w-full rounded border p-2">
-                      {MOCK_DOCS.description}
-                    </Markdown> */}
-                    No description yet!
+                    {data.description ? (
+                      <div className="border-border w-full rounded border p-2">
+                        <p className="text-sm">{data.description}</p>
+                      </div>
+                    ) : (
+                      <p className="text-sm">No description yet.</p>
+                    )}
                   </div>
                 </div>
               </TabsContent>
