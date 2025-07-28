@@ -1,6 +1,6 @@
 """Document API routes."""
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..agentic.dependencies import TextEmbedder, get_text_embedder
@@ -54,7 +54,9 @@ def get_document(
     """Get a document with all details."""
     doc_details = document_service.get_document_with_details(document.id)
     if not doc_details:
-        return None
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
+        )
     return DocumentDetailResponse(**doc_details)
 
 
