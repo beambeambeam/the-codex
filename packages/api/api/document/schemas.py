@@ -259,6 +259,3 @@ class DocumentDetailResponse(DocumentResponse):
 
     chunks: list[ChunkResponse] = []
     relations: list[DocumentRelationWithNodes] = []
-    minio_file_url: Optional[str] = Field(
-        None, description="Presigned MinIO file URL for iframe usage"
-    )
