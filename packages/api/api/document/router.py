@@ -180,14 +180,14 @@ def search_collection_documents(
     ),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
     document_service: DocumentService = Depends(get_document_service),
-) -> DocumentSearchResponse:
+) -> list[DocumentSearchResponse]:
     """Search for documents in a collection."""
     # Convert query to embedding
     query_embedding = text_embedder.get_embedding(query)
 
-    # Search chunks using the embedding
-    return document_service.search_collection_chunks(
-        collection_id=collection_id, query_embedding=query_embedding, top_k=5
+    # Search documents using the embedding
+    return document_service.search_collection_documents(
+        collection_id=collection_id, query_embedding=query_embedding, top_k=10
     )
 
 
