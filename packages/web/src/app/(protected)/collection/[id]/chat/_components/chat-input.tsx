@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowUpRightIcon } from "lucide-react";
+import { ArrowUpRightIcon, FileTextIcon } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TextareaAutosize } from "@/components/ui/textarea";
@@ -13,36 +13,29 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { fetchClient } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 
-// Mock user data for mentions
-const MOCK_USERS = [
-  { id: "1", name: "John Doe", email: "john.doe@example.com", avatar: "" },
-  { id: "2", name: "Jane Smith", email: "jane.smith@example.com", avatar: "" },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob.johnson@example.com",
-    avatar: "",
-  },
-  {
-    id: "4",
-    name: "Alice Brown",
-    email: "alice.brown@example.com",
-    avatar: "",
-  },
-];
-
-type MentionUser = {
+type Document = {
   id: string;
-  name: string;
-  email: string;
-  avatar?: string;
+  file_name: string;
+  description?: string | null;
+  file_type: string;
+  file_size?: number | null;
+  collection_id: string;
+  is_vectorized: boolean;
+  is_graph_extracted: boolean;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string | null;
+  updated_by?: string | null;
+  minio_file_url?: string | null;
 };
 
 type Mention = {
   id: string;
-  user: MentionUser;
+  document: Document;
   startIndex: number;
   endIndex: number;
 };
@@ -55,22 +48,26 @@ type ChatInputWithMentionsProps = {
   disabled?: boolean;
   className?: string;
   maxHeight?: number | string;
+  collectionId: string;
 };
 
 export function ChatInputWithMentions({
   value = "",
   onValueChange,
   onSubmit,
-  placeholder = "Type @ to mention someone...",
+  placeholder = "Type @ to mention a document...",
   disabled = false,
   className,
   maxHeight = 240,
+  collectionId,
 }: ChatInputWithMentionsProps) {
   const [internalValue, setInternalValue] = useState(value);
   const [mentions, setMentions] = useState<Mention[]>([]);
   const [mentionDropdown, setMentionDropdown] = useState({
     isOpen: false,
     searchTerm: "",
+    documents: [] as Document[],
+    loading: false,
   });
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -79,7 +76,31 @@ export function ChatInputWithMentions({
     setInternalValue(value);
   }, [value]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const searchDocuments = async (query: string) => {
+    if (!query.trim()) return [];
+
+    try {
+      const response = await fetchClient.GET(
+        "/documents/collection/{collection_id}/documents/search",
+        {
+          params: {
+            path: { collection_id: collectionId },
+            query: { query },
+          },
+        },
+      );
+
+      if (response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error("Error searching documents:", error);
+      return [];
+    }
+  };
+
+  const handleChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;
     setInternalValue(newValue);
     onValueChange?.(newValue);
@@ -97,10 +118,20 @@ export function ChatInputWithMentions({
         !mentionDropdown.isOpen ||
         searchTerm !== mentionDropdown.searchTerm
       ) {
-        setMentionDropdown({
+        setMentionDropdown((prev) => ({
+          ...prev,
           isOpen: true,
           searchTerm,
-        });
+          loading: true,
+        }));
+
+        // Search for documents
+        const documents = await searchDocuments(searchTerm);
+        setMentionDropdown((prev) => ({
+          ...prev,
+          documents: documents || [],
+          loading: false,
+        }));
       }
     } else {
       // Close dropdown if no @ found
@@ -122,7 +153,7 @@ export function ChatInputWithMentions({
     }
   };
 
-  const handleSelectUser = (user: MentionUser) => {
+  const handleSelectDocument = (document: Document) => {
     if (!textareaRef.current) return;
 
     const cursorPos = textareaRef.current.selectionStart;
@@ -132,7 +163,9 @@ export function ChatInputWithMentions({
     const atIndex = beforeCursor.lastIndexOf("@");
     if (atIndex !== -1) {
       const newValue =
-        beforeCursor.slice(0, atIndex) + `@${user.name} ` + afterCursor;
+        beforeCursor.slice(0, atIndex) +
+        `@${document.file_name} ` +
+        afterCursor;
       setInternalValue(newValue);
       onValueChange?.(newValue);
 
@@ -140,16 +173,16 @@ export function ChatInputWithMentions({
       const mentionId = `mention_${Date.now()}`;
       const newMention: Mention = {
         id: mentionId,
-        user,
+        document,
         startIndex: atIndex,
-        endIndex: atIndex + user.name.length,
+        endIndex: atIndex + document.file_name.length,
       };
       setMentions((prev) => [...prev, newMention]);
 
       // Set cursor position after the mention
       setTimeout(() => {
         if (textareaRef.current) {
-          const newCursorPos = atIndex + user.name.length + 2; // +2 for @ and space
+          const newCursorPos = atIndex + document.file_name.length + 2; // +2 for @ and space
           textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
           textareaRef.current.focus();
         }
@@ -159,16 +192,6 @@ export function ChatInputWithMentions({
       setMentionDropdown((prev) => ({ ...prev, isOpen: false }));
     }
   };
-
-  const filteredUsers = MOCK_USERS.filter(
-    (user) =>
-      user.name
-        .toLowerCase()
-        .includes(mentionDropdown.searchTerm.toLowerCase()) ||
-      user.email
-        .toLowerCase()
-        .includes(mentionDropdown.searchTerm.toLowerCase()),
-  );
 
   return (
     <TooltipProvider>
@@ -192,40 +215,52 @@ export function ChatInputWithMentions({
             maxRows={10}
           />
 
-          {/* Mention Dropdown */}
-          {mentionDropdown.isOpen && filteredUsers.length > 0 && (
+          {/* Document Mention Dropdown */}
+          {mentionDropdown.isOpen && (
             <div
               className="bg-background border-border absolute z-50 max-h-48 overflow-y-auto rounded-lg border shadow-lg"
               style={{
                 left: "0",
                 bottom: "100%",
                 marginBottom: "8px",
-                minWidth: "200px",
+                minWidth: "250px",
               }}
             >
-              {filteredUsers.map((user) => (
-                <button
-                  key={user.id}
-                  className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left"
-                  onClick={() => handleSelectUser(user)}
-                >
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={user.avatar} />
-                    <AvatarFallback>
-                      {user.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{user.name}</span>
-                    <span className="text-muted-foreground text-xs">
-                      {user.email}
-                    </span>
+              {mentionDropdown.loading ? (
+                <div className="text-muted-foreground flex items-center justify-center px-3 py-2 text-sm">
+                  Searching documents...
+                </div>
+              ) : mentionDropdown.documents.length > 0 ? (
+                mentionDropdown.documents.map((document) => (
+                  <button
+                    key={document.id}
+                    className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left"
+                    onClick={() => handleSelectDocument(document)}
+                  >
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback>
+                        <FileTextIcon className="h-3 w-3" />
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">
+                        {document.file_name}
+                      </span>
+                      {document.description && (
+                        <span className="text-muted-foreground text-xs">
+                          {document.description}
+                        </span>
+                      )}
+                    </div>
+                  </button>
+                ))
+              ) : (
+                mentionDropdown.searchTerm && (
+                  <div className="text-muted-foreground px-3 py-2 text-sm">
+                    No documents found
                   </div>
-                </button>
-              ))}
+                )
+              )}
             </div>
           )}
 
@@ -249,12 +284,12 @@ export function ChatInputWithMentions({
           </div>
         </div>
 
-        {/* Mention Badges */}
+        {/* Document Mention Badges */}
         {mentions.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {mentions.map((mention) => (
               <Badge key={mention.id} variant="secondary" className="text-xs">
-                @{mention.user.name}
+                @{mention.document.file_name}
               </Badge>
             ))}
           </div>

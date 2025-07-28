@@ -1,5 +1,6 @@
 "use client";
 
+import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,6 +25,7 @@ export type ChatFormSchemaType = z.infer<typeof chatFormSchema>;
 function ChatForm(
   props: FormProps<ChatFormSchemaType> & { suggest?: boolean },
 ) {
+  const params = useParams<{ id: string }>();
   const form = useForm<ChatFormSchemaType>({
     resolver: zodResolver(chatFormSchema),
     defaultValues: props.defaultValues,
@@ -80,8 +82,9 @@ function ChatForm(
                   value={field.value}
                   onValueChange={field.onChange}
                   onSubmit={() => form.handleSubmit(props.onSubmit)()}
-                  placeholder="Type @ to mention someone..."
+                  placeholder="Type @ to mention a document..."
                   disabled={props.disabled}
+                  collectionId={params.id}
                 />
               </FormControl>
             </FormItem>
