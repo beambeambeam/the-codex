@@ -32,6 +32,7 @@ type Mention = {
 type ChatInputWithMentionsProps = {
   value?: string;
   onValueChange?: (value: string) => void;
+  onReferencesChange?: (references: string[]) => void;
   onSubmit?: () => void;
   placeholder?: string;
   disabled?: boolean;
@@ -43,6 +44,7 @@ type ChatInputWithMentionsProps = {
 export function ChatInputWithMentions({
   value = "",
   onValueChange,
+  onReferencesChange,
   onSubmit,
   placeholder = "Type @ and then type document name to mention...",
   disabled = false,
@@ -64,6 +66,12 @@ export function ChatInputWithMentions({
   useEffect(() => {
     setInternalValue(value);
   }, [value]);
+
+  // Update references when mentions change
+  useEffect(() => {
+    const references = mentions.map((mention) => mention.document.id);
+    onReferencesChange?.(references);
+  }, [mentions, onReferencesChange]);
 
   const searchDocuments = async (query: string) => {
     if (!query.trim() || query.trim().length < 2) return [];

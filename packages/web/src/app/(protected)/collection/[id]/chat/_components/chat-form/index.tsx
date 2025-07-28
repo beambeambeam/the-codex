@@ -18,6 +18,7 @@ import type { FormProps } from "@/types";
 
 const chatFormSchema = z.object({
   chat_message: z.string().min(1, "Message is required"),
+  reference: z.array(z.string()),
 });
 
 export type ChatFormSchemaType = z.infer<typeof chatFormSchema>;
@@ -28,7 +29,10 @@ function ChatForm(
   const params = useParams<{ id: string }>();
   const form = useForm<ChatFormSchemaType>({
     resolver: zodResolver(chatFormSchema),
-    defaultValues: props.defaultValues,
+    defaultValues: props.defaultValues || {
+      chat_message: "",
+      reference: [],
+    },
     disabled: props.disabled,
     mode: "onChange",
     reValidateMode: "onChange",
@@ -81,6 +85,9 @@ function ChatForm(
                 <ChatInputWithMentions
                   value={field.value}
                   onValueChange={field.onChange}
+                  onReferencesChange={(references) =>
+                    form.setValue("reference", references)
+                  }
                   onSubmit={() => form.handleSubmit(props.onSubmit)()}
                   placeholder="Type @ to mention a document..."
                   disabled={props.disabled}

@@ -39,10 +39,11 @@ function ChatContent() {
           onSubmit={function (
             values: ChatFormSchemaType,
           ): void | Promise<void> {
-            throw new Error("Function not implemented.");
+            console.log(values);
           }}
           defaultValues={{
             chat_message: "",
+            reference: [],
           }}
           suggest={true}
         />

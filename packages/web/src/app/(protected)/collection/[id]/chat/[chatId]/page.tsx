@@ -64,6 +64,7 @@ function ChatIdPage() {
           }}
           defaultValues={{
             chat_message: "",
+            reference: [],
           }}
           suggest={false}
         />
