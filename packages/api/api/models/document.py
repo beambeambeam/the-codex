@@ -4,11 +4,12 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
 from pgvector.sqlalchemy import Vector
-from sqlalchemy import TIMESTAMP, Boolean, ForeignKey, Integer, Text
+from sqlalchemy import TIMESTAMP, Boolean, Enum, ForeignKey, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
+from .enum import IngestionStatus
 
 if TYPE_CHECKING:
     from .user import User
@@ -19,12 +20,19 @@ class Document(Base):
     __tablename__ = "document"
 
     id: Mapped[str] = mapped_column(Text, primary_key=True)
+
     collection_id: Mapped[str] = mapped_column(
         Text, ForeignKey("collection.id", ondelete="CASCADE")
     )
     file_name: Mapped[str] = mapped_column(Text)
+    description: Mapped[Optional[str]] = mapped_column(Text)
+    summary: Mapped[Optional[str]] = mapped_column(Text)
     source_file_path: Mapped[str] = mapped_column(Text)
     file_type: Mapped[str] = mapped_column(Text)
+    file_size: Mapped[Optional[int]] = mapped_column(Integer)
+    status: Mapped[IngestionStatus] = mapped_column(
+        Enum(IngestionStatus), default=IngestionStatus.pending
+    )
     is_vectorized: Mapped[bool] = mapped_column(Boolean, default=False)
     is_graph_extracted: Mapped[bool] = mapped_column(Boolean, default=False)
     created_by: Mapped[Optional[str]] = mapped_column(
