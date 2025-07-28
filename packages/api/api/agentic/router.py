@@ -55,10 +55,22 @@ async def upload_and_ingest_documents(
             object_name, file_type, _ = DocumentService.prepare_file_upload(
                 input_file, current_user.id, collection_id
             )
+
+            # Read file content once at the beginning
+            file_content = await input_file.read()
+            if not file_content:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Uploaded file is empty: {input_file.filename}",
+                )
+
+            # Rewind the file to be read again by the storage service
+            await input_file.seek(0)
+
             stored_path = await storage_service.upload_file_to_storage(
                 input_file, object_name
             )
-            await input_file.seek(0)
+
             document = document_service.create_document(
                 document_data=DocumentCreate(
                     file_name=input_file.filename or "uploaded_file",
@@ -72,9 +84,6 @@ async def upload_and_ingest_documents(
                 raise RuntimeError(
                     f"Failed to create document record for {input_file.filename}"
                 )
-            file_content = await input_file.read()
-            if not file_content:
-                raise HTTPException(status_code=400, detail="Uploaded file is empty")
             formatted_input = FileInput(
                 name=input_file.filename or "uploaded_file",
                 file_name=input_file.filename or "uploaded_file",
