@@ -68,6 +68,9 @@ class DocumentResponse(DocumentBase):
     updated_at: datetime
     created_by: Optional[str]
     updated_by: Optional[str]
+    minio_file_url: Optional[str] = Field(
+        None, description="Presigned MinIO file URL for iframe usage"
+    )
 
     class Config:
         from_attributes = True
