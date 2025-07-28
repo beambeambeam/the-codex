@@ -7,7 +7,7 @@ function CollectionIdPage() {
   return (
     <>
       <CollectionIdTabs tab="tab-overview" />
-      <div className="h-full w-full border-l p-4">
+      <div className="h-full w-full border-x p-4">
         <ClusteringCanvas />
       </div>
     </>
