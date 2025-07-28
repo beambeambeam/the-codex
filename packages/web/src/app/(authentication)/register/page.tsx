@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import RegisterForm, {
@@ -16,13 +17,14 @@ import {
 import { $api } from "@/lib/api/client";
 
 function RegisterPage() {
+  const router = useRouter();
   const { mutate, isSuccess, isPending } = $api.useMutation(
     "post",
     "/auth/register",
     {
       onSuccess() {
         toast.success("Registration successful! Please sign in to continue.");
-        window.location.href = "/sign-in";
+        router.push("/sign-in");
       },
       onError(error: unknown) {
         const message =
