@@ -34,7 +34,7 @@ function ChatContent() {
         <ChatHeader title="Start a new Conversation" />
         <ChatTemplate message={[]} />
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10">
+      <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10 lg:mx-20">
         <ChatForm
           onSubmit={function (
             values: ChatFormSchemaType,
