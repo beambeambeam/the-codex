@@ -46,10 +46,9 @@ class CollectionChatHistory(Base):
     collection_chat_id: Mapped[str] = mapped_column(
         Text, ForeignKey("collection_chat.id", ondelete="CASCADE"), nullable=False
     )
-    agent: Mapped[str] = mapped_column(Enum(Role), nullable=False)
-    system_prompt: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    instruct: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    text: Mapped[str] = mapped_column(Text, nullable=False)
+    role: Mapped[Role] = mapped_column(Enum(Role, native_enum=False), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )

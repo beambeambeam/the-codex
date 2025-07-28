@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ..models.enum import CollectionChatReferenceType
+from ..models.enum import CollectionChatReferenceType, Role
 
 
 class CollectionChatBase(BaseModel):
@@ -34,10 +34,10 @@ class CollectionChatResponse(CollectionChatBase):
 
 class CollectionChatHistoryBase(BaseModel):
     collection_chat_id: str = Field(..., description="Collection Chat ID")
-    agent: str = Field(..., description="User or Agent")
-    system_prompt: Optional[str] = Field(None, description="System prompt")
-    instruct: Optional[str] = Field(None, description="Instruction")
-    text: str = Field(..., description="Message text")
+    role: Role = Field(
+        ..., description="Role of the message sender (user/assistant/system)"
+    )
+    content: str = Field(..., description="Content of the chat message")
 
 
 class CollectionChatHistoryCreate(CollectionChatHistoryBase):
@@ -45,9 +45,10 @@ class CollectionChatHistoryCreate(CollectionChatHistoryBase):
 
 
 class CollectionChatHistoryUpdate(BaseModel):
-    system_prompt: Optional[str] = Field(None, description="System prompt")
-    instruct: Optional[str] = Field(None, description="Instruction")
-    text: Optional[str] = Field(None, description="Message text")
+    role: Optional[Role] = Field(
+        None, description="Role of the message sender (user/assistant/system)"
+    )
+    content: Optional[str] = Field(None, description="Content of the chat message")
 
 
 class CollectionChatHistoryResponse(CollectionChatHistoryBase):

@@ -8,8 +8,13 @@ from fastapi import (
     status,
 )
 
-from ..document.schemas import DocumentCreate, DocumentResponse
-from ..storage import storage_service
+from api.agentic.agent import rag_agent
+from api.agentic.schemas import AgentResponse
+from api.chat.dependencies import get_chat_or_404
+from api.document.schemas import DocumentCreate, DocumentResponse
+from api.models.chat import CollectionChat
+from api.storage import storage_service
+
 from .core.clustering.schemas import (
     ClusteringResult,
 )  # TODO: This is for quick use future will be use with database
@@ -23,6 +28,7 @@ from .dependencies import (
     get_document_clustering_service,
     get_document_ingestor,
     get_document_service,
+    get_rag_agent,
 )
 from .utils import normalize_file_input
 
@@ -75,6 +81,7 @@ async def upload_and_ingest_documents(
                 document_data=DocumentCreate(
                     file_name=input_file.filename or "uploaded_file",
                     file_type=file_type,
+                    file_size=len(input_file.content),
                     source_file_path=stored_path,
                     collection_id=collection_id,
                 ),
@@ -135,4 +142,42 @@ def cluster_documents(
         collection_id=collection_id,
         cluster_title_top_n_topics=5,
         cluster_title_top_n_words=50,
+        title_generated_methods="by_summaries",
+    )
+
+
+@router.post(
+    "/rag_query",
+    response_model=AgentResponse,
+    tags=["agentic"],
+    status_code=status.HTTP_200_OK,
+)
+async def rag_query(
+    user_question: str,
+    collection_chat: CollectionChat = Depends(get_chat_or_404),
+    rag_agent: rag_agent = Depends(get_rag_agent),
+):
+    """
+    Query the RAG agent with a user question and return the answer.
+    """
+    if not user_question:
+        raise HTTPException(status_code=400, detail="User question cannot be empty")
+
+    shared_store = rag_agent.run(
+        user_question=user_question,
+        collection_chat_id=collection_chat.id,
+    )
+
+    # Clear chunks text to avoid sending large data back
+    if shared_store.retrieved_contexts:
+        for context in shared_store.retrieved_contexts:
+            context.chunk_text = (
+                context.chunk_text[:100] + "..."
+                if len(context.chunk_text) > 100
+                else context.chunk_text
+            )
+
+    return AgentResponse(
+        chat_history=shared_store.chat_history,
+        retrieved_contexts=shared_store.retrieved_contexts,
     )

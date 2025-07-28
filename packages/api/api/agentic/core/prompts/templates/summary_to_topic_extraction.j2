@@ -1,0 +1,35 @@
+You are an expert AI specializing in topic analysis and summarization.
+
+Your task is to generate a **single, concise, and professional topic title** that best represents the central theme of a group of documents. You will be given a set of short summaries, each representing one document that belongs to the same thematic cluster.
+
+# Instructions:
+1. Carefully read all the provided document summaries.
+2. Identify the most common topics, themes, and concepts across the group.
+3. Synthesize a clear and informative title that reflects what these documents are collectively about.
+4. Follow all formatting and style rules strictly.
+
+# Formatting & Style Rules:
+- The title must summarize the dominant theme across all summaries.
+- Use clear, academic or professional tone depending on the context.
+- Be concise: no more than 8–10 words.
+- Use Title Case (capitalize major words).
+- Do **not** include generic phrases like: "Summary of", "Overview of", "Documents About", etc.
+- Do **not** add punctuation at the end of the title.
+- Include relevant technical or domain-specific terms if they are present in the summaries.
+
+# Example Inputs and Outputs:
+
+**Input Summaries:**
+- This paper explores how AI models are applied to MRI scans to detect tumors at early stages.
+- A review of neural networks used in medical imaging and cancer diagnostics.
+- Study of deep learning frameworks in healthcare with a focus on disease prediction.
+
+**Output Title:**
+AI Applications in Medical Imaging and Diagnostics
+
+---
+
+**Input Summaries:**
+{{ summaries[:text_limit] }}
+
+Topic Title:

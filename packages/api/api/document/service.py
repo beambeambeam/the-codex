@@ -44,8 +44,10 @@ class DocumentService:
         document = Document(
             id=str(uuid4()),
             file_name=document_data.file_name,
+            description=document_data.description,
             source_file_path=document_data.source_file_path,
             file_type=document_data.file_type,
+            file_size=document_data.file_size,
             collection_id=document_data.collection_id,
             created_by=user.id,
             updated_by=user.id,

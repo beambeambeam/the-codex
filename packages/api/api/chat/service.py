@@ -76,10 +76,8 @@ class ChatService:
         history = CollectionChatHistory(
             id=str(uuid4()),
             collection_chat_id=history_data.collection_chat_id,
-            agent=history_data.agent,
-            system_prompt=history_data.system_prompt,
-            instruct=history_data.instruct,
-            text=history_data.text,
+            role=history_data.role,
+            content=history_data.content,
             created_by=user.id,
         )
         self.db.add(history)
@@ -107,12 +105,10 @@ class ChatService:
         history = self.get_history(history_id)
         if not history:
             return None
-        if update_data.system_prompt is not None:
-            history.system_prompt = update_data.system_prompt
-        if update_data.instruct is not None:
-            history.instruct = update_data.instruct
-        if update_data.text is not None:
-            history.text = update_data.text
+        if update_data.role is not None:
+            history.role = update_data.role
+        if update_data.content is not None:
+            history.content = update_data.content
         self.db.commit()
         self.db.refresh(history)
         return history
@@ -123,10 +119,22 @@ class ChatService:
             self.db.delete(history)
             self.db.commit()
 
+    def clear_history(self, chat_id: str):
+        histories = self.list_histories(chat_id)
+        for history in histories:
+            self.db.delete(history)
+        self.db.commit()
+
     # CollectionChatReference CRUD
     def create_reference(
         self, reference_data: CollectionChatReferenceCreate
     ) -> CollectionChatReference:
+        history = self.db.get(
+            CollectionChatHistory, reference_data.collection_chat_history_id
+        )
+        if not history:
+            raise ValueError("Referenced chat history not found")
+
         reference = CollectionChatReference(
             id=str(uuid4()),
             collection_chat_history_id=reference_data.collection_chat_history_id,

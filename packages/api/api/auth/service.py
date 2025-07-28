@@ -78,7 +78,12 @@ class AuthService:
                 )
 
             return payload
-        except jwt.exceptions.JWTError as exc:
+          
+        except jwt.ExpiredSignatureError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired"
+            ) from exc
+        except Exception as exc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid session token"
             ) from exc

@@ -3,7 +3,7 @@ Prompt template management using Jinja2.
 """
 
 import os
-from typing import Any, Union
+from typing import Any, Literal, Union
 
 from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound
 
@@ -141,6 +141,27 @@ def render_keyword_to_topic_extraction(keywords: Union[str, list[str]]) -> str:
     return manager.render_template("keyword_to_topic_extraction.j2", keywords=keywords)
 
 
+def render_summary_to_topic_extraction(
+    summaries: Union[str, list[str]], text_limit: int = 15000
+) -> str:
+    """
+    Convenience function to render the summary to topic extraction prompt.
+
+    Args:
+        summaries: The summaries to extract topics from
+        text_limit: Maximum characters to include from the text
+
+    Returns:
+        Rendered prompt string
+    """
+    if isinstance(summaries, list):
+        summaries = "\n\n---\n\n".join(summaries)
+    manager = get_prompt_manager()
+    return manager.render_template(
+        "summary_to_topic_extraction.j2", summaries=summaries, text_limit=text_limit
+    )
+
+
 def render_collection_rag_agent_prompt(
     question: str, contexts: Union[str, list[str]] = None
 ) -> str:
@@ -160,4 +181,34 @@ def render_collection_rag_agent_prompt(
     manager = get_prompt_manager()
     return manager.render_template(
         "collection_rag_agent.j2", question=question, contexts=contexts
+    )
+
+
+def render_summary_generate_prompt(
+    full_text: str,
+    text_limit: int = 15000,
+    tone: str = "professional",
+    language: Literal["en", "th"] = "en",
+    max_length: int = 100,
+) -> str:
+    """
+    Convenience function to render the summary generation prompt.
+
+    Args:
+        full_text: The text to summarize
+        text_limit: Maximum characters to include from the text
+
+    Returns:
+        Rendered prompt string
+    """
+    # Normalize language input make it better for rendering
+
+    manager = get_prompt_manager()
+    return manager.render_template(
+        "summary_generate.j2",
+        full_text=full_text,
+        text_limit=text_limit,
+        tone=tone,
+        language=language,
+        max_length=max_length,
     )

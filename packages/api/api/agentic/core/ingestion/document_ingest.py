@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Literal, Union
 
 from ....document.schemas import (
     ChunkCreate,
@@ -8,7 +8,7 @@ from ....document.schemas import (
     DocumentUpdate,
 )
 from ....document.service import DocumentService
-from ....models import Document, User
+from ....models import Document, User, enum
 from ..embedding.embedding import TextEmbedder
 from ..graph.graph_extract import ExtractedGraph, KnowledgeGraphExtractor
 from .ingest_methods import (
@@ -16,6 +16,7 @@ from .ingest_methods import (
     extract_chunks_from_text_file,
 )
 from .schemas import FileInput
+from .summary import SummaryGenerator
 
 
 class DocumentIngestor:
@@ -29,6 +30,7 @@ class DocumentIngestor:
         document_service: DocumentService,
         text_embedder: TextEmbedder,
         kg_extractor: KnowledgeGraphExtractor,
+        summary_generator: SummaryGenerator,
         chunk_size: int = 512,
         min_characters_per_chunk: int = 24,
     ):
@@ -42,6 +44,7 @@ class DocumentIngestor:
         self.document_service: DocumentService = document_service
         self.text_embedder: TextEmbedder = text_embedder
         self.kg_extractor: KnowledgeGraphExtractor = kg_extractor
+        self.summary_generator: SummaryGenerator = summary_generator
 
     def extract_full_text(self, file_input: FileInput) -> str:
         """Extract full text from file input."""
@@ -200,6 +203,25 @@ class DocumentIngestor:
         print(f"No knowledge graph extracted from {file_input.name}")
         return None
 
+    async def get_document_summary(
+        self, file_input: FileInput, language: Literal["en", "th"] = "en"
+    ) -> str:
+        """Generate a summary of the document."""
+        full_text = self.extract_full_text(file_input)
+        if not full_text:
+            print(f"No text content for summary generation from {file_input.name}")
+            return ""
+
+        try:
+            summary = await self.summary_generator.async_generate_summary(
+                full_text, language=language
+            )
+            print(f"Summary generated for {file_input.name}")
+            return summary
+        except Exception as e:
+            print(f"Error generating summary for {file_input.name}: {e}")
+            return ""
+
 
 class DocumentIngestorService(DocumentIngestor):
     """Service class to handle document ingestion operations."""
@@ -209,6 +231,7 @@ class DocumentIngestorService(DocumentIngestor):
         document_service,
         text_embedder,
         kg_extractor,
+        summary_generator,
         chunk_size=512,
         min_characters_per_chunk=24,
     ):
@@ -216,6 +239,7 @@ class DocumentIngestorService(DocumentIngestor):
             document_service,
             text_embedder,
             kg_extractor,
+            summary_generator,
             chunk_size,
             min_characters_per_chunk,
         )
@@ -316,6 +340,25 @@ class DocumentIngestorService(DocumentIngestor):
         Returns:
             Document: The created document record
         """
+        # update document status to processing
+        self.document_service.update_document(
+            document_id=document.id,
+            update_data=DocumentUpdate(status=enum.IngestionStatus.processing),
+            user=user,
+        )
+
+        # extract document summary
+        document_summary = await self.get_document_summary(
+            file_input=input_file, language="en"
+        )
+        self.document_service.update_document(
+            document_id=document.id,
+            update_data=DocumentUpdate(summary=document_summary),
+            user=user,
+        )
+        print(
+            f"Document summary extracted for {input_file.name}: {document_summary[:100]}..."
+        )
 
         # Extract and store vector chunks if not already done
         if not document.is_vectorized:
@@ -346,3 +389,10 @@ class DocumentIngestorService(DocumentIngestor):
                 print(f"Failed to extract knowledge graph for {input_file.name}")
 
         print(f"Finished processing {input_file.name}")
+
+        # update status to completed
+        self.document_service.update_document(
+            document_id=document.id,
+            update_data=DocumentUpdate(status=enum.IngestionStatus.ready),
+            user=user,
+        )
