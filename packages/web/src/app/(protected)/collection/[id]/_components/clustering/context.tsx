@@ -101,6 +101,15 @@ export const ClusteringProvider = ({
         getClustering: (id) => get().clusterings.find((c) => c.id === id),
         getAllClusterings: () => get().clusterings,
         clusteringToTree: (clustering) => {
+          if (!clustering || !Array.isArray(clustering.topics)) {
+            return {
+              root: {
+                id: "root",
+                name: "root",
+                children: [],
+              },
+            };
+          }
           const items: Record<string, Item> = {
             root: {
               id: "root",
@@ -114,17 +123,19 @@ export const ClusteringProvider = ({
               id: `id-${topic.title}`,
               name: topic.title,
               children:
-                topic.documents.length > 0
+                topic.documents && topic.documents.length > 0
                   ? topic.documents.map((d) => d.id)
                   : [],
             };
 
-            for (const doc of topic.documents) {
-              items[doc.id] = {
-                id: doc.id,
-                name: doc.file_name || doc.id,
-                children: [],
-              };
+            if (topic.documents) {
+              for (const doc of topic.documents) {
+                items[doc.id] = {
+                  id: doc.id,
+                  name: doc.file_name || doc.id,
+                  children: [],
+                };
+              }
             }
           }
           return items;

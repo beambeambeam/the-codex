@@ -1,6 +1,6 @@
 """Document API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..agentic.dependencies import TextEmbedder, get_text_embedder
@@ -20,7 +20,6 @@ from .schemas import (
     ChunkCreate,
     ChunkResponse,
     ChunkSearchResponse,
-    DocumentCreate,
     DocumentDetailResponse,
     DocumentEdgeCreate,
     DocumentEdgeResponse,
@@ -38,58 +37,6 @@ from .service import DocumentServiceSearch as DocumentService
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
-@router.post(
-    "/upload", response_model=DocumentResponse, status_code=status.HTTP_201_CREATED
-)
-async def upload_document(
-    collection_id: str,
-    current_user: User = Depends(get_current_user),
-    document_service: DocumentService = Depends(get_document_service),
-    *,
-    file: UploadFile,
-):
-    """Upload a document file and create a document record."""
-    try:
-        from uuid import uuid4
-
-        # Get file extension from original filename
-        file_extension = ""
-        if file.filename and "." in file.filename:
-            file_extension = "." + file.filename.split(".")[-1].lower()
-
-        # Generate UUID-based filename for storage
-        uuid_filename = str(uuid4()) + file_extension
-        object_name = (
-            f"users/{current_user.id}/collections/{collection_id}/{uuid_filename}"
-        )
-
-        # Upload file to MinIO with UUID filename
-        stored_path = await storage_service.upload_file_to_storage(file, object_name)
-
-        # Determine file type from original filename
-        file_type = (
-            file.filename.split(".")[-1].lower()
-            if file.filename and "." in file.filename
-            else "unknown"
-        )
-
-        # Create document record with original filename for display
-        document_data = DocumentCreate(
-            file_name=file.filename or "uploaded_file",
-            source_file_path=stored_path,
-            file_type=file_type,
-            collection_id=collection_id,
-        )
-
-        return document_service.create_document(document_data, current_user)
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to upload document: {str(e)}",
-        ) from e
-
-
 @router.get("/", response_model=list[DocumentResponse])
 def list_user_documents(
     current_user: User = Depends(get_current_user),
@@ -105,7 +52,12 @@ def get_document(
     document_service: DocumentService = Depends(get_document_service),
 ):
     """Get a document with all details."""
-    return document_service.get_document_with_details(document.id)
+    doc_details = document_service.get_document_with_details(document.id)
+    if not doc_details:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Document not found"
+        )
+    return DocumentDetailResponse(**doc_details)
 
 
 @router.put("/{document_id}", response_model=DocumentResponse)

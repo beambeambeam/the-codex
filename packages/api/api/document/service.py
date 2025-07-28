@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import text
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, aliased, joinedload
 
 from ..models.document import (
     Chunk,
@@ -60,14 +60,29 @@ class DocumentService:
         """Get a document by ID."""
         return self.db.query(Document).filter(Document.id == document_id).first()
 
-    def get_collection_documents(self, collection_id: str) -> list[Document]:
-        """Get all documents in a collection."""
-        return (
-            self.db.query(Document)
+    def get_collection_documents(self, collection_id: str) -> list[dict]:
+        """Get all documents in a collection, with created_by and updated_by replaced by usernames."""
+        creator_alias = aliased(User)
+        updater_alias = aliased(User)
+        results = (
+            self.db.query(
+                Document,
+                creator_alias.username.label("creator_username"),
+                updater_alias.username.label("updater_username"),
+            )
+            .outerjoin(creator_alias, Document.created_by == creator_alias.id)
+            .outerjoin(updater_alias, Document.updated_by == updater_alias.id)
             .filter(Document.collection_id == collection_id)
             .order_by(Document.created_at.desc())
             .all()
         )
+        documents = []
+        for doc, creator_username, updater_username in results:
+            doc_dict = DocumentResponse.model_validate(doc).model_dump()
+            doc_dict["created_by"] = creator_username
+            doc_dict["updated_by"] = updater_username
+            documents.append(doc_dict)
+        return documents
 
     def get_user_documents(self, user_id: str) -> list[Document]:
         """Get all documents created by a user."""
@@ -124,9 +139,9 @@ class DocumentService:
         self.db.commit()
         return True
 
-    def get_document_with_details(self, document_id: str) -> Optional[Document]:
-        """Get document with all related data."""
-        return (
+    def get_document_with_details(self, document_id: str) -> Optional[dict]:
+        """Get document with all related data and MinIO file URL."""
+        document = (
             self.db.query(Document)
             .options(
                 joinedload(Document.chunks),
@@ -136,6 +151,16 @@ class DocumentService:
             .filter(Document.id == document_id)
             .first()
         )
+        if not document:
+            return None
+        # Convert to dict (or use model_dump if using pydantic models)
+        doc_dict = document.__dict__.copy()
+        # Add related fields if needed (chunks, relations)
+        doc_dict["chunks"] = getattr(document, "chunks", [])
+        doc_dict["relations"] = getattr(document, "relations", [])
+        # Generate MinIO file URL
+        doc_dict["minio_file_url"] = self.get_file_url(document.source_file_path, None)
+        return doc_dict
 
     # Chunk CRUD operations
     def create_chunk(self, chunk_data: ChunkCreate, user: User) -> Chunk:
@@ -320,6 +345,28 @@ class DocumentService:
     def get_file_url(self, object_name: str, bucket_name: str) -> str:
         """Get the public URL of a file in MinIO."""
         return storage_service.get_file_url_from_storage(object_name, bucket_name)
+
+    @staticmethod
+    def prepare_file_upload(file: UploadFile, user_id: str, collection_id: str):
+        """
+        Prepare storage object name and extract file type (MIME type) for an uploaded file.
+        Returns (object_name, file_type, file_extension).
+        """
+        from uuid import uuid4
+
+        # Get file extension from original filename
+        file_extension = ""
+        if file.filename and "." in file.filename:
+            file_extension = "." + file.filename.split(".")[-1].lower()
+
+        # Generate UUID-based filename for storage
+        uuid_filename = str(uuid4()) + file_extension
+        object_name = f"users/{user_id}/collections/{collection_id}/{uuid_filename}"
+
+        # Get MIME type
+        file_type = file.content_type or "unknown"
+
+        return object_name, file_type, file_extension
 
 
 class DocumentServiceSearch(DocumentService):

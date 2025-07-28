@@ -12,15 +12,6 @@ function HomePage() {
   const { username } = useUser();
   const { collections, isPending } = useHome();
 
-  console.log([
-    ...(collections ?? []).map((_, index) => ({
-      id: `${index + 1}`,
-      source: String(index + 1),
-      target: "center",
-      type: "straight",
-    })),
-  ]);
-
   return (
     <div className="flex h-full w-full flex-col items-start justify-center gap-4">
       <div className="flex w-full items-center justify-between">

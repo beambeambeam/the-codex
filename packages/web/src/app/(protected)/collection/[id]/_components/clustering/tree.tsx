@@ -11,6 +11,7 @@ import {
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
 import {
+  CloudUploadIcon,
   FolderIcon,
   FolderOpenIcon,
   ListCollapseIcon,
@@ -23,6 +24,7 @@ import {
   useClusterings,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
 import { getFileIcon } from "@/lib/files";
 
@@ -35,6 +37,12 @@ function ClusteringTree() {
   const clustering = useClusterings();
 
   const clusteringTree = clusteringToTree(clustering[0]);
+
+  const hasFiles =
+    clusteringTree &&
+    clusteringTree["root"] &&
+    clusteringTree["root"].children &&
+    clusteringTree["root"].children.length > 0;
 
   const tree = useTree<Item>({
     indent,
@@ -67,50 +75,65 @@ function ClusteringTree() {
         </div>
       </div>
 
-      <Tree indent={indent} tree={tree}>
-        {tree.getItems().map((item) =>
-          item.isFolder() ? (
-            <TreeItem key={item.getId()} item={item}>
-              <TreeItemLabel>
-                <span className="flex items-center gap-2">
-                  {item.isExpanded() ? (
-                    <FolderOpenIcon className="text-muted-foreground pointer-events-none size-4" />
-                  ) : (
-                    <FolderIcon className="text-muted-foreground pointer-events-none size-4" />
-                  )}
-                  <span className="max-w-40 truncate">
-                    {item.getItemName()}
-                  </span>
-                  <span className="text-muted-foreground -ms-1">
-                    {`(${item.getChildren().length})`}
-                  </span>
-                </span>
-              </TreeItemLabel>
-            </TreeItem>
-          ) : (
-            <Link
-              href={`/collection/${params.id}/docs/${item.getItemData().id}`}
-              key={item.getId()}
-            >
+      {hasFiles ? (
+        <Tree indent={indent} tree={tree}>
+          {tree.getItems().map((item) =>
+            item.isFolder() ? (
               <TreeItem key={item.getId()} item={item}>
                 <TreeItemLabel>
                   <span className="flex items-center gap-2">
-                    {getFileIcon({
-                      file: {
-                        name: item.getItemName(),
-                        type: item.getItemName(),
-                      },
-                    })}
+                    {item.isExpanded() ? (
+                      <FolderOpenIcon className="text-muted-foreground pointer-events-none size-4" />
+                    ) : (
+                      <FolderIcon className="text-muted-foreground pointer-events-none size-4" />
+                    )}
                     <span className="max-w-40 truncate">
                       {item.getItemName()}
+                    </span>
+                    <span className="text-muted-foreground -ms-1">
+                      {`(${item.getChildren().length})`}
                     </span>
                   </span>
                 </TreeItemLabel>
               </TreeItem>
-            </Link>
-          ),
-        )}
-      </Tree>
+            ) : (
+              <Link
+                href={`/collection/${params.id}/docs/${item.getItemData().id}`}
+                key={item.getId()}
+              >
+                <TreeItem key={item.getId()} item={item}>
+                  <TreeItemLabel>
+                    <span className="flex items-center gap-2">
+                      {getFileIcon({
+                        file: {
+                          name: item.getItemName(),
+                          type: item.getItemName(),
+                        },
+                      })}
+                      <span className="max-w-40 truncate">
+                        {item.getItemName()}
+                      </span>
+                    </span>
+                  </TreeItemLabel>
+                </TreeItem>
+              </Link>
+            ),
+          )}
+        </Tree>
+      ) : (
+        <Link href={`/collection/${params.id}/docs`}>
+          <Card className="text-muted-foreground hover:text-foreground border-muted-foreground hover:border-foreground flex h-[14rem] items-center justify-center gap-1 border border-dashed text-xs transition-colors">
+            <div className="flex flex-col items-center justify-center gap-0">
+              <CloudUploadIcon className="size-7" />
+              <p>Upload Files!</p>
+              <p>PDF,</p>
+              <p>Image (png, jpg or other)</p>
+              <p>Table data (CSV, JSON or excel)</p>
+              <p>Docs (doc, docx or pptx)</p>
+            </div>
+          </Card>
+        </Link>
+      )}
     </div>
   );
 }

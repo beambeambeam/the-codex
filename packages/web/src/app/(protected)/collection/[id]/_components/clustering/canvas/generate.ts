@@ -6,6 +6,10 @@ import {
 export const generateGraphNodes = (clustering: Clustering): GraphNode[] => {
   const nodes: GraphNode[] = [];
 
+  if (!clustering || !Array.isArray(clustering.topics)) {
+    return nodes;
+  }
+
   const TOPIC_WIDTH = 400;
   const TOPIC_INITIAL_HEIGHT = 40;
   const DOC_SPACING_Y = 150;
