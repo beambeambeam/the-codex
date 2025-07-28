@@ -22,6 +22,8 @@ export interface Document {
   id: string;
   collection_id: string;
   file_name: string;
+  title?: string;
+  document?: string;
   source_file_path: string;
   file_type: string;
   is_vectorized: boolean;

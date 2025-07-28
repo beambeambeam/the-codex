@@ -35,6 +35,25 @@ export const fileQueueColumns = [
     },
     enableColumnFilter: true,
   }),
+  columnHelper.accessor("title", {
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Title" />
+    ),
+    cell: ({ row }) => {
+      const title = row.original.title;
+      const fileName = row.original.file_name;
+      if (!title || title === fileName) {
+        return <span className="text-muted-foreground">-</span>;
+      }
+      return <span>{title}</span>;
+    },
+    meta: {
+      label: "Title",
+      placeholder: "Search titles...",
+      variant: "text",
+    },
+    enableColumnFilter: true,
+  }),
   columnHelper.accessor("source_file_path", {
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Source Path" />

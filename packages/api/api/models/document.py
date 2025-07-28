@@ -25,6 +25,8 @@ class Document(Base):
         Text, ForeignKey("collection.id", ondelete="CASCADE")
     )
     file_name: Mapped[str] = mapped_column(Text)
+    title: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    document: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     source_file_path: Mapped[str] = mapped_column(Text)

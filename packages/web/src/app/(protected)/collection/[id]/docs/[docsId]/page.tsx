@@ -101,7 +101,14 @@ function DocIdPage() {
                 <div className="flex h-full w-full flex-col gap-6">
                   <div className="flex flex-col gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-xl font-bold">{data.file_name}</p>
+                      <p className="text-xl font-bold">
+                        {data.title || data.file_name}
+                      </p>
+                      {data.title && data.title !== data.file_name && (
+                        <p className="text-muted-foreground text-sm">
+                          ({data.file_name})
+                        </p>
+                      )}
                       <div className="flex flex-col gap-1"></div>
                       <div className="flex items-center gap-1">
                         {data.created_by ?? (
@@ -155,6 +162,19 @@ function DocIdPage() {
                       </div>
                     </div>
                   </div>
+                  {data.document && (
+                    <div className="text-muted-foreground flex flex-col gap-2">
+                      <Label>
+                        <BadgeQuestionMarkIcon size={16} />
+                        Document Content
+                      </Label>
+                      <div className="border-border max-h-40 w-full overflow-y-auto rounded border p-2">
+                        <pre className="text-sm whitespace-pre-wrap">
+                          {data.document}
+                        </pre>
+                      </div>
+                    </div>
+                  )}
                   <div className="text-muted-foreground flex flex-col gap-2">
                     <Label>
                       <BadgeQuestionMarkIcon size={16} />
