@@ -73,7 +73,7 @@ export const generateGraphNodes = (clustering: Clustering): GraphNode[] => {
 
       nodes.push({
         id: doc.id,
-        data: { label: doc.file_name },
+        data: { label: doc.title || doc.file_name },
         position: {
           x: zigzagX,
           y: DOCUMENT_START_Y + j * DOC_SPACING_Y,

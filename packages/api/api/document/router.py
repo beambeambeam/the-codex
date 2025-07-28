@@ -180,7 +180,7 @@ def search_collection_documents(
     ),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
     document_service: DocumentService = Depends(get_document_service),
-) -> DocumentSearchResponse:
+) -> list[DocumentSearchResponse]:
     """Search for documents in a collection."""
     # Convert query to embedding
     query_embedding = text_embedder.get_embedding(query)
@@ -189,6 +189,26 @@ def search_collection_documents(
     return document_service.search_collection_documents(
         collection_id=collection_id, query_embedding=query_embedding, top_k=10
     )
+
+
+# Search Documents by Name/Description
+@router.get(
+    "/collection/{collection_id}/documents/search",
+    tags=["search"],
+    response_model=list[DocumentResponse],
+    status_code=status.HTTP_200_OK,
+)
+def search_documents_by_name(
+    collection_id: str,
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for documents by name/description",
+    ),
+    document_service: DocumentService = Depends(get_document_service),
+) -> list[DocumentResponse]:
+    """Search for documents in a collection by name or description."""
+    return document_service.search_documents_by_name(collection_id, query)
 
 
 # Document Relation routes

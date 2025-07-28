@@ -44,6 +44,8 @@ class DocumentService:
         document = Document(
             id=str(uuid4()),
             file_name=document_data.file_name,
+            title=document_data.title,
+            document=document_data.document,
             description=document_data.description,
             source_file_path=document_data.source_file_path,
             file_type=document_data.file_type,
@@ -76,6 +78,37 @@ class DocumentService:
             .outerjoin(updater_alias, Document.updated_by == updater_alias.id)
             .filter(Document.collection_id == collection_id)
             .order_by(Document.created_at.desc())
+            .all()
+        )
+        documents = []
+        for doc, creator_username, updater_username in results:
+            doc_dict = DocumentResponse.model_validate(doc).model_dump()
+            doc_dict["created_by"] = creator_username
+            doc_dict["updated_by"] = updater_username
+            documents.append(doc_dict)
+        return documents
+
+    def search_documents_by_name(
+        self, collection_id: str, query: str
+    ) -> list[Document]:
+        """Search for documents in a collection by name or description."""
+        creator_alias = aliased(User)
+        updater_alias = aliased(User)
+        results = (
+            self.db.query(
+                Document,
+                creator_alias.username.label("creator_username"),
+                updater_alias.username.label("updater_username"),
+            )
+            .outerjoin(creator_alias, Document.created_by == creator_alias.id)
+            .outerjoin(updater_alias, Document.updated_by == updater_alias.id)
+            .filter(Document.collection_id == collection_id)
+            .filter(
+                Document.file_name.ilike(f"%{query}%")
+                | Document.description.ilike(f"%{query}%")
+            )
+            .order_by(Document.created_at.desc())
+            .limit(10)
             .all()
         )
         documents = []
@@ -143,25 +176,40 @@ class DocumentService:
 
     def get_document_with_details(self, document_id: str) -> Optional[dict]:
         """Get document with all related data and MinIO file URL."""
+        creator_alias = aliased(User)
+        updater_alias = aliased(User)
+
         document = (
-            self.db.query(Document)
+            self.db.query(
+                Document,
+                creator_alias.username.label("creator_username"),
+                updater_alias.username.label("updater_username"),
+            )
             .options(
                 joinedload(Document.chunks),
                 joinedload(Document.relations).joinedload(DocumentRelation.nodes),
                 joinedload(Document.relations).joinedload(DocumentRelation.edges),
             )
+            .outerjoin(creator_alias, Document.created_by == creator_alias.id)
+            .outerjoin(updater_alias, Document.updated_by == updater_alias.id)
             .filter(Document.id == document_id)
             .first()
         )
         if not document:
             return None
+
+        doc, creator_username, updater_username = document
+
         # Convert to dict (or use model_dump if using pydantic models)
-        doc_dict = document.__dict__.copy()
+        doc_dict = doc.__dict__.copy()
         # Add related fields if needed (chunks, relations)
-        doc_dict["chunks"] = getattr(document, "chunks", [])
-        doc_dict["relations"] = getattr(document, "relations", [])
+        doc_dict["chunks"] = getattr(doc, "chunks", [])
+        doc_dict["relations"] = getattr(doc, "relations", [])
+        # Replace UUIDs with usernames
+        doc_dict["created_by"] = creator_username
+        doc_dict["updated_by"] = updater_username
         # Generate MinIO file URL
-        doc_dict["minio_file_url"] = self.get_file_url(document.source_file_path, None)
+        doc_dict["minio_file_url"] = self.get_file_url(doc.source_file_path, None)
         return doc_dict
 
     # Chunk CRUD operations

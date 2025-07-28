@@ -14,6 +14,8 @@ class DocumentBase(BaseModel):
     file_name: str = Field(
         ..., min_length=1, max_length=255, description="Document file name"
     )
+    title: Optional[str] = Field(None, max_length=255, description="Document title")
+    document: Optional[str] = Field(None, description="Document content")
     description: Optional[str] = Field(
         None, max_length=1000, description="Document description"
     )
@@ -36,6 +38,8 @@ class DocumentUpdate(BaseModel):
     file_name: Optional[str] = Field(
         None, min_length=1, max_length=255, description="Document file name"
     )
+    title: Optional[str] = Field(None, max_length=255, description="Document title")
+    document: Optional[str] = Field(None, description="Document content")
     description: Optional[str] = Field(
         None, max_length=1000, description="Document description"
     )

@@ -132,7 +132,7 @@ export const ClusteringProvider = ({
               for (const doc of topic.documents) {
                 items[doc.id] = {
                   id: doc.id,
-                  name: doc.file_name || doc.id,
+                  name: doc.title || doc.file_name || doc.id,
                   children: [],
                 };
               }

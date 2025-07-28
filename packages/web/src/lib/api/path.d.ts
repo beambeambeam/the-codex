@@ -487,7 +487,11 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    get?: never;
+    /**
+     * Search Documents By Name
+     * @description Search for documents in a collection by name or description.
+     */
+    get: operations["search_documents_by_name_documents_collection__collection_id__documents_search_get"];
     put?: never;
     /**
      * Search Collection Documents
@@ -661,6 +665,26 @@ export interface paths {
      *     - cluster_title_top_n_words: The number of keywords to extract from each contributing topic.
      */
     post: operations["cluster_documents_agentic_cluster_topic_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/agentic/rag_query": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Rag Query
+     * @description Query the RAG agent with a user question and return the answer.
+     */
+    post: operations["rag_query_agentic_rag_query_post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -959,10 +983,44 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/chats/{chat_id}/clear": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    /**
+     * Clear Chat History
+     * @description Clear all chat history for the specified chat ID.
+     *     This endpoint removes all messages associated with the chat.
+     */
+    put: operations["clear_chat_history_chats__chat_id__clear_put"];
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * AgentResponse
+     * @description Schema for the response from the RAG agent.
+     */
+    AgentResponse: {
+      /** @description Conversation history including user questions and assistant responses */
+      chat_history?: components["schemas"]["ChatHistory"];
+      /**
+       * Retrieved Contexts
+       * @description List of retrieved document chunks based on the query embedding
+       */
+      retrieved_contexts?: components["schemas"]["ChunkSearchResponse"][];
+    };
     /**
      * AuthResponse
      * @description Authentication response.
@@ -983,6 +1041,40 @@ export interface components {
     Body_upload_and_ingest_documents_agentic_upload_ingest_post: {
       /** Input Files */
       input_files: File[];
+    };
+    /**
+     * ChatHistory
+     * @description Schema for a list of chat messages.
+     */
+    ChatHistory: {
+      /**
+       * Messages
+       * @description List of chat messages in the conversation
+       */
+      messages?: components["schemas"]["ChatMessage"][];
+    };
+    /**
+     * ChatMessage
+     * @description Schema for chat messages in the RAG system.
+     */
+    ChatMessage: {
+      /**
+       * Collection Chat Id
+       * @description Collection Chat ID
+       */
+      collection_chat_id?: string;
+      /** @description Role of the message sender (user/assistant/system) */
+      role: components["schemas"]["Role"];
+      /**
+       * Content
+       * @description Content of the chat message
+       */
+      content: string;
+      /**
+       * Retrieved Contexts
+       * @description List of context references retrieved for the chat message
+       */
+      retrieved_contexts?: components["schemas"]["ChunkSearchResponse"][];
     };
     /**
      * ChunkCreate
@@ -1167,26 +1259,13 @@ export interface components {
        * @description Collection Chat ID
        */
       collection_chat_id: string;
+      /** @description Role of the message sender (user/assistant/system) */
+      role: components["schemas"]["Role"];
       /**
-       * Agent
-       * @description User or Agent
+       * Content
+       * @description Content of the chat message
        */
-      agent: string;
-      /**
-       * System Prompt
-       * @description System prompt
-       */
-      system_prompt?: string | null;
-      /**
-       * Instruct
-       * @description Instruction
-       */
-      instruct?: string | null;
-      /**
-       * Text
-       * @description Message text
-       */
-      text: string;
+      content: string;
     };
     /** CollectionChatHistoryResponse */
     CollectionChatHistoryResponse: {
@@ -1195,26 +1274,13 @@ export interface components {
        * @description Collection Chat ID
        */
       collection_chat_id: string;
+      /** @description Role of the message sender (user/assistant/system) */
+      role: components["schemas"]["Role"];
       /**
-       * Agent
-       * @description User or Agent
+       * Content
+       * @description Content of the chat message
        */
-      agent: string;
-      /**
-       * System Prompt
-       * @description System prompt
-       */
-      system_prompt?: string | null;
-      /**
-       * Instruct
-       * @description Instruction
-       */
-      instruct?: string | null;
-      /**
-       * Text
-       * @description Message text
-       */
-      text: string;
+      content: string;
       /** Id */
       id: string;
       /** Created By */
@@ -1623,6 +1689,21 @@ export interface components {
        */
       file_name: string;
       /**
+       * Title
+       * @description Document title
+       */
+      title?: string | null;
+      /**
+       * Document
+       * @description Document content
+       */
+      document?: string | null;
+      /**
+       * Description
+       * @description Document description
+       */
+      description?: string | null;
+      /**
        * Source File Path
        * @description Source file path
        */
@@ -1632,6 +1713,11 @@ export interface components {
        * @description File type (pdf, txt, doc, etc.)
        */
       file_type: string;
+      /**
+       * File Size
+       * @description File size in bytes
+       */
+      file_size?: number | null;
       /** Id */
       id: string;
       /** Collection Id */
@@ -1640,6 +1726,7 @@ export interface components {
       is_vectorized: boolean;
       /** Is Graph Extracted */
       is_graph_extracted: boolean;
+      status: components["schemas"]["IngestionStatus"];
       /**
        * Created At
        * Format: date-time
@@ -1934,6 +2021,21 @@ export interface components {
        */
       file_name: string;
       /**
+       * Title
+       * @description Document title
+       */
+      title?: string | null;
+      /**
+       * Document
+       * @description Document content
+       */
+      document?: string | null;
+      /**
+       * Description
+       * @description Document description
+       */
+      description?: string | null;
+      /**
        * Source File Path
        * @description Source file path
        */
@@ -1943,6 +2045,11 @@ export interface components {
        * @description File type (pdf, txt, doc, etc.)
        */
       file_type: string;
+      /**
+       * File Size
+       * @description File size in bytes
+       */
+      file_size?: number | null;
       /** Id */
       id: string;
       /** Collection Id */
@@ -1951,6 +2058,7 @@ export interface components {
       is_vectorized: boolean;
       /** Is Graph Extracted */
       is_graph_extracted: boolean;
+      status: components["schemas"]["IngestionStatus"];
       /**
        * Created At
        * Format: date-time
@@ -1982,6 +2090,21 @@ export interface components {
        */
       file_name: string;
       /**
+       * Title
+       * @description Document title
+       */
+      title?: string | null;
+      /**
+       * Document
+       * @description Document content
+       */
+      document?: string | null;
+      /**
+       * Description
+       * @description Document description
+       */
+      description?: string | null;
+      /**
        * Source File Path
        * @description Source file path
        */
@@ -1991,6 +2114,11 @@ export interface components {
        * @description File type (pdf, txt, doc, etc.)
        */
       file_type: string;
+      /**
+       * File Size
+       * @description File size in bytes
+       */
+      file_size?: number | null;
       /** Id */
       id: string;
       /** Collection Id */
@@ -1999,6 +2127,7 @@ export interface components {
       is_vectorized: boolean;
       /** Is Graph Extracted */
       is_graph_extracted: boolean;
+      status: components["schemas"]["IngestionStatus"];
       /**
        * Created At
        * Format: date-time
@@ -2035,6 +2164,21 @@ export interface components {
        */
       file_name?: string | null;
       /**
+       * Title
+       * @description Document title
+       */
+      title?: string | null;
+      /**
+       * Document
+       * @description Document content
+       */
+      document?: string | null;
+      /**
+       * Description
+       * @description Document description
+       */
+      description?: string | null;
+      /**
        * Source File Path
        * @description Source file path
        */
@@ -2045,6 +2189,11 @@ export interface components {
        */
       file_type?: string | null;
       /**
+       * File Size
+       * @description File size in bytes
+       */
+      file_size?: number | null;
+      /**
        * Is Vectorized
        * @description Whether document is vectorized
        */
@@ -2054,12 +2203,24 @@ export interface components {
        * @description Whether knowledge graph is extracted
        */
       is_graph_extracted?: boolean | null;
+      /**
+       * Summary
+       * @description Document summary
+       */
+      summary?: string | null;
+      /** @description Document ingestion status */
+      status?: components["schemas"]["IngestionStatus"] | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
       detail?: components["schemas"]["ValidationError"][];
     };
+    /**
+     * IngestionStatus
+     * @enum {string}
+     */
+    IngestionStatus: "pending" | "processing" | "ready" | "failed";
     /**
      * QueueHealthResponse
      * @description Queue health check response.
@@ -2090,6 +2251,11 @@ export interface components {
       | "collection_processing"
       | "chat_notifications"
       | "system_events";
+    /**
+     * Role
+     * @enum {string}
+     */
+    Role: "user" | "assistant" | "system";
     /**
      * SessionResponse
      * @description Session response.
@@ -3161,6 +3327,40 @@ export interface operations {
       };
     };
   };
+  search_documents_by_name_documents_collection__collection_id__documents_search_get: {
+    parameters: {
+      query: {
+        /** @description Search query for documents by name/description */
+        query: string;
+      };
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocumentResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   search_collection_documents_documents_collection__collection_id__documents_search_post: {
     parameters: {
       query: {
@@ -3462,6 +3662,40 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ClusteringResult"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  rag_query_agentic_rag_query_post: {
+    parameters: {
+      query: {
+        user_question: string;
+        chat_id: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["AgentResponse"];
         };
       };
       /** @description Validation Error */
@@ -4080,6 +4314,35 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["CollectionChatHistoryResponse"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  clear_chat_history_chats__chat_id__clear_put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        chat_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {
