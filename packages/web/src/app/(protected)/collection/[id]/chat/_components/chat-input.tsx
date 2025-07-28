@@ -14,24 +14,13 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { fetchClient } from "@/lib/api/client";
+import { components } from "@/lib/api/path";
 import { cn } from "@/lib/utils";
 
-type Document = {
-  id: string;
-  file_name: string;
-  description?: string | null;
-  file_type: string;
-  file_size?: number | null;
-  collection_id: string;
-  is_vectorized: boolean;
-  is_graph_extracted: boolean;
-  status: string;
-  created_at: string;
-  updated_at: string;
-  created_by?: string | null;
-  updated_by?: string | null;
-  minio_file_url?: string | null;
-};
+export type Document = Omit<
+  components["schemas"]["DocumentDetailResponse"],
+  "chunks" | "relations"
+>;
 
 type Mention = {
   id: string;
