@@ -1,11 +1,10 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowUpRightIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
+import { ChatInputWithMentions } from "@/app/(protected)/collection/[id]/chat/_components/chat-input";
 import {
   Form,
   FormControl,
@@ -13,12 +12,6 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import {
-  PromptInput,
-  PromptInputAction,
-  PromptInputActions,
-  PromptInputTextarea,
-} from "@/components/ui/prompt-input";
 import { PromptSuggestion } from "@/components/ui/prompt-suggestion";
 import type { FormProps } from "@/types";
 
@@ -83,26 +76,13 @@ function ChatForm(
                 Message
               </FormLabel>
               <FormControl>
-                <PromptInput>
-                  <PromptInputTextarea
-                    placeholder="Type @ to mention a document..."
-                    {...field}
-                  />
-                  <PromptInputActions className="justify-end pt-2">
-                    <PromptInputAction tooltip="Send message">
-                      <Button
-                        variant="default"
-                        size="icon"
-                        aria-label="Send message"
-                        className="rounded-full"
-                        disabled={!form.formState.isValid}
-                        type="submit"
-                      >
-                        <ArrowUpRightIcon className="size-5" />
-                      </Button>
-                    </PromptInputAction>
-                  </PromptInputActions>
-                </PromptInput>
+                <ChatInputWithMentions
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  onSubmit={() => form.handleSubmit(props.onSubmit)()}
+                  placeholder="Type @ to mention someone..."
+                  disabled={props.disabled}
+                />
               </FormControl>
             </FormItem>
           )}
