@@ -45,7 +45,7 @@ class CollectionChatHistoryCreate(CollectionChatHistoryBase):
 
 
 class CollectionChatHistoryUpdate(BaseModel):
-    role: Optional[str] = Field(
+    role: Optional[Role] = Field(
         None, description="Role of the message sender (user/assistant/system)"
     )
     content: Optional[str] = Field(None, description="Content of the chat message")
