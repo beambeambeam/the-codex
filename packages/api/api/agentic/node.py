@@ -255,7 +255,7 @@ class GenerateResponseNode(Node):
 
         new_message = ChatMessage(
             collection_chat_id=shared.chat_session.id,
-            role="user",
+            role="assistant",
             content=exec_res,
         )
         shared.new_chat_history.messages.append(new_message)
