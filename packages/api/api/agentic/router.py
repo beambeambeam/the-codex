@@ -10,6 +10,7 @@ from fastapi import (
 
 from api.agentic.agent import rag_agent
 from api.agentic.schemas import AgentResponse
+from api.auth.schemas import UserResponse
 from api.chat.dependencies import get_chat_or_404
 from api.document.schemas import DocumentCreate, DocumentResponse
 from api.models.chat import CollectionChat
@@ -81,7 +82,7 @@ async def upload_and_ingest_documents(
                 document_data=DocumentCreate(
                     file_name=input_file.filename or "uploaded_file",
                     file_type=file_type,
-                    file_size=len(input_file.content),
+                    file_size=input_file.size,
                     source_file_path=stored_path,
                     collection_id=collection_id,
                 ),
@@ -99,12 +100,16 @@ async def upload_and_ingest_documents(
                 is_path=False,
             )
             input_file_model: FileInput = normalize_file_input(formatted_input)
+
+            # detach user
+            current_user = UserResponse.model_validate(current_user)
+
             # Schedule ingestion concurrently using asyncio
             asyncio.create_task(
                 document_ingestor.ingest_file(
                     input_file=input_file_model,
                     document=document,
-                    graph_extract=False,
+                    graph_extract=True,
                     user=current_user,
                 )
             )

@@ -132,7 +132,7 @@ class GetUserIntentNode(Node):
     def exec(self, user_question: str) -> UserIntent:
         user_intent = call_structured_llm(
             prompt=f"You are an intent classifier. Classify the following question: {user_question}",
-            model=UserIntent,
+            response_model=UserIntent,
             max_retries=3,
         )
         return user_intent

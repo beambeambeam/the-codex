@@ -15,7 +15,7 @@ from .ingest_methods import (
     extract_chunks_from_pdf,
     extract_chunks_from_text_file,
 )
-from .schemas import FileInput
+from .schemas import FileInput, document_details
 from .summary import SummaryGenerator
 
 
@@ -205,22 +205,18 @@ class DocumentIngestor:
 
     async def get_document_summary(
         self, file_input: FileInput, language: Literal["en", "th"] = "en"
-    ) -> str:
+    ) -> document_details:
         """Generate a summary of the document."""
         full_text = self.extract_full_text(file_input)
         if not full_text:
             print(f"No text content for summary generation from {file_input.name}")
-            return ""
+            return document_details()
 
-        try:
-            summary = await self.summary_generator.async_generate_summary(
-                full_text, language=language
-            )
-            print(f"Summary generated for {file_input.name}")
-            return summary
-        except Exception as e:
-            print(f"Error generating summary for {file_input.name}: {e}")
-            return ""
+        summary = await self.summary_generator.async_generate_summary(
+            full_text, language=language
+        )
+        print(f"Summary generated for {file_input.name}")
+        return summary
 
 
 class DocumentIngestorService(DocumentIngestor):
@@ -353,11 +349,14 @@ class DocumentIngestorService(DocumentIngestor):
         )
         self.document_service.update_document(
             document_id=document.id,
-            update_data=DocumentUpdate(summary=document_summary),
+            update_data=DocumentUpdate(
+                title=document_summary.title,
+                description=document_summary.description,
+            ),
             user=user,
         )
         print(
-            f"Document summary extracted for {input_file.name}: {document_summary[:100]}..."
+            f"Document summary extracted for {input_file.name}: {document_summary.title} {document_summary.description[:100]}..."
         )
 
         # Extract and store vector chunks if not already done

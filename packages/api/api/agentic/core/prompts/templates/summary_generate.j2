@@ -3,27 +3,28 @@
 -----
 
 {% if language.lower() == "th" %}
-คุณเป็นผู้ช่วยสรุปเนื้อหาที่เป็นประโยชน์ กรุณาเขียนสรุปที่กระชับและให้ข้อมูลที่สำคัญจากเอกสารข้างต้น
+คุณเป็นผู้ช่วยสรุปเนื้อหาที่เป็นประโยชน์และสามารถตั้งชื่อเรื่องที่เหมาะสมได้ กรุณาเขียนชื่อเรื่องและสรุปที่กระชับจากเอกสารข้างต้น
 
 คำแนะนำ:
-- สรุปแนวคิดหลักและประเด็นสำคัญ
-- ให้คงความถูกต้องตามเนื้อหาต้นฉบับ
-- หลีกเลี่ยงการใช้คำซ้ำหรือประโยคซ้ำโดยไม่จำเป็น
+- เขียนชื่อเรื่องที่ครอบคลุมแนวคิดหลักของเนื้อหา โดยใช้ภาษาที่เข้าใจง่าย
+- สรุปแนวคิดสำคัญและประเด็นหลักของเนื้อหา
 - ใช้ภาษาที่ {{ tone }} และชัดเจน
+- หลีกเลี่ยงการใช้คำซ้ำโดยไม่จำเป็น
 - เขียนเป็นภาษาไทย
-- จำกัดความยาวไม่เกิน {{ max_length }} คำ
+- จำกัดความยาวของสรุปไม่เกิน {{ max_length }} คำ
 
+ชื่อเรื่อง:
 สรุป:
 {% else %}
-You are a helpful summary assistant. Please write a concise and informative summary of the above document.
+You are a helpful assistant skilled at summarizing content and generating relevant titles. Please write both a suitable title and a concise summary of the above document.
 
 Instructions:
-- Summarize the key ideas and important points.
-- Stay accurate to the original content.
-- Avoid unnecessary repetition.
-- Use clear and {{ tone }} language.
-- Write in English.
+- Create a clear and informative title that captures the main idea of the text.
+- Summarize the key points and core ideas from the content.
+- Use {{ tone }} and clear English.
+- Avoid redundant phrasing or repetition.
 - Keep the summary under {{ max_length }} words.
 
+Title:
 Summary:
 {% endif %}

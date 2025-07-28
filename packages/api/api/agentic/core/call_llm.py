@@ -63,7 +63,7 @@ async def call_llm_async(prompt: Union[str, ChatHistory], api_key=api_key) -> st
 
 
 def call_structured_llm(
-    prompt: Union[str, ChatHistory], model: type[T], max_retries: int = 3
+    prompt: Union[str, ChatHistory], response_model: type[T], max_retries: int = 3
 ) -> T:
     """Calls the LLM with a structured prompt and returns the response."""
     response = client.chat.completions.create(
@@ -74,7 +74,7 @@ def call_structured_llm(
         ],
         model=structured_model,
         api_key=api_key,
-        response_model=model,
+        response_model=response_model,
         max_retries=max_retries,
     )
 
@@ -82,14 +82,16 @@ def call_structured_llm(
         return response
 
     else:
-        raise ValueError(f"Error: Could not extract message content from LLM response. Response: {response}")
+        raise ValueError(
+            f"Error: Could not extract message content from LLM response. Response: {response}"
+        )
 
 
-def call_structured_llm_async(
-    prompt: Union[str, ChatHistory], model: type[T], max_retries: int = 3
+async def call_structured_llm_async(
+    prompt: Union[str, ChatHistory], response_model: type[T], max_retries: int = 3
 ) -> T:
     """Asynchronously calls the LLM with a structured prompt and returns the response."""
-    response = async_client.chat.completions.create(
+    response = await async_client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}]
         if isinstance(prompt, str)
         else [
@@ -97,7 +99,7 @@ def call_structured_llm_async(
         ],
         model=structured_model,
         api_key=api_key,
-        response_model=model,
+        response_model=response_model,
         max_retries=max_retries,
     )
 
@@ -105,4 +107,6 @@ def call_structured_llm_async(
         return response
 
     else:
-        raise ValueError(f"Error: Could not extract message content from LLM response. Response: {response}")
+        raise ValueError(
+            f"Error: Could not extract message content from LLM response. Response: {response}"
+        )

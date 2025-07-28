@@ -43,3 +43,11 @@ class DocumentChunk(BaseModel):
     chunk_metadata: ChunkMetadata = Field(
         default_factory=ChunkMetadata, description="Metadata associated with the chunk"
     )
+
+
+# ------
+class document_details(BaseModel):
+    """Schema for document generated details."""
+
+    title: str = Field(None, description="Title of the document")
+    description: Optional[str] = Field(None, description="Summary of document content")
