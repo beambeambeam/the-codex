@@ -86,6 +86,37 @@ class DocumentService:
             documents.append(doc_dict)
         return documents
 
+    def search_documents_by_name(
+        self, collection_id: str, query: str
+    ) -> list[Document]:
+        """Search for documents in a collection by name or description."""
+        creator_alias = aliased(User)
+        updater_alias = aliased(User)
+        results = (
+            self.db.query(
+                Document,
+                creator_alias.username.label("creator_username"),
+                updater_alias.username.label("updater_username"),
+            )
+            .outerjoin(creator_alias, Document.created_by == creator_alias.id)
+            .outerjoin(updater_alias, Document.updated_by == updater_alias.id)
+            .filter(Document.collection_id == collection_id)
+            .filter(
+                Document.file_name.ilike(f"%{query}%")
+                | Document.description.ilike(f"%{query}%")
+            )
+            .order_by(Document.created_at.desc())
+            .limit(10)
+            .all()
+        )
+        documents = []
+        for doc, creator_username, updater_username in results:
+            doc_dict = DocumentResponse.model_validate(doc).model_dump()
+            doc_dict["created_by"] = creator_username
+            doc_dict["updated_by"] = updater_username
+            documents.append(doc_dict)
+        return documents
+
     def get_user_documents(self, user_id: str) -> list[Document]:
         """Get all documents created by a user."""
         return (
