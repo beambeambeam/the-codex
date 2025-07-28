@@ -1,3 +1,4 @@
+import { useRouter } from "next/navigation";
 import { LogOutIcon, UserIcon, UserPenIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,6 +11,7 @@ import { $api } from "@/lib/api/client";
 import { useUser, useUserActions } from "@/store/userStore";
 
 function SettingPanel() {
+  const router = useRouter();
   const TABS_TRIGGER_CLASSNAME =
     "hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none";
 
@@ -22,7 +24,7 @@ function SettingPanel() {
       onSuccess: () => {
         reset();
         toast.success("Logged out successfully.");
-        window.location.href = "/sign-in";
+        router.push("/sign-in");
       },
       onError: (error: unknown) => {
         const message =
