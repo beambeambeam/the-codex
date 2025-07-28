@@ -55,7 +55,7 @@ export function ChatInputWithMentions({
   value = "",
   onValueChange,
   onSubmit,
-  placeholder = "Type @ to mention a document...",
+  placeholder = "Type @ and then type document name to mention...",
   disabled = false,
   className,
   maxHeight = 240,
@@ -77,7 +77,7 @@ export function ChatInputWithMentions({
   }, [value]);
 
   const searchDocuments = async (query: string) => {
-    if (!query.trim()) return [];
+    if (!query.trim() || query.trim().length < 2) return [];
 
     try {
       const response = await fetchClient.GET(
@@ -216,7 +216,7 @@ export function ChatInputWithMentions({
           />
 
           {/* Document Mention Dropdown */}
-          {mentionDropdown.isOpen && (
+          {mentionDropdown.isOpen && mentionDropdown.searchTerm.length >= 2 && (
             <div
               className="bg-background border-border absolute z-50 max-h-48 overflow-y-auto rounded-lg border shadow-lg"
               style={{
@@ -257,7 +257,7 @@ export function ChatInputWithMentions({
               ) : (
                 mentionDropdown.searchTerm && (
                   <div className="text-muted-foreground px-3 py-2 text-sm">
-                    No documents found
+                    No documents found. Try typing more characters.
                   </div>
                 )
               )}
