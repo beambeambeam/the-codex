@@ -42,6 +42,7 @@ async def upload_and_ingest_documents(
     *,
     input_file: UploadFile,
     file_name: str = None,
+    description: str = None,
 ):
     """
     Ingest documents into the system.
@@ -77,7 +78,9 @@ async def upload_and_ingest_documents(
         document = document_service.create_document(
             document_data=DocumentCreate(
                 file_name=input_file.name,
+                description=description,
                 file_type=input_file.type,
+                file_size=len(input_file.content),
                 source_file_path=stored_path,
                 collection_id=collection_id,
             ),

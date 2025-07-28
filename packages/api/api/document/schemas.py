@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, Field
+from ..models import enum
 
 
 class DocumentBase(BaseModel):
@@ -12,8 +13,12 @@ class DocumentBase(BaseModel):
     file_name: str = Field(
         ..., min_length=1, max_length=255, description="Document file name"
     )
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Document description"
+    )
     source_file_path: str = Field(..., description="Source file path")
     file_type: str = Field(..., description="File type (pdf, txt, doc, etc.)")
+    file_size: Optional[int] = Field(None, ge=0, description="File size in bytes")
 
 
 class DocumentCreate(DocumentBase):
@@ -30,13 +35,23 @@ class DocumentUpdate(BaseModel):
     file_name: Optional[str] = Field(
         None, min_length=1, max_length=255, description="Document file name"
     )
+    description: Optional[str] = Field(
+        None, max_length=1000, description="Document description"
+    )
     source_file_path: Optional[str] = Field(None, description="Source file path")
     file_type: Optional[str] = Field(None, description="File type")
+    file_size: Optional[int] = Field(None, ge=0, description="File size in bytes")
     is_vectorized: Optional[bool] = Field(
         None, description="Whether document is vectorized"
     )
     is_graph_extracted: Optional[bool] = Field(
         None, description="Whether knowledge graph is extracted"
+    )
+    summary: Optional[str] = Field(
+        None, max_length=1000, description="Document summary"
+    )
+    status: Optional[enum.IngestionStatus] = Field(
+        None, description="Document ingestion status"
     )
 
 
@@ -47,6 +62,7 @@ class DocumentResponse(DocumentBase):
     collection_id: str
     is_vectorized: bool
     is_graph_extracted: bool
+    status: enum.IngestionStatus
     created_at: datetime
     updated_at: datetime
     created_by: Optional[str]

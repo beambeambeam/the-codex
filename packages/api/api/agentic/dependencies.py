@@ -1,5 +1,6 @@
 from fastapi import Depends
 
+from api.agentic.core.ingestion.summary import SummaryGenerator
 from api.auth.dependencies import get_current_user
 from api.chat.dependencies import get_chat_service
 from api.chat.service import ChatService
@@ -17,7 +18,10 @@ from .core import (
     call_llm_async,
 )
 from .core.embedding.embedding import MODEL_BACKEND_MAP
-from .core.prompts.prompt_manager import render_knowledge_graph_extraction_prompt
+from .core.prompts.prompt_manager import (
+    render_knowledge_graph_extraction_prompt,
+    render_summary_generate_prompt,
+)
 
 
 def get_knowledge_graph_extractor() -> KnowledgeGraphExtractor:
@@ -29,6 +33,18 @@ def get_knowledge_graph_extractor() -> KnowledgeGraphExtractor:
 
     return KnowledgeGraphExtractor(
         llm_caller=llm_caller, prompt_renderer=prompt_renderer
+    )
+
+
+def get_summary_generator() -> SummaryGenerator:
+    """
+    Returns an instance of SummaryGenerator with the necessary dependencies.
+    """
+    llm_caller = call_llm_async
+
+    return SummaryGenerator(
+        llm_caller=llm_caller,
+        text_limit=15000,  # Default text limit
     )
 
 
@@ -53,6 +69,7 @@ def get_document_ingestor(
     document_service: DocumentService = Depends(get_document_service),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
     graph_extractor: KnowledgeGraphExtractor = Depends(get_knowledge_graph_extractor),
+    summary_generator: SummaryGenerator = Depends(get_summary_generator),
 ) -> DocumentIngestorService:
     """
     Returns an instance of DocumentIngestor with the necessary dependencies.
@@ -61,6 +78,7 @@ def get_document_ingestor(
         document_service=document_service,
         text_embedder=text_embedder,
         kg_extractor=graph_extractor,
+        summary_generator=summary_generator,
     )
 
 
