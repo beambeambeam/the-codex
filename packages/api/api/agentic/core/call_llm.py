@@ -15,9 +15,9 @@ T = TypeVar("T", bound=BaseModel)
 
 load_dotenv()
 api_key = os.getenv("OPENROUTER_API_KEY")
-model = os.getenv("OPENROUTER_MODEL", "openrouter/meta-llama/llama-3.3-70b-instruct")
+model = os.getenv("LITELLM_MODEL", "openrouter/meta-llama/llama-3.3-70b-instruct")
 structured_model = os.getenv(
-    "OPENROUTER_STRUCTURED_MODEL", "openrouter/meta-llama/llama-3.3-70b-instruct"
+    "LITELLM_STRUCTURED_MODEL", "openrouter/meta-llama/llama-3.3-70b-instruct"
 )
 
 client = instructor.from_litellm(litellm.completion, mode=instructor.Mode.JSON_SCHEMA)
