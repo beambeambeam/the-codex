@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { ArrowUpRightIcon, FileTextIcon } from "lucide-react";
+import { ArrowUpRightIcon, FileTextIcon, XIcon } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -190,6 +190,10 @@ export function ChatInputWithMentions({
     }
   };
 
+  const handleRemoveMention = (mentionId: string) => {
+    setMentions((prev) => prev.filter((mention) => mention.id !== mentionId));
+  };
+
   return (
     <TooltipProvider>
       <div className="flex w-full flex-col gap-2">
@@ -285,8 +289,19 @@ export function ChatInputWithMentions({
         {mentions.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {mentions.map((mention) => (
-              <Badge key={mention.id} variant="secondary" className="text-xs">
-                @{mention.document.file_name}
+              <Badge
+                key={mention.id}
+                variant="secondary"
+                className="flex items-center gap-1 text-xs"
+              >
+                {mention.document.title || mention.document.file_name}
+                <button
+                  onClick={() => handleRemoveMention(mention.id)}
+                  className="hover:bg-muted ml-1 rounded-full p-0.5 transition-colors"
+                  aria-label={`Remove mention of ${mention.document.title || mention.document.file_name}`}
+                >
+                  <XIcon className="h-3 w-3 cursor-pointer" />
+                </button>
               </Badge>
             ))}
           </div>
