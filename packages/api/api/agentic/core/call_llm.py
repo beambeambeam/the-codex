@@ -82,7 +82,7 @@ def call_structured_llm(
         return response
 
     else:
-        raise f"Error: Could not extract message content from LLM response. Response: {response}"
+        raise ValueError(f"Error: Could not extract message content from LLM response. Response: {response}")
 
 
 def call_structured_llm_async(
