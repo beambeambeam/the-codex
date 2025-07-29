@@ -86,7 +86,7 @@ function ClusteringTree() {
       <div className="flex items-center justify-between">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 px-2 text-sm font-medium">
+            <Button variant="outline" className="w-full text-sm font-medium">
               {selectedClustering.title || "Clustering"}
               <ChevronDownIcon className="ml-1 h-3 w-3" />
             </Button>
@@ -163,7 +163,7 @@ function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium">Clustering</h3>
+        <h3 className="text-sm font-medium">Trees</h3>
         <div className="flex gap-1">
           <Button
             size="icon"
