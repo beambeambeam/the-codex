@@ -1,7 +1,9 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId } from "react";
+import { redirect, useParams } from "next/navigation";
 import { FilePenIcon, SearchIcon } from "lucide-react";
+import { parseAsBoolean, useQueryState } from "nuqs";
 
 import {
   CommandDialog,
@@ -16,8 +18,9 @@ import { Input } from "@/components/ui/input";
 
 function CollectionIdSidebarSearchbox() {
   const id = useId();
+  const params = useParams<{ id: string }>();
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useQueryState("s", parseAsBoolean.withDefault(false));
 
   return (
     <>
@@ -52,7 +55,9 @@ function CollectionIdSidebarSearchbox() {
             </CommandItem>
           </CommandGroup>
           <CommandGroup heading="Command Suggestions">
-            <CommandItem>
+            <CommandItem
+              onSelect={() => redirect(`/collection/${params.id}/docs`)}
+            >
               <FilePenIcon />
               <span>Create new chat</span>
             </CommandItem>
