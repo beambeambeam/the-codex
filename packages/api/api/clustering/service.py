@@ -380,6 +380,7 @@ class ClusteringService:
     ) -> list[ClusteringTopicResponse]:
         """Get all topics for a clustering."""
         # Verify clustering exists and user has access
+        self.get_clustering(clustering_id, user)
 
         topics = (
             self.db.query(ClusteringTopic)
