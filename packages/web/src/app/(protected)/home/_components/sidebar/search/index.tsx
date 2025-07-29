@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { FolderOpenIcon, SearchIcon } from "lucide-react";
 
 import {
@@ -24,7 +24,6 @@ function HomeSidebarSearchbox() {
 
   const { searchResults, isSearching, handleSearch } = useCollectionSearch();
 
-  // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (inputValue.trim()) {
@@ -90,6 +89,16 @@ function HomeSidebarSearchbox() {
             </CommandGroup>
           )}
           <CommandSeparator />
+          <CommandGroup heading="Actions">
+            <CommandItem
+              onSelect={() => {
+                setOpen(false);
+                redirect("/home?new=true");
+              }}
+            >
+              Create New Collections
+            </CommandItem>
+          </CommandGroup>
         </CommandList>
       </CommandDialog>
     </>
