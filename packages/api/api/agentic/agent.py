@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Literal
 
 from api.chat.service import ChatService
 from api.document.service import DocumentServiceSearch as DocumentService
@@ -14,7 +15,8 @@ from .node import (
     GetInputAppendHistoryNode,
     GetUserIntentNode,
     SaveChatHistoryNode,
-    SearchPgvectorNode,
+    SearchCollectionNode,
+    SearchDocumentNode,
 )
 from .pocketflow_custom import Flow  # PocketFlow custom components
 from .schemas import (
@@ -60,7 +62,7 @@ class rag_agent(agentic_base):
         self.current_user = current_user
 
         self.shared_data: SharedStore = SharedStore()
-        self.flow: Flow = self.create_online_rag_flow()
+        self.flow: Flow = None
 
     def get_current_chat_history(self, collection_chat_id: str) -> ChatHistory:
         """
@@ -72,11 +74,18 @@ class rag_agent(agentic_base):
             messages=[ChatMessage.model_validate(history) for history in chat_history]
         )
 
-    def run(self, collection_chat_id: str, user_question: str) -> SharedStore:
+    def run(
+        self, collection_chat_id: str, user_question: str, references: list[str] = None
+    ) -> SharedStore:
         """
         Run the RAG agent with the provided user question.
         This method initializes the shared data and runs the flow.
         """
+        if references is None:
+            references = []
+        if self.flow is None:
+            raise ValueError("Flow is not initialized. Please create a flow first.")
+
         self.reset_shared_data()
         self.shared_data.current_user = self.current_user
 
@@ -85,6 +94,8 @@ class rag_agent(agentic_base):
         self.shared_data.chat_history = self.get_current_chat_history(
             collection_chat_id
         )
+        self.shared_data.document_references_id = references
+
         self.flow.run(shared=self.shared_data)
 
         return self.shared_data
@@ -96,43 +107,87 @@ class rag_agent(agentic_base):
         self.shared_data = SharedStore()
         print("Shared data has been reset.")
 
-    def create_online_rag_flow(self, intent: INTENT = None) -> Flow:
+    def create_collection_rag_flow(self) -> Flow:
         """
         Creates and returns a PocketFlow for the online RAG process.
         """
         input_node = GetInputAppendHistoryNode()
         get_intent_node = GetUserIntentNode()
         embed_q_node = EmbedQueryNode(embedding_model=self.embedding_model)
-        search_db_node = SearchPgvectorNode(document_service=self.document_service)
+        search_collection_node = SearchCollectionNode(
+            document_service=self.document_service
+        )
         generate_ans_node = GenerateResponseNode()
         generate_ans_based_on_context_node = GenerateResponseFromContextNode()
         save_chat_node = SaveChatHistoryNode(
             chat_service=self.chat_service,
         )
 
-        if intent:
-            input_node >> embed_q_node
-            embed_q_node >> search_db_node
-            search_db_node >> generate_ans_node
-            generate_ans_node >> save_chat_node
+        input_node >> get_intent_node
+        (
+            get_intent_node - INTENT.DOCUMENT_QA
+            >> embed_q_node
+            >> search_collection_node
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        (
+            get_intent_node - INTENT.SUMMARIZATION
+            >> embed_q_node
+            >> search_collection_node
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
 
+        flow = Flow(start=input_node, name="collection_rag_flow", debug=True)
+        return flow
+
+    def create_document_rag_flow(self) -> Flow:
+        """
+        Creates and returns a PocketFlow for the online RAG process.
+        """
+        input_node = GetInputAppendHistoryNode()
+        get_intent_node = GetUserIntentNode()
+        embed_q_node = EmbedQueryNode(embedding_model=self.embedding_model)
+        search_document_node = SearchDocumentNode(
+            document_service=self.document_service
+        )
+        generate_ans_node = GenerateResponseNode()
+        generate_ans_based_on_context_node = GenerateResponseFromContextNode()
+        save_chat_node = SaveChatHistoryNode(
+            chat_service=self.chat_service,
+        )
+
+        input_node >> get_intent_node
+        (
+            get_intent_node - INTENT.DOCUMENT_QA
+            >> embed_q_node
+            >> search_document_node
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        (
+            get_intent_node - INTENT.SUMMARIZATION
+            >> embed_q_node
+            >> search_document_node
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
+
+        flow = Flow(start=input_node, name="document_rag_flow", debug=True)
+        return flow
+
+    def create_flow(
+        self, flow_type: Literal["collection", "document"] = "collection"
+    ) -> None:
+        """
+        Creates and returns a PocketFlow based on the specified flow type.
+        """
+        if flow_type == "collection":
+            self.flow = self.create_collection_rag_flow()
+        elif flow_type == "document":
+            self.flow = self.create_document_rag_flow()
         else:
-            input_node >> get_intent_node
-            (
-                get_intent_node - INTENT.DOCUMENT_QA
-                >> embed_q_node
-                >> search_db_node
-                >> generate_ans_based_on_context_node
-                >> save_chat_node
-            )
-            get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
-            (
-                get_intent_node - INTENT.SUMMARIZATION
-                >> embed_q_node
-                >> search_db_node
-                >> generate_ans_based_on_context_node
-                >> save_chat_node
-            )
-
-        online_flow = Flow(start=input_node, name="Online_RAG_Query_Flow", debug=True)
-        return online_flow
+            raise ValueError(f"Unknown flow type: {flow_type}")

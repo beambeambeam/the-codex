@@ -1,0 +1,23 @@
+You are provided with a document image and its dimensions.
+
+The document may contain structured content such as tables, forms, diagrams, or headings.
+
+Your task:
+- Use any available raw text (below) combined with visual layout to reconstruct the document content.
+- If no readable text is available, rely fully on visual elements and layout to describe the document.
+
+Formatting instructions:
+- Use **HTML tables** for tabular content.
+- Use markdown for section titles, paragraphs, and overall structure.
+- Insert `<figure>IMAGE_ANALYSIS</figure>` placeholders for visual diagrams or non-text elements.
+
+Length guidance:
+- Aim for about **{{ text_length }} words**, focusing on clear and accurate representation.
+
+Output:
+- Return a JSON object with one key, `natural_text`, containing the markdown description.
+"""
+
+RAW_TEXT_START
+{{ base_text }}
+RAW_TEXT_END

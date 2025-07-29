@@ -13,6 +13,7 @@ from chonkie import (
 )
 
 from .schemas import ChunkMetadata, DocumentChunk
+from .typhoon_ocr.ocr_utils import ocr_image_document
 
 
 def _normalize_file_type(file_type: str) -> str:
@@ -152,21 +153,8 @@ def extract_chunks_from_text_file(
     embedding_model: Optional[Union[str, SentenceTransformerEmbeddings]] = None,
 ) -> list[DocumentChunk]:
     """Extract and chunk text from a text file."""
-    try:
-        if isinstance(file_input, str):
-            with open(file_input, encoding="utf-8", errors="ignore") as file:
-                content = file.read()
-        elif isinstance(file_input, bytes):
-            # Validate that bytes content is not empty
-            if not file_input:
-                raise ValueError("Text file bytes content is empty")
-            content = file_input.decode("utf-8", errors="ignore")
-        else:
-            raise TypeError("file_input must be a string (path) or bytes.")
-    except Exception as e:
-        print(f"Error reading text file {file_name}: {e}")
-        return []
 
+    content = extract_text_from_text_file(file_input)
     content = preprocess_content(content)
 
     if not content.strip():
@@ -177,6 +165,79 @@ def extract_chunks_from_text_file(
 
     return _chunk_text(
         content,
+        file_name,
+        normalized_type,
+        chunk_size,
+        min_characters_per_chunk,
+        embedding_model=embedding_model,
+    )
+
+
+def extract_text_from_pdf_file(
+    file_input: Union[str, bytes],
+) -> str:
+    """Extract text from a PDF file."""
+    if isinstance(file_input, str):
+        doc = fitz.open(file_input)
+    else:
+        # Validate that content is not empty before opening
+        if not file_input:
+            raise ValueError("PDF content is empty")
+        doc = fitz.open(stream=file_input, filetype="pdf")
+
+    full_text = ""
+    try:
+        for page in doc:
+            full_text += page.get_text("text") + "\n"
+    finally:
+        doc.close()
+
+    return full_text.strip()
+
+
+def extract_text_from_text_file(
+    file_input: Union[str, bytes],
+) -> str:
+    """Extract text from a text file."""
+    if isinstance(file_input, str):
+        with open(file_input, encoding="utf-8", errors="ignore") as file:
+            content = file.read()
+    elif isinstance(file_input, bytes):
+        # Validate that bytes content is not empty
+        if not file_input:
+            raise ValueError("Text file bytes content is empty")
+        content = file_input.decode("utf-8", errors="ignore")
+    else:
+        raise TypeError("file_input must be a string (path) or bytes.")
+
+    return content.strip()
+
+
+async def extract_text_from_image_file(
+    file_input: Union[str, bytes],
+) -> str:
+    """Extract and chunk text from an image file using OCR."""
+    content = await ocr_image_document(file_input, task_type="default")
+    return content.strip()
+
+
+def extract_chunks_from_text(
+    file_text: str,
+    file_name: str,
+    file_type: str,
+    chunk_size: int = 512,
+    min_characters_per_chunk: int = 24,
+    embedding_model: Optional[Union[str, SentenceTransformerEmbeddings]] = None,
+) -> list[DocumentChunk]:
+    """Extract and chunk text from a string."""
+    if not file_text.strip():
+        print(f"No text provided for chunking from {file_name}")
+        return []
+
+    normalized_type = _normalize_file_type(file_type)
+
+    return _chunk_text(
+        file_text,
         file_name,
         normalized_type,
         chunk_size,

@@ -1,0 +1,23 @@
+You are provided with a document image and its dimensions.
+
+The image may contain printed text, tables, figures, or other visual layout elements.
+
+Your task:
+- If OCR or any text is available (shown below), integrate it with your visual analysis to produce a rich, descriptive markdown explanation of the page content.
+- If no text is present or the text is incomplete, rely entirely on visual cues (layout, fonts, graphics, spacing) to infer and describe the content naturally and comprehensively.
+
+Formatting instructions:
+- Use **markdown** syntax for structure: headings, lists, and tables.
+- Format any tables using **markdown tables**.
+- Insert `![Image](dummy.png)` placeholders where images or figures appear.
+
+Length guidance:
+- Your description should be roughly **{{ text_length }} words** but may vary slightly based on content complexity.
+
+Output:
+- Return your final output as a JSON object with a single key `natural_text` containing the markdown string.
+"""
+
+RAW_TEXT_START
+{{ base_text }}
+RAW_TEXT_END

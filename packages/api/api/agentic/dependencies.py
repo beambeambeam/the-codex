@@ -39,10 +39,8 @@ def get_summary_generator() -> SummaryGenerator:
     """
     Returns an instance of SummaryGenerator with the necessary dependencies.
     """
-    llm_caller = call_llm_async
 
     return SummaryGenerator(
-        llm_caller=llm_caller,
         text_limit=15000,  # Default text limit
     )
 

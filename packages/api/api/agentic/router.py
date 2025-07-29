@@ -10,6 +10,7 @@ from fastapi import (
 
 from api.agentic.agent import rag_agent
 from api.agentic.schemas import AgentResponse
+from api.auth.schemas import UserResponse
 from api.chat.dependencies import get_chat_or_404
 from api.document.schemas import DocumentCreate, DocumentResponse
 from api.models.chat import CollectionChat
@@ -81,7 +82,7 @@ async def upload_and_ingest_documents(
                 document_data=DocumentCreate(
                     file_name=input_file.filename or "uploaded_file",
                     file_type=file_type,
-                    file_size=len(input_file.content),
+                    file_size=len(file_content),
                     source_file_path=stored_path,
                     collection_id=collection_id,
                 ),
@@ -99,12 +100,17 @@ async def upload_and_ingest_documents(
                 is_path=False,
             )
             input_file_model: FileInput = normalize_file_input(formatted_input)
+
+            # detach user/ document
+            current_user = UserResponse.model_validate(current_user)
+            current_document = DocumentResponse.model_validate(document)
+
             # Schedule ingestion concurrently using asyncio
             asyncio.create_task(
                 document_ingestor.ingest_file(
                     input_file=input_file_model,
-                    document=document,
-                    graph_extract=False,
+                    document=current_document,
+                    graph_extract=True,
                     user=current_user,
                 )
             )
@@ -154,6 +160,8 @@ def cluster_documents(
 )
 async def rag_query(
     user_question: str,
+    *,
+    references: list[str] = None,
     collection_chat: CollectionChat = Depends(get_chat_or_404),
     rag_agent: rag_agent = Depends(get_rag_agent),
 ):
@@ -163,9 +171,15 @@ async def rag_query(
     if not user_question:
         raise HTTPException(status_code=400, detail="User question cannot be empty")
 
+    if references is not None:
+        rag_agent.create_flow(flow_type="document")
+    else:
+        rag_agent.create_flow(flow_type="collection")
+
     shared_store = rag_agent.run(
         user_question=user_question,
         collection_chat_id=collection_chat.id,
+        references=references,
     )
 
     # Clear chunks text to avoid sending large data back

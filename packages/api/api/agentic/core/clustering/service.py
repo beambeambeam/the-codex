@@ -275,9 +275,9 @@ class DocumentClusteringService:
                 collection_id
             )
             doc_id_to_summary = {
-                doc.id: doc.summary
+                doc.id: doc.description
                 for doc in document_list
-                if doc.summary
+                if doc.description
                 and doc.id in doc_primary_topic  # only use those in clustering
             }
 

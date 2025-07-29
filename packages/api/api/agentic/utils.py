@@ -4,7 +4,9 @@ from typing import Union
 from .core.ingestion.schemas import FileInput
 
 MIME_TYPE_MAPPING = {
+    # Common file types and their extensions
     "application/pdf": ".pdf",
+    # Text and document formats
     "text/plain": ".txt",
     "text/markdown": ".md",
     "application/json": ".json",
@@ -20,6 +22,15 @@ MIME_TYPE_MAPPING = {
     "application/x-yaml": ".yml",
     "text/yaml": ".yml",
     "text/x-log": ".log",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ".docx",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ".xlsx",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation": ".pptx",
+    # Image formats
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/gif": ".gif",
+    "image/bmp": ".bmp",
+    "image/webp": ".webp",
 }
 
 
