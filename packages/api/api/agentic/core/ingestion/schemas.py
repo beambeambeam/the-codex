@@ -52,7 +52,7 @@ class DocumentChunk(BaseModel):
 class document_details(BaseModel):
     """Schema for document generated details."""
 
-    title: str = Field(None, description="Title of the document")
+    title: Optional[str] = Field(None, description="Title of the document")
     description: Optional[str] = Field(
         None, description="Full summary of document content"
     )
