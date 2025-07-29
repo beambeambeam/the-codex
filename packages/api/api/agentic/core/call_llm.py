@@ -100,6 +100,7 @@ async def call_structured_llm_async(
         model=structured_model,
         api_key=api_key,
         response_model=response_model,
+        max_retries=max_retries,
     )
 
     if response:
