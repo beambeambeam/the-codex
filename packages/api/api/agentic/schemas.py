@@ -56,7 +56,7 @@ class UserIntent(BaseModel):
         Example:
         Q: "Summarize the key points of this article."
         A: "summarization"
-
+ 
         Q: "Can you provide overview of this document?"
         A: "summarization"
 
