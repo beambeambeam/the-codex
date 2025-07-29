@@ -11,7 +11,6 @@ import {
 import { useTree } from "@headless-tree/react";
 import {
   ChevronDownIcon,
-  CloudUploadIcon,
   FolderIcon,
   FolderOpenIcon,
   ListCollapseIcon,
@@ -37,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Loader } from "@/components/ui/loader";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
+import { getFileIcon } from "@/lib/files";
 
 const indent = 20;
 
@@ -199,17 +199,28 @@ function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
                   item.isFolder() ? undefined : "Double-click to view document"
                 }
               >
-                <div className="flex items-center gap-2">
+                <div className="flex w-full min-w-0 items-center gap-2 overflow-hidden">
                   {item.isFolder() ? (
                     item.isExpanded() ? (
-                      <FolderOpenIcon className="h-4 w-4" />
+                      <FolderOpenIcon className="h-4 w-4 flex-shrink-0" />
                     ) : (
-                      <FolderIcon className="h-4 w-4" />
+                      <FolderIcon className="h-4 w-4 flex-shrink-0" />
                     )
                   ) : (
-                    <CloudUploadIcon className="h-4 w-4" />
+                    <div className="flex-shrink-0">
+                      {getFileIcon({
+                        file: {
+                          type:
+                            item.getItemData().name.split(".").pop() ||
+                            "unknown",
+                          name: item.getItemData().name,
+                        },
+                      })}
+                    </div>
                   )}
-                  <span className="truncate">{item.getItemData().name}</span>
+                  <span className="min-w-0 flex-1 truncate text-start">
+                    {item.getItemData().name}
+                  </span>
                 </div>
               </TreeItemLabel>
             </TreeItem>
