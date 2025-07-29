@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { FilePenIcon, FolderOpenIcon, SearchIcon } from "lucide-react";
+import { FolderOpenIcon, SearchIcon } from "lucide-react";
 
 import {
   CommandDialog,
@@ -49,16 +49,6 @@ function HomeSidebarSearchbox() {
             <CommandItem>
               <FolderOpenIcon />
               <span>Collection #2</span>
-            </CommandItem>
-          </CommandGroup>
-          <CommandGroup heading="Documents Suggestions">
-            <CommandItem>
-              <FilePenIcon />
-              <span>Document #1</span>
-            </CommandItem>
-            <CommandItem>
-              <FilePenIcon />
-              <span>Document #2</span>
             </CommandItem>
           </CommandGroup>
           <CommandSeparator />
