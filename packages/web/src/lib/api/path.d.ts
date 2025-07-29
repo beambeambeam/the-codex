@@ -220,6 +220,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/collections/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search Collection By Name
+     * @description Search for collections by name or description.
+     */
+    get: operations["search_collection_by_name_collections_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/collections/{collection_id}": {
     parameters: {
       query?: never;
@@ -2733,6 +2753,40 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CollectionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  search_collection_by_name_collections_search_get: {
+    parameters: {
+      query?: {
+        /** @description Search query for collections by name/description. Leave empty to return all collections. */
+        query?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CollectionResponse"][];
         };
       };
       /** @description Validation Error */
