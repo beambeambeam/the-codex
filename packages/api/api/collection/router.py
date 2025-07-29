@@ -1,6 +1,6 @@
 """Collection API routes."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
