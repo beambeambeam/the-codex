@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
-from ..clustering.schemas import ClusteringResponse
-from ..clustering.service import get_clustering_service
+from ..clustering.schemas import EnhancedClusteringResponse
+from ..clustering.service import ClusteringService, get_clustering_service
 from ..database import get_db
 from ..document.dependencies import get_document_service
 from ..document.schemas import DocumentResponse
@@ -114,19 +114,28 @@ def list_collection_documents(
     return document_service.get_collection_documents(collection.id)
 
 
-@router.get("/{collection_id}/clustering", response_model=list[ClusteringResponse])
+@router.get(
+    "/{collection_id}/clustering", response_model=list[EnhancedClusteringResponse]
+)
 def get_collection_clustering(
     collection_id: str,
     current_user: User = Depends(get_current_user),
     collection_service: CollectionService = Depends(get_collection_service),
-    clustering_service=Depends(get_clustering_service),
+    clustering_service: ClusteringService = Depends(get_clustering_service),
 ):
-    """Get clustering data for a specific collection."""
+    """Get all clusterings for a collection, including virtual clusterings by file type and date."""
     # Verify collection exists and user has access
-    collection = collection_service.get_collection(collection_id, current_user)
+    collection = collection_service.get_collection(collection_id)
     if not collection:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
+        )
+
+    # Check if user has access to this collection
+    if not collection_service._can_access_collection(collection, current_user):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to access this collection",
         )
 
     return clustering_service.get_clusterings_by_collection(collection_id, current_user)

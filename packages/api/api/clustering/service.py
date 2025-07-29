@@ -1,12 +1,17 @@
 """Clustering service for managing clustering and related entities."""
 
+from collections import defaultdict
+from datetime import datetime
 from typing import Optional
 from uuid import uuid4
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
+from ..database import get_db
+from ..document.schemas import DocumentResponse
 from ..models.clustering import Clustering, ClusteringChild, ClusteringTopic
+from ..models.document import Document
 from ..models.user import User
 from .schemas import (
     ClusteringChildCreate,
@@ -15,6 +20,10 @@ from .schemas import (
     ClusteringTopicCreate,
     ClusteringTopicUpdate,
     ClusteringUpdate,
+    EnhancedClusteringResponse,
+    ClusteringTopicWithDocuments,
+    ClusteringResponse,
+    ClusteringTopicResponse,
 )
 
 
@@ -63,8 +72,9 @@ class ClusteringService:
 
     def get_clusterings_by_collection(
         self, collection_id: str, user: User
-    ) -> list[Clustering]:
-        """Get all clusterings for a specific collection."""
+    ) -> list[dict]:
+        """Get all clusterings for a specific collection, including virtual clusterings by file type and date."""
+        # Get existing clusterings
         clusterings = (
             self.db.query(Clustering)
             .options(joinedload(Clustering.creator), joinedload(Clustering.updater))
@@ -74,7 +84,152 @@ class ClusteringService:
             .all()
         )
         self._populate_clustering_usernames(clusterings)
-        return clusterings
+
+        # Convert existing clusterings to dict format using Pydantic schemas
+        result = []
+        for clustering in clusterings:
+            topics = []
+            for topic in clustering.topics:
+                documents = []
+                for child in topic.children:
+                    document = (
+                        self.db.query(Document)
+                        .filter(Document.id == child.target)
+                        .first()
+                    )
+                    if document:
+                        doc_response = DocumentResponse.model_validate(document)
+                        documents.append(doc_response.model_dump())
+
+                topic_with_docs = ClusteringTopicWithDocuments(
+                    **ClusteringTopicResponse.model_validate(topic).model_dump(),
+                    documents=documents,
+                )
+                topics.append(topic_with_docs.model_dump())
+
+            clustering_dict = EnhancedClusteringResponse(
+                **ClusteringResponse.model_validate(clustering).model_dump(),
+                topics=topics,
+            ).model_dump()
+
+            result.append(clustering_dict)
+
+        # Add virtual clustering by file type
+        file_type_clustering = self._create_file_type_clustering(collection_id, user)
+        if file_type_clustering:
+            result.append(file_type_clustering)
+
+        # Add virtual clustering by date
+        date_clustering = self._create_date_clustering(collection_id, user)
+        if date_clustering:
+            result.append(date_clustering)
+
+        return result
+
+    def _create_file_type_clustering(
+        self, collection_id: str, user: User
+    ) -> Optional[dict]:
+        """Create virtual clustering grouped by file type."""
+        # Get all documents in the collection
+        documents = (
+            self.db.query(Document)
+            .filter(Document.collection_id == collection_id)
+            .all()
+        )
+
+        if not documents:
+            return None
+
+        # Group documents by file type
+        file_type_groups = defaultdict(list)
+        for doc in documents:
+            file_type_groups[doc.file_type].append(doc)
+
+        # Create topics for each file type
+        topics = []
+        for file_type, docs in file_type_groups.items():
+            documents = [
+                DocumentResponse.model_validate(doc).model_dump() for doc in docs
+            ]
+
+            topic_dict = ClusteringTopicWithDocuments(
+                clustering_id="virtual_file_type_clustering",
+                title=f"{file_type.upper()} Documents",
+                description=f"Documents with file type {file_type}",
+                id=f"virtual_topic_file_type_{file_type}",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                created_by=user.id,
+                updated_by=user.id,
+                documents=documents,
+            ).model_dump()
+
+            topics.append(topic_dict)
+
+        return EnhancedClusteringResponse(
+            collection_id=collection_id,
+            search_word="by_file_type",
+            title="Documents by File Type",
+            description="Documents grouped by file type",
+            id="virtual_file_type_clustering",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            created_by=user.id,
+            updated_by=user.id,
+            topics=topics,
+        ).model_dump()
+
+    def _create_date_clustering(self, collection_id: str, user: User) -> Optional[dict]:
+        """Create virtual clustering grouped by creation date."""
+        # Get all documents in the collection
+        documents = (
+            self.db.query(Document)
+            .filter(Document.collection_id == collection_id)
+            .all()
+        )
+
+        if not documents:
+            return None
+
+        # Group documents by creation date (date part only)
+        date_groups = defaultdict(list)
+        for doc in documents:
+            date_key = doc.created_at.strftime("%Y-%m-%d")
+            date_groups[date_key].append(doc)
+
+        # Create topics for each date
+        topics = []
+        for date_key, docs in sorted(date_groups.items(), reverse=True):
+            documents = [
+                DocumentResponse.model_validate(doc).model_dump() for doc in docs
+            ]
+
+            topic_dict = ClusteringTopicWithDocuments(
+                clustering_id="virtual_date_clustering",
+                title=date_key,
+                description=f"Documents created on {date_key}",
+                id=f"virtual_topic_date_{date_key}",
+                created_at=datetime.now(),
+                updated_at=datetime.now(),
+                created_by=user.id,
+                updated_by=user.id,
+                documents=documents,
+            ).model_dump()
+
+            topics.append(topic_dict)
+
+        return EnhancedClusteringResponse(
+            collection_id=collection_id,
+            search_word="by_date",
+            title="Documents by Creation Date",
+            description="Documents grouped by creation date",
+            id="virtual_date_clustering",
+            created_at=datetime.now(),
+            updated_at=datetime.now(),
+            created_by=user.id,
+            updated_by=user.id,
+            topics=topics,
+        ).model_dump()
 
     def update_clustering(
         self, clustering_id: str, update_data: ClusteringUpdate, user: User
@@ -395,10 +550,6 @@ class ClusteringService:
             child.updated_by = child.updater.username if child.updater else None
 
 
-def get_clustering_service(db: Session = None) -> ClusteringService:
+def get_clustering_service(db: Session = Depends(get_db)) -> ClusteringService:
     """Get clustering service with database session."""
-    if db is None:
-        from ..database import get_db
-
-        db = next(get_db())
     return ClusteringService(db)

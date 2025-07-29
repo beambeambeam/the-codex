@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from ..document.schemas import DocumentResponse
+
 
 class ClusteringBase(BaseModel):
     collection_id: str = Field(..., description="Collection ID")
@@ -77,6 +79,42 @@ class ClusteringChildResponse(ClusteringChildBase):
     updated_at: datetime
     created_by: Optional[str]
     updated_by: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+# New schemas for enhanced clustering response
+class ClusteringTopicWithDocuments(BaseModel):
+    """Topic with documents for enhanced clustering response."""
+
+    clustering_id: str
+    title: str
+    description: Optional[str]
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    created_by: Optional[str]
+    updated_by: Optional[str]
+    documents: list[DocumentResponse]
+
+    class Config:
+        from_attributes = True
+
+
+class EnhancedClusteringResponse(BaseModel):
+    """Enhanced clustering response with topics and documents."""
+
+    collection_id: str
+    search_word: Optional[str]
+    title: str
+    description: Optional[str]
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    created_by: Optional[str]
+    updated_by: Optional[str]
+    topics: list[ClusteringTopicWithDocuments]
 
     class Config:
         from_attributes = True
