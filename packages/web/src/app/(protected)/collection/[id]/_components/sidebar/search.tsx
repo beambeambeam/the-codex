@@ -2,7 +2,13 @@
 
 import { useEffect, useId, useState } from "react";
 import { redirect, useParams } from "next/navigation";
-import { FilePenIcon, MessageSquareIcon, SearchIcon } from "lucide-react";
+import {
+  FilePenIcon,
+  MessageSquareIcon,
+  PlusIcon,
+  SearchIcon,
+  UploadIcon,
+} from "lucide-react";
 import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -96,6 +102,31 @@ function CollectionIdSidebarSearchbox() {
               "No results found."
             )}
           </CommandEmpty>
+
+          {/* Static Actions */}
+          <CommandGroup heading="Actions">
+            <CommandItem
+              onSelect={() => {
+                setOpen(false);
+                redirect(`/collection/${params.id}/chat`);
+              }}
+            >
+              <PlusIcon className="mr-2 h-4 w-4" />
+              <span>Create New Chat</span>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                setOpen(false);
+                redirect(`/collection/${params.id}/docs`);
+              }}
+            >
+              <UploadIcon className="mr-2 h-4 w-4" />
+              <span>Upload New File</span>
+            </CommandItem>
+          </CommandGroup>
+
+          <CommandSeparator />
+
           {documentResults.length > 0 && (
             <CommandGroup heading="Documents">
               {documentResults.map((document) => (
