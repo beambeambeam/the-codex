@@ -160,6 +160,8 @@ def cluster_documents(
 )
 async def rag_query(
     user_question: str,
+    *,
+    references: list[str] = None,
     collection_chat: CollectionChat = Depends(get_chat_or_404),
     rag_agent: rag_agent = Depends(get_rag_agent),
 ):
@@ -169,9 +171,15 @@ async def rag_query(
     if not user_question:
         raise HTTPException(status_code=400, detail="User question cannot be empty")
 
+    if references is not None:
+        rag_agent.create_flow(flow_type="document")
+    else:
+        rag_agent.create_flow(flow_type="collection")
+
     shared_store = rag_agent.run(
         user_question=user_question,
         collection_chat_id=collection_chat.id,
+        references=references,
     )
 
     # Clear chunks text to avoid sending large data back

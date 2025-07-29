@@ -10,7 +10,6 @@ from PIL import Image
 
 from ...call_llm import call_vlm_async
 from ...prompts.prompt_manager import render_ocr_prompt
-from .schemas import TyphoonOCRResponse
 
 # -----------------------------
 # OCR Types & Data Structures

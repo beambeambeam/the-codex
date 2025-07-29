@@ -181,7 +181,7 @@ class EmbedQueryNode(Node):
         return NodeStatus.DEFAULT.value
 
 
-class SearchPgvectorNode(Node):
+class SearchCollectionNode(Node):
     def __init__(
         self, document_service: DocumentService, name="", max_retries=3, wait=0, TOP_K=5
     ):
@@ -222,13 +222,77 @@ class SearchPgvectorNode(Node):
         prep_res: Any,
         exec_res: list[ChunkSearchResponse],
     ):
-        shared.retrieved_contexts = exec_res
+        shared.retrieved_contexts.extend(exec_res)
 
-        if exec_res is None:
+        if not exec_res:
             print("SearchPgvectorNode: No relevant contexts retrieved.")
         else:
             print(
                 f"SearchPgvectorNode: Stored {len(exec_res)} retrieved contexts in shared store."
+            )
+        return NodeStatus.DEFAULT.value
+
+
+class SearchDocumentNode(Node):
+    """
+    Node to search for documents in a collection based on the user's query.
+    This node can be used to retrieve relevant documents from the collection.
+    """
+
+    def __init__(
+        self, document_service: DocumentService, name="", max_retries=3, wait=0
+    ):
+        super().__init__(name, max_retries, wait)
+        self.document_service = document_service
+
+    def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
+        if shared.query_embedding is None:
+            print("SearchDocumentNode: No query embedding found in shared store.")
+            return None
+        return {
+            "embedding": shared.query_embedding,
+            "references": shared.document_references_id,
+        }
+
+    def exec(self, inputs: dict[str, Any]) -> list[ChunkSearchResponse]:
+        if inputs.get("embedding") is None:
+            return []
+        try:
+            if not inputs.get("references"):
+                print("SearchDocumentNode: No references provided for search.")
+                return []
+
+            created_documents = []
+            for ref_id in inputs.get("references"):
+                print(f"Searching for document with reference ID: {ref_id}")
+
+                retrieved_docs = self.document_service.search_document_chunks(
+                    document_id=ref_id,
+                    query_embedding=inputs.get("embedding"),
+                )
+                print(
+                    f"SearchDocumentNode: Retrieved {len(retrieved_docs)} documents from DB."
+                )
+                created_documents.extend(retrieved_docs)
+
+            return created_documents
+        except Exception as e:
+            print(f"SearchDocumentNode: Error searching documents in DB: {e}")
+            return []
+
+    def post(
+        self,
+        shared: SharedStore,
+        prep_res: Any,
+        exec_res: list[ChunkSearchResponse],
+    ):
+        shared.retrieved_contexts.extend(exec_res)
+
+        if not exec_res:
+            print("SearchDocumentNode: No relevant contexts retrieved.")
+        else:
+            print(
+                f"SearchDocumentNode: Stored {len(exec_res)} retrieved contexts in shared store."
             )
         return NodeStatus.DEFAULT.value
 

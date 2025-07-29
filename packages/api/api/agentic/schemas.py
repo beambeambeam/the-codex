@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 
 from api.chat.schemas import (
     CollectionChatHistoryBase,
-    CollectionChatReferenceCreate,
     CollectionChatResponse,
 )
 from api.document.schemas import (
@@ -161,9 +160,11 @@ class SharedStore(ShareStoreBase):
         default_factory=ChatHistory,
         description="New chat history to be appended to the existing conversation",
     )
-    new_retrieved_contexts: list[CollectionChatReferenceCreate] = Field(
+
+    # References
+    document_references_id: list[str] = Field(
         default_factory=list,
-        description="New retrieved contexts to be appended to the existing conversation",
+        description="ID of the document being processed or queried",
     )
 
     # Node Status
