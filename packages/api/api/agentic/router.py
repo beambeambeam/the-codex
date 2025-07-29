@@ -82,7 +82,7 @@ async def upload_and_ingest_documents(
                 document_data=DocumentCreate(
                     file_name=input_file.filename or "uploaded_file",
                     file_type=file_type,
-                    file_size=input_file.size,
+                    file_size=len(file_content),
                     source_file_path=stored_path,
                     collection_id=collection_id,
                 ),

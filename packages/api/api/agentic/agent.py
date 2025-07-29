@@ -176,7 +176,7 @@ class rag_agent(agentic_base):
             >> save_chat_node
         )
 
-        flow = Flow(start=input_node, name="search_document_node", debug=True)
+        flow = Flow(start=input_node, name="document_rag_flow", debug=True)
         return flow
 
     def create_flow(

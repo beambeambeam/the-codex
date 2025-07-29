@@ -100,6 +100,7 @@ async def call_structured_llm_async(
         model=structured_model,
         api_key=api_key,
         response_model=response_model,
+        max_retries=max_retries,
     )
 
     if response:
@@ -114,7 +115,7 @@ async def call_structured_llm_async(
 async def call_vlm_async(
     prompt_text: Union[str, ChatHistory],
     image_base64: str,
-    api_key: str = os.getenv("TYPHOON_API_KEY", "your-typhoon-api-key"),
+    api_key: str = os.getenv("TYPHOON_API_KEY"),
     *,
     model: str = "openai/typhoon-ocr-preview",
     litellm_params: dict[str, Any] = None,
