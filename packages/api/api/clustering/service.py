@@ -54,9 +54,23 @@ class ClusteringService:
         self.db.refresh(clustering)
         return clustering
 
-    def get_clustering(self, clustering_id: str) -> Optional[Clustering]:
-        """Get a clustering by ID."""
-        return self.db.query(Clustering).filter(Clustering.id == clustering_id).first()
+    def get_clustering(self, clustering_id: str, user: User) -> Optional[Clustering]:
+        """Get a clustering by ID with authorization check."""
+        clustering = (
+            self.db.query(Clustering).filter(Clustering.id == clustering_id).first()
+        )
+        if not clustering:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Clustering not found"
+            )
+
+        if not self._can_access_clustering(clustering, user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to access this clustering",
+            )
+
+        return clustering
 
     def list_clusterings(self, user: User) -> list[Clustering]:
         """Get all clusterings created by a user."""
@@ -233,11 +247,7 @@ class ClusteringService:
         self, clustering_id: str, update_data: ClusteringUpdate, user: User
     ) -> Clustering:
         """Update a clustering."""
-        clustering = self.get_clustering(clustering_id)
-        if not clustering:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Clustering not found"
-            )
+        clustering = self.get_clustering(clustering_id, user)
 
         # Check if user has permission to update
         if not self._can_modify_clustering(clustering, user):
@@ -262,11 +272,7 @@ class ClusteringService:
 
     def delete_clustering(self, clustering_id: str, user: User) -> bool:
         """Delete a clustering."""
-        clustering = self.get_clustering(clustering_id)
-        if not clustering:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Clustering not found"
-            )
+        clustering = self.get_clustering(clustering_id, user)
 
         if not self._can_modify_clustering(clustering, user):
             raise HTTPException(
@@ -284,11 +290,7 @@ class ClusteringService:
     ) -> ClusteringTopic:
         """Create a new clustering topic."""
         # Verify clustering exists and user has access
-        clustering = self.get_clustering(clustering_id)
-        if not clustering:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Clustering not found"
-            )
+        clustering = self.get_clustering(clustering_id, user)
 
         if not self._can_modify_clustering(clustering, user):
             raise HTTPException(
@@ -310,30 +312,33 @@ class ClusteringService:
         self.db.refresh(topic)
         return topic
 
-    def get_clustering_topic(self, topic_id: str) -> Optional[ClusteringTopic]:
-        """Get a clustering topic by ID."""
-        return (
+    def get_clustering_topic(
+        self, topic_id: str, user: User
+    ) -> Optional[ClusteringTopic]:
+        """Get a clustering topic by ID with authorization check."""
+        topic = (
             self.db.query(ClusteringTopic)
             .filter(ClusteringTopic.id == topic_id)
             .first()
         )
+        if not topic:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found"
+            )
+
+        if not self._can_access_clustering(topic.clustering, user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to access this topic",
+            )
+
+        return topic
 
     def list_clustering_topics(
         self, clustering_id: str, user: User
     ) -> list[ClusteringTopic]:
         """Get all topics for a clustering."""
         # Verify clustering exists and user has access
-        clustering = self.get_clustering(clustering_id)
-        if not clustering:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Clustering not found"
-            )
-
-        if not self._can_access_clustering(clustering, user):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this clustering",
-            )
 
         topics = (
             self.db.query(ClusteringTopic)
@@ -351,11 +356,7 @@ class ClusteringService:
         self, topic_id: str, update_data: ClusteringTopicUpdate, user: User
     ) -> ClusteringTopic:
         """Update a clustering topic."""
-        topic = self.get_clustering_topic(topic_id)
-        if not topic:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found"
-            )
+        topic = self.get_clustering_topic(topic_id, user)
 
         if not self._can_modify_topic(topic, user):
             raise HTTPException(
@@ -377,11 +378,7 @@ class ClusteringService:
 
     def delete_clustering_topic(self, topic_id: str, user: User) -> bool:
         """Delete a clustering topic."""
-        topic = self.get_clustering_topic(topic_id)
-        if not topic:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found"
-            )
+        topic = self.get_clustering_topic(topic_id, user)
 
         if not self._can_modify_topic(topic, user):
             raise HTTPException(
@@ -424,13 +421,27 @@ class ClusteringService:
         self.db.refresh(child)
         return child
 
-    def get_clustering_child(self, child_id: str) -> Optional[ClusteringChild]:
-        """Get a clustering child by ID."""
-        return (
+    def get_clustering_child(
+        self, child_id: str, user: User
+    ) -> Optional[ClusteringChild]:
+        """Get a clustering child by ID with authorization check."""
+        child = (
             self.db.query(ClusteringChild)
             .filter(ClusteringChild.id == child_id)
             .first()
         )
+        if not child:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Child not found"
+            )
+
+        if not self._can_access_clustering(child.topic.clustering, user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to access this child",
+            )
+
+        return child
 
     def list_clustering_children(
         self, topic_id: str, user: User
