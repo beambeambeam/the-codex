@@ -22,12 +22,10 @@ import { useCollectionSearch } from "@/hooks/use-collection-search";
 function HomeSidebarSearchbox() {
   const id = useId();
   const [open, setOpen] = useQueryState("s", parseAsBoolean.withDefault(false));
-
   const [inputValue, setInputValue] = useQueryState(
     "search",
     parseAsString.withDefault(""),
   );
-
   const [localInputValue, setLocalInputValue] = useState(inputValue || "");
   const [isSearching, setIsSearching] = useState(false);
 
@@ -48,8 +46,9 @@ function HomeSidebarSearchbox() {
     }
   }, [open, inputValue]);
 
-  const { searchResults, isSearching: isApiSearching } =
-    useCollectionSearch(inputValue);
+  const { searchResults, isSearching: isApiSearching } = useCollectionSearch(
+    inputValue || "",
+  );
 
   const showLoading =
     (isSearching || isApiSearching) && inputValue && inputValue.trim() !== "";
@@ -62,7 +61,7 @@ function HomeSidebarSearchbox() {
             <Input
               id={id}
               className="peer ps-9"
-              placeholder="Search for Library"
+              placeholder="Search in collections"
               type="text"
               onClick={() => setOpen(true)}
             />
@@ -74,45 +73,63 @@ function HomeSidebarSearchbox() {
       </div>
       <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
         <CommandInput
-          placeholder="Type to search collections..."
+          placeholder="Type a command or search..."
           value={localInputValue}
           onValueChange={handleInputChange}
         />
         <CommandList>
-          {showLoading ? (
-            <div className="flex items-center justify-center gap-2 py-6">
-              <Loader text="Searching..." variant="text-shimmer" />
+          {inputValue.trim() === "" && !showLoading && (
+            <div className="flex items-center justify-center py-6">
+              <div className="text-muted-foreground text-center">
+                Ask about the data, Search the Chat titles
+              </div>
             </div>
-          ) : searchResults.length > 0 ? (
-            <>
-              <CommandGroup heading="Collections">
-                {searchResults.map((collection) => (
-                  <CommandItem
-                    key={collection.id}
-                    onSelect={() => {
-                      redirect(`/collection/${collection.id}`);
-                    }}
-                  >
-                    <FolderOpenIcon className="mr-2 h-4 w-4" />
-                    <span>{collection.name}</span>
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-              <CommandSeparator />
-            </>
-          ) : (
-            <CommandEmpty>No collections found.</CommandEmpty>
           )}
+
+          {showLoading && (
+            <div className="flex items-center justify-center py-6">
+              <Loader className="h-4 w-4" />
+              <span className="ml-2">Searching...</span>
+            </div>
+          )}
+
+          {inputValue.trim() !== "" &&
+            !showLoading &&
+            searchResults.length === 0 && (
+              <CommandEmpty>No results found.</CommandEmpty>
+            )}
+
+          {searchResults.length > 0 && (
+            <CommandGroup heading="Collections">
+              {searchResults.map((collection) => (
+                <CommandItem
+                  key={collection.id}
+                  onSelect={() => {
+                    redirect(`/collection/${collection.id}`);
+                  }}
+                >
+                  <FolderOpenIcon className="mr-2 h-4 w-4" />
+                  <span>{collection.name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
+          <CommandSeparator />
+
+          {/* Static Actions */}
           <CommandGroup heading="Actions">
             <CommandItem
               onSelect={() => {
                 redirect("/home?new=true");
               }}
             >
-              <LibraryBigIcon />
+              <LibraryBigIcon className="mr-2 h-4 w-4" />
               <span>Create New Collection</span>
             </CommandItem>
           </CommandGroup>
+
+          <CommandSeparator />
         </CommandList>
       </CommandDialog>
     </>
