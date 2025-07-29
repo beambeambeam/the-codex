@@ -6,7 +6,7 @@ from typing import Optional
 from uuid import uuid4
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 
 from ..database import get_db
 from ..document.schemas import DocumentResponse
@@ -91,7 +91,15 @@ class ClusteringService:
         # Get existing clusterings
         clusterings = (
             self.db.query(Clustering)
-            .options(joinedload(Clustering.creator), joinedload(Clustering.updater))
+            .options(
+                selectinload(Clustering.topics).options(
+                    selectinload(ClusteringTopic.children),
+                    joinedload(ClusteringTopic.creator),
+                    joinedload(ClusteringTopic.updater),
+                ),
+                joinedload(Clustering.creator),
+                joinedload(Clustering.updater),
+            )
             .filter(Clustering.collection_id == collection_id)
             .filter(Clustering.created_by == user.id)
             .order_by(Clustering.created_at.desc())
