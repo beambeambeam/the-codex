@@ -102,18 +102,33 @@ class ClusteringService:
         # Convert existing clusterings to Pydantic models
         result = []
         for clustering in clusterings:
+            # Collect all document IDs for this clustering to avoid N+1 queries
+            all_doc_ids = []
+            topic_doc_mapping = {}
+
+            for topic in clustering.topics:
+                doc_ids = [child.target for child in topic.children]
+                topic_doc_mapping[topic.id] = doc_ids
+                all_doc_ids.extend(doc_ids)
+
+            # Fetch all documents for this clustering in a single query
+            documents_map = {}
+            if all_doc_ids:
+                docs = (
+                    self.db.query(Document).filter(Document.id.in_(all_doc_ids)).all()
+                )
+                documents_map = {
+                    doc.id: DocumentResponse.model_validate(doc) for doc in docs
+                }
+
             topics = []
             for topic in clustering.topics:
-                documents = []
-                for child in topic.children:
-                    document = (
-                        self.db.query(Document)
-                        .filter(Document.id == child.target)
-                        .first()
-                    )
-                    if document:
-                        doc_response = DocumentResponse.model_validate(document)
-                        documents.append(doc_response)
+                doc_ids = topic_doc_mapping.get(topic.id, [])
+                documents = [
+                    documents_map[doc_id]
+                    for doc_id in doc_ids
+                    if doc_id in documents_map
+                ]
 
                 topic_with_docs = ClusteringTopicWithDocuments(
                     **ClusteringTopicResponse.model_validate(topic).model_dump(),
