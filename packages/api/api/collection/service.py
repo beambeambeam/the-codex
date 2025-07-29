@@ -53,8 +53,6 @@ class CollectionService:
 
     def get_user_collections(self, user_id: str) -> list[Collection]:
         """Get all collections created by a user."""
-        from sqlalchemy.orm import joinedload
-
         collections = (
             self.db.query(Collection)
             .options(joinedload(Collection.creator), joinedload(Collection.updater))
@@ -62,16 +60,7 @@ class CollectionService:
             .order_by(Collection.created_at.desc())
             .all()
         )
-
-        # Replace created_by and updated_by with usernames
-        for collection in collections:
-            collection.created_by = (
-                collection.creator.username if collection.creator else None
-            )
-            collection.updated_by = (
-                collection.updater.username if collection.updater else None
-            )
-
+        self._populate_collection_usernames(collections)
         return collections
 
     def update_collection(
@@ -257,34 +246,25 @@ class CollectionService:
             .first()
         )
 
+    def _populate_collection_usernames(self, collections: list[Collection]) -> None:
+        """Helper to replace created_by and updated_by with usernames."""
+        for collection in collections:
+            collection.created_by = (
+                collection.creator.username if collection.creator else None
+            )
+            collection.updated_by = (
+                collection.updater.username if collection.updater else None
+            )
+
     def search_collection_by_name(
         self,
         user: User,
         query: str,
     ) -> list[Collection]:
         """Search for collections by name or description."""
-        from sqlalchemy.orm import joinedload
-
         # If query is empty, return all collections for the user
         if not query.strip():
-            collections = (
-                self.db.query(Collection)
-                .options(joinedload(Collection.creator), joinedload(Collection.updater))
-                .filter(Collection.created_by == user.id)
-                .order_by(Collection.created_at.desc())
-                .all()
-            )
-
-            for collection in collections:
-                collection.created_by = (
-                    collection.creator.username if collection.creator else None
-                )
-                collection.updated_by = (
-                    collection.updater.username if collection.updater else None
-                )
-
-            return collections
-
+            return self.get_user_collections(user.id)
         # Search by name or description
         collections = (
             self.db.query(Collection)
@@ -298,13 +278,5 @@ class CollectionService:
             .limit(10)
             .all()
         )
-
-        for collection in collections:
-            collection.created_by = (
-                collection.creator.username if collection.creator else None
-            )
-            collection.updated_by = (
-                collection.updater.username if collection.updater else None
-            )
-
+        self._populate_collection_usernames(collections)
         return collections
