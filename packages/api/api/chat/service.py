@@ -57,9 +57,7 @@ class ChatService:
             self.db.query(CollectionChat)
             .filter(
                 CollectionChat.collection_id == collection_id,
-                or_(
-                    CollectionChat.title.ilike(f"%{query}%"),
-                ),
+                CollectionChat.title.ilike(f"%{query}%"),
             )
             .all()
         )
