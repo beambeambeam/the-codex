@@ -6,6 +6,33 @@ from pydantic import BaseModel, Field, computed_field
 from ..document.schemas import DocumentResponse
 
 
+class AuditedResponseBase(BaseModel):
+    """Base class for response schemas with audit fields."""
+
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    created_by: Optional[str]
+    updated_by: Optional[str]
+
+    @computed_field
+    @property
+    def created_by_username(self) -> Optional[str]:
+        """Get the username of the creator."""
+        # This will be populated by the service layer
+        return getattr(self, "_created_by_username", None)
+
+    @computed_field
+    @property
+    def updated_by_username(self) -> Optional[str]:
+        """Get the username of the updater."""
+        # This will be populated by the service layer
+        return getattr(self, "_updated_by_username", None)
+
+    class Config:
+        from_attributes = True
+
+
 class ClusteringBase(BaseModel):
     collection_id: str = Field(..., description="Collection ID")
     search_word: Optional[str] = Field(None, description="Search word")
@@ -23,29 +50,8 @@ class ClusteringUpdate(BaseModel):
     description: Optional[str] = Field(None, description="Clustering description")
 
 
-class ClusteringResponse(ClusteringBase):
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
-
-    @computed_field
-    @property
-    def created_by_username(self) -> Optional[str]:
-        """Get the username of the creator."""
-        # This will be populated by the service layer
-        return getattr(self, "_created_by_username", None)
-
-    @computed_field
-    @property
-    def updated_by_username(self) -> Optional[str]:
-        """Get the username of the updater."""
-        # This will be populated by the service layer
-        return getattr(self, "_updated_by_username", None)
-
-    class Config:
-        from_attributes = True
+class ClusteringResponse(ClusteringBase, AuditedResponseBase):
+    pass
 
 
 class ClusteringTopicBase(BaseModel):
@@ -63,29 +69,8 @@ class ClusteringTopicUpdate(BaseModel):
     description: Optional[str] = Field(None, description="Topic description")
 
 
-class ClusteringTopicResponse(ClusteringTopicBase):
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
-
-    @computed_field
-    @property
-    def created_by_username(self) -> Optional[str]:
-        """Get the username of the creator."""
-        # This will be populated by the service layer
-        return getattr(self, "_created_by_username", None)
-
-    @computed_field
-    @property
-    def updated_by_username(self) -> Optional[str]:
-        """Get the username of the updater."""
-        # This will be populated by the service layer
-        return getattr(self, "_updated_by_username", None)
-
-    class Config:
-        from_attributes = True
+class ClusteringTopicResponse(ClusteringTopicBase, AuditedResponseBase):
+    pass
 
 
 class ClusteringChildBase(BaseModel):
@@ -101,90 +86,25 @@ class ClusteringChildUpdate(BaseModel):
     target: Optional[str] = Field(None, description="Document ID")
 
 
-class ClusteringChildResponse(ClusteringChildBase):
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
-
-    @computed_field
-    @property
-    def created_by_username(self) -> Optional[str]:
-        """Get the username of the creator."""
-        # This will be populated by the service layer
-        return getattr(self, "_created_by_username", None)
-
-    @computed_field
-    @property
-    def updated_by_username(self) -> Optional[str]:
-        """Get the username of the updater."""
-        # This will be populated by the service layer
-        return getattr(self, "_updated_by_username", None)
-
-    class Config:
-        from_attributes = True
+class ClusteringChildResponse(ClusteringChildBase, AuditedResponseBase):
+    pass
 
 
 # New schemas for enhanced clustering response
-class ClusteringTopicWithDocuments(BaseModel):
+class ClusteringTopicWithDocuments(AuditedResponseBase):
     """Topic with documents for enhanced clustering response."""
 
     clustering_id: str
     title: str
     description: Optional[str]
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
     documents: list[DocumentResponse]
 
-    @computed_field
-    @property
-    def created_by_username(self) -> Optional[str]:
-        """Get the username of the creator."""
-        # This will be populated by the service layer
-        return getattr(self, "_created_by_username", None)
 
-    @computed_field
-    @property
-    def updated_by_username(self) -> Optional[str]:
-        """Get the username of the updater."""
-        # This will be populated by the service layer
-        return getattr(self, "_updated_by_username", None)
-
-    class Config:
-        from_attributes = True
-
-
-class EnhancedClusteringResponse(BaseModel):
+class EnhancedClusteringResponse(AuditedResponseBase):
     """Enhanced clustering response with topics and documents."""
 
     collection_id: str
     search_word: Optional[str]
     title: str
     description: Optional[str]
-    id: str
-    created_at: datetime
-    updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
     topics: list[ClusteringTopicWithDocuments]
-
-    @computed_field
-    @property
-    def created_by_username(self) -> Optional[str]:
-        """Get the username of the creator."""
-        # This will be populated by the service layer
-        return getattr(self, "_created_by_username", None)
-
-    @computed_field
-    @property
-    def updated_by_username(self) -> Optional[str]:
-        """Get the username of the updater."""
-        # This will be populated by the service layer
-        return getattr(self, "_updated_by_username", None)
-
-    class Config:
-        from_attributes = True
