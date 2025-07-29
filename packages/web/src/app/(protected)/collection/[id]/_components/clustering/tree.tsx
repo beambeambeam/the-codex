@@ -21,6 +21,7 @@ import {
   useClusteringActions,
   useClusterings,
   useClusteringState,
+  type Clustering,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -30,35 +31,13 @@ import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
 const indent = 20;
 
 function ClusteringTree() {
-  const { clusteringToTree } = useClusteringActions();
   const clusterings = useClusterings();
   const { isPending, isEmpty, isError } = useClusteringState();
-
-  // Use the first clustering for now, or we could add a selector
-  const clustering = clusterings[0];
-  const clusteringTree = clusteringToTree(clustering);
-
-  const tree = useTree<Item>({
-    indent,
-    rootItemId: "root",
-    getItemName: (item) => item.getItemData().name,
-    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
-    dataLoader: {
-      getItem: (itemId) => clusteringTree[itemId],
-      getChildren: (itemId) => clusteringTree[itemId]?.children ?? [],
-    },
-    features: [
-      syncDataLoaderFeature,
-      selectionFeature,
-      expandAllFeature,
-      hotkeysCoreFeature,
-    ],
-  });
 
   if (isPending) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader variant="text-shimmer" text="Loading..." />
+        <Loader variant="text-shimmer" text="Loading clusterings..." />
       </div>
     );
   }
@@ -82,6 +61,36 @@ function ClusteringTree() {
       </div>
     );
   }
+
+  // Use the first clustering for now, or we could add a selector
+  const clustering = clusterings[0];
+  if (!clustering) {
+    return null;
+  }
+
+  return <ClusteringTreeChild clustering={clustering} />;
+}
+
+function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
+  const { clusteringToTree } = useClusteringActions();
+  const clusteringTree = clusteringToTree(clustering);
+
+  const tree = useTree<Item>({
+    indent,
+    rootItemId: "root",
+    getItemName: (item) => item.getItemData().name,
+    isItemFolder: (item) => (item.getItemData()?.children?.length ?? 0) > 0,
+    dataLoader: {
+      getItem: (itemId) => clusteringTree[itemId],
+      getChildren: (itemId) => clusteringTree[itemId]?.children ?? [],
+    },
+    features: [
+      syncDataLoaderFeature,
+      selectionFeature,
+      expandAllFeature,
+      hotkeysCoreFeature,
+    ],
+  });
 
   const hasFiles =
     clusteringTree &&
@@ -114,28 +123,26 @@ function ClusteringTree() {
       </div>
 
       {hasFiles ? (
-        <Card className="p-2">
-          <Tree tree={tree}>
-            {tree.getItems().map((item) => (
-              <TreeItem key={item.getId()} item={item}>
-                <TreeItemLabel>
-                  <div className="flex items-center gap-2">
-                    {item.isFolder() ? (
-                      item.isExpanded() ? (
-                        <FolderOpenIcon className="h-4 w-4" />
-                      ) : (
-                        <FolderIcon className="h-4 w-4" />
-                      )
+        <Tree tree={tree}>
+          {tree.getItems().map((item) => (
+            <TreeItem key={item.getId()} item={item}>
+              <TreeItemLabel>
+                <div className="flex items-center gap-2">
+                  {item.isFolder() ? (
+                    item.isExpanded() ? (
+                      <FolderOpenIcon className="h-4 w-4" />
                     ) : (
-                      <CloudUploadIcon className="h-4 w-4" />
-                    )}
-                    <span className="truncate">{item.getItemData().name}</span>
-                  </div>
-                </TreeItemLabel>
-              </TreeItem>
-            ))}
-          </Tree>
-        </Card>
+                      <FolderIcon className="h-4 w-4" />
+                    )
+                  ) : (
+                    <CloudUploadIcon className="h-4 w-4" />
+                  )}
+                  <span className="truncate">{item.getItemData().name}</span>
+                </div>
+              </TreeItemLabel>
+            </TreeItem>
+          ))}
+        </Tree>
       ) : (
         <Card className="p-4 text-center">
           <p className="text-muted-foreground text-sm">
