@@ -81,7 +81,7 @@ function HomeSidebarSearchbox() {
           {inputValue.trim() === "" && !showLoading && (
             <div className="flex items-center justify-center py-6">
               <div className="text-muted-foreground text-center">
-                Ask about the data, Search the Chat titles
+                Search the Collections titles
               </div>
             </div>
           )}
