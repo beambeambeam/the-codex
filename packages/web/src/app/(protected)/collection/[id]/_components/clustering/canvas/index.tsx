@@ -15,6 +15,7 @@ import {
   useClusteringActions,
   useClusterings,
   useClusteringState,
+  useSelectedClustering,
   type Clustering,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Loader } from "@/components/ui/loader";
@@ -27,6 +28,7 @@ const nodeTypes = {
 function ClusteringCanvas() {
   const clusterings = useClusterings();
   const { isPending, isEmpty, isError } = useClusteringState();
+  const selectedClustering = useSelectedClustering();
 
   if (isPending) {
     return (
@@ -66,12 +68,20 @@ function ClusteringCanvas() {
     );
   }
 
-  const clustering = clusterings[0];
-  if (!clustering) {
-    return null;
+  if (!selectedClustering) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">No clustering selected</h3>
+          <p className="text-muted-foreground">
+            Please select a clustering to visualize.
+          </p>
+        </div>
+      </div>
+    );
   }
 
-  return <ClusteringCanvasChild clustering={clustering} />;
+  return <ClusteringCanvasChild clustering={selectedClustering} />;
 }
 
 function ClusteringCanvasChild({ clustering }: { clustering: Clustering }) {

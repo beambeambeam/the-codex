@@ -19,6 +19,7 @@ export type Clustering = EnhancedClusteringResponse;
 
 interface ClusteringState {
   clusterings: Clustering[];
+  selectedId: string;
   isPending: boolean;
   isEmpty: boolean;
   isError: boolean;
@@ -39,8 +40,10 @@ interface ClusteringActions {
   addClustering: (clustering: Clustering) => void;
   setPending: (isPending: boolean) => void;
   setError: (isError: boolean) => void;
+  setSelectedId: (id: string) => void;
   reset: () => void;
   getClustering: (id: string) => Clustering | undefined;
+  getSelectedClustering: () => Clustering | undefined;
   getAllClusterings: () => Clustering[];
   clusteringToTree: (clustering: Clustering) => Record<string, Item>;
   clusteringToGraph: (clustering: Clustering) => GraphNode[];
@@ -74,6 +77,7 @@ export const ClusteringProvider = ({
   const [store] = React.useState(() =>
     createStore<ClusteringStore>((set, get) => ({
       clusterings: initialClusterings,
+      selectedId: initialClusterings.length > 0 ? initialClusterings[0].id : "",
       isPending: false,
       isEmpty: initialClusterings.length === 0,
       isError: false,
@@ -81,6 +85,7 @@ export const ClusteringProvider = ({
         setClusterings: (clusterings) =>
           set({
             clusterings,
+            selectedId: clusterings.length > 0 ? clusterings[0].id : "",
             isEmpty: clusterings.length === 0,
             isError: false,
           }),
@@ -94,14 +99,22 @@ export const ClusteringProvider = ({
           }),
         setPending: (isPending) => set({ isPending }),
         setError: (isError) => set({ isError }),
+        setSelectedId: (id) => set({ selectedId: id }),
         reset: () =>
           set({
             clusterings: [],
+            selectedId: "",
             isPending: false,
             isEmpty: true,
             isError: false,
           }),
         getClustering: (id) => get().clusterings.find((c) => c.id === id),
+        getSelectedClustering: () => {
+          const state = get();
+          return state.selectedId && state.selectedId !== ""
+            ? state.clusterings.find((c) => c.id === state.selectedId)
+            : undefined;
+        },
         getAllClusterings: () => get().clusterings,
         clusteringToTree: (clustering) => {
           if (!clustering || !Array.isArray(clustering.topics)) {
@@ -215,4 +228,15 @@ export const useClusteringState = () =>
       isEmpty: state.isEmpty,
       isError: state.isError,
     })),
+  );
+
+export const useSelectedClusteringId = () =>
+  useClusteringStore(useShallow((state) => state.selectedId));
+
+export const useSelectedClustering = () =>
+  useClusteringStore(
+    useShallow((state) => {
+      const actions = state.actions;
+      return actions.getSelectedClustering();
+    }),
   );

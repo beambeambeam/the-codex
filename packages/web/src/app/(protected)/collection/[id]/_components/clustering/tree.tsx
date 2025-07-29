@@ -10,6 +10,7 @@ import {
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
 import {
+  ChevronDownIcon,
   CloudUploadIcon,
   FolderIcon,
   FolderOpenIcon,
@@ -22,10 +23,18 @@ import {
   useClusteringActions,
   useClusterings,
   useClusteringState,
+  useSelectedClustering,
+  useSelectedClusteringId,
   type Clustering,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Loader } from "@/components/ui/loader";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
 
@@ -33,6 +42,7 @@ const indent = 20;
 
 function ClusteringTree() {
   const clusterings = useClusterings();
+  const selectedClustering = useSelectedClustering();
   const { isPending, isEmpty, isError } = useClusteringState();
 
   if (isPending) {
@@ -63,13 +73,48 @@ function ClusteringTree() {
     );
   }
 
-  // Use the first clustering for now, or we could add a selector
-  const clustering = clusterings[0];
-  if (!clustering) {
-    return null;
+  if (!selectedClustering) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground text-sm">No clustering selected</p>
+      </div>
+    );
   }
 
-  return <ClusteringTreeChild clustering={clustering} />;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 px-2 text-sm font-medium">
+              {selectedClustering.title || "Clustering"}
+              <ChevronDownIcon className="ml-1 h-3 w-3" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            {clusterings.map((clustering) => (
+              <ClusteringMenuItem key={clustering.id} clustering={clustering} />
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <ClusteringTreeChild clustering={selectedClustering} />
+    </div>
+  );
+}
+
+function ClusteringMenuItem({ clustering }: { clustering: Clustering }) {
+  const { setSelectedId } = useClusteringActions();
+  const selectedId = useSelectedClusteringId();
+
+  return (
+    <DropdownMenuItem
+      onClick={() => setSelectedId(clustering.id)}
+      className={selectedId === clustering.id ? "bg-accent" : ""}
+    >
+      {clustering.title}
+    </DropdownMenuItem>
+  );
 }
 
 function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
