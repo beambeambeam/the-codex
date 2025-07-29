@@ -4,7 +4,7 @@ from typing import Optional
 from uuid import uuid4
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, aliased, joinedload
 
 from ..models.collection import (
     Collection,
@@ -18,6 +18,7 @@ from .schemas import (
     CollectionEdgeCreate,
     CollectionNodeCreate,
     CollectionRelationCreate,
+    CollectionResponse,
     CollectionUpdate,
 )
 
@@ -242,3 +243,38 @@ class CollectionService:
             .filter(Collection.id == collection_id)
             .first()
         )
+
+    def search_collection_by_name(
+        self: str,
+        user: User,
+        query: str,
+    ) -> list[Collection]:
+        """Search for documents in a collection by name or description."""
+        creator_alias = aliased(User)
+        updater_alias = aliased(User)
+
+        results = (
+            self.db.query(
+                Collection,
+                creator_alias.username.label("creator_username"),
+                updater_alias.username.label("updater_username"),
+            )
+            .outerjoin(creator_alias, Collection.created_by == creator_alias.id)
+            .outerjoin(updater_alias, Collection.updated_by == updater_alias.id)
+            .filter(User.id == user.id)
+            .filter(
+                Collection.name.ilike(f"%{query}%")
+                | Collection.description.ilike(f"%{query}%")
+            )
+            .order_by(Collection.created_at.desc())
+            .limit(10)
+            .all()
+        )
+
+        collections = []
+        for col, creator_username, updater_username in results:
+            col_dict = CollectionResponse.model_validate(col).model_dump()
+            col_dict["created_by"] = creator_username
+            col_dict["updated_by"] = updater_username
+            collections.append(col_dict)
+        return collections

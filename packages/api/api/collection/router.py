@@ -1,6 +1,6 @@
 """Collection API routes."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
@@ -190,3 +190,19 @@ def create_collection_edge(
     # Ensure the relation_id in the data matches the URL parameter
     edge_data.collection_relation_id = relation.id
     return collection_service.create_collection_edge(edge_data, current_user)
+
+
+@router.post(
+    "/search", response_model=list[CollectionResponse], status_code=status.HTTP_200_OK
+)
+def search_collection_by_name(
+    current_user: User = Depends(get_current_user),
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for documents by name/description",
+    ),
+    collection_service: CollectionService = Depends(get_collection_service),
+) -> list[CollectionResponse]:
+    """Search for documents in a collection by name or description."""
+    return collection_service.search_collection_by_name(current_user, query)
