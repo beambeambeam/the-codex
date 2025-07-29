@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import {
   Background,
   BackgroundVariant,
@@ -81,7 +82,12 @@ function ClusteringCanvas() {
     );
   }
 
-  return <ClusteringCanvasChild clustering={selectedClustering} />;
+  return (
+    <ClusteringCanvasChild
+      key={selectedClustering.id}
+      clustering={selectedClustering}
+    />
+  );
 }
 
 function ClusteringCanvasChild({ clustering }: { clustering: Clustering }) {

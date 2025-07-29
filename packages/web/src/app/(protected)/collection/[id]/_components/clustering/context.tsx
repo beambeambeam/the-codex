@@ -236,7 +236,9 @@ export const useSelectedClusteringId = () =>
 export const useSelectedClustering = () =>
   useClusteringStore(
     useShallow((state) => {
-      const actions = state.actions;
-      return actions.getSelectedClustering();
+      const { selectedId, clusterings } = state;
+      return selectedId && selectedId !== ""
+        ? clusterings.find((c) => c.id === selectedId)
+        : undefined;
     }),
   );

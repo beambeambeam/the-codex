@@ -98,7 +98,10 @@ function ClusteringTree() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <ClusteringTreeChild clustering={selectedClustering} />
+      <ClusteringTreeChild
+        key={selectedClustering.id}
+        clustering={selectedClustering}
+      />
     </div>
   );
 }
