@@ -71,7 +71,7 @@ class DocumentIngestor:
                 print(
                     f"Treating file type {file_input.type} as text, attempting text extraction"
                 )
-                full_text = extract_chunks_from_text_file(
+                full_text = extract_text_from_text_file(
                     file_input.content,
                 )
             if not full_text.strip():
