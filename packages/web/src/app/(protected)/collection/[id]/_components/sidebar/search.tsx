@@ -92,16 +92,27 @@ function CollectionIdSidebarSearchbox() {
           onValueChange={handleInputChange}
         />
         <CommandList>
-          <CommandEmpty>
-            {showLoading ? (
-              <div className="flex items-center justify-center py-6">
-                <Loader className="h-4 w-4" />
-                <span className="ml-2">Searching...</span>
+          {inputValue.trim() === "" && !showLoading && (
+            <div className="flex items-center justify-center py-6">
+              <div className="text-muted-foreground text-center">
+                Ask about the data, Search the Chat titles
               </div>
-            ) : (
-              "No results found."
+            </div>
+          )}
+
+          {showLoading && (
+            <div className="flex items-center justify-center py-6">
+              <Loader className="h-4 w-4" />
+              <span className="ml-2">Searching...</span>
+            </div>
+          )}
+
+          {inputValue.trim() !== "" &&
+            !showLoading &&
+            documentResults.length === 0 &&
+            chatResults.length === 0 && (
+              <CommandEmpty>No results found.</CommandEmpty>
             )}
-          </CommandEmpty>
 
           {documentResults.length > 0 && (
             <CommandGroup heading="Documents">
@@ -109,7 +120,6 @@ function CollectionIdSidebarSearchbox() {
                 <CommandItem
                   key={document.id}
                   onSelect={() => {
-                    setOpen(false);
                     redirect(`/collection/${params.id}/docs/${document.id}`);
                   }}
                 >
@@ -125,7 +135,6 @@ function CollectionIdSidebarSearchbox() {
                 <CommandItem
                   key={chat.id}
                   onSelect={() => {
-                    setOpen(false);
                     redirect(`/collection/${params.id}/chat/${chat.id}`);
                   }}
                 >
@@ -142,7 +151,6 @@ function CollectionIdSidebarSearchbox() {
           <CommandGroup heading="Actions">
             <CommandItem
               onSelect={() => {
-                setOpen(false);
                 redirect(`/collection/${params.id}/chat`);
               }}
             >
@@ -151,7 +159,6 @@ function CollectionIdSidebarSearchbox() {
             </CommandItem>
             <CommandItem
               onSelect={() => {
-                setOpen(false);
                 redirect(`/collection/${params.id}/docs`);
               }}
             >
