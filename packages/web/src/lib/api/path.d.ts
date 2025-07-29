@@ -1652,7 +1652,7 @@ export interface components {
     };
     /**
      * CollectionResponse
-     * @description Schema for collection response.
+     * @description Schema for collection response. created_by and updated_by are usernames, not UUIDs.
      */
     CollectionResponse: {
       /**

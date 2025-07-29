@@ -1,47 +1,36 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useMemo } from "react";
 
-import { fetchClient } from "@/lib/api/client";
-import { components } from "@/lib/api/path";
+import { $api } from "@/lib/api/client";
 
-type CollectionResponse = components["schemas"]["CollectionResponse"];
+export function useCollectionSearch(query: string) {
+  const trimmedQuery = query.trim();
 
-export function useCollectionSearch() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<CollectionResponse[]>([]);
-
-  const handleSearch = useCallback(async (query: string) => {
-    setSearchQuery(query);
-    setIsSearching(true);
-
-    try {
-      const response = await fetchClient.GET("/collections/search", {
-        params: {
-          query: {
-            query: query.trim(),
-          },
+  const { data, isPending, isError } = $api.useQuery(
+    "get",
+    "/collections/search",
+    {
+      params: {
+        query: {
+          query: trimmedQuery || "",
         },
-      });
+      },
+    },
+    {
+      enabled: trimmedQuery.length > 0,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+    },
+  );
 
-      if (response.data) {
-        setSearchResults(response.data);
-      } else {
-        setSearchResults([]);
-      }
-    } catch (error) {
-      console.error("Search error:", error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, []);
+  const searchResults = useMemo(() => {
+    return data || [];
+  }, [data]);
 
   return {
-    searchQuery,
     searchResults,
-    isSearching,
-    handleSearch,
+    isSearching: isPending,
+    isError,
   };
 }

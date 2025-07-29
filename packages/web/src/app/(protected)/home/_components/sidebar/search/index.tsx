@@ -1,8 +1,8 @@
 "use client";
 
-import { useId } from "react";
-import { redirect, useRouter } from "next/navigation";
-import { FolderOpenIcon, SearchIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { redirect } from "next/navigation";
+import { FolderOpenIcon, LibraryBigIcon, SearchIcon } from "lucide-react";
 import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
 import { useDebouncedCallback } from "use-debounce";
 
@@ -16,11 +16,11 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
+import { Loader } from "@/components/ui/loader";
 import { useCollectionSearch } from "@/hooks/use-collection-search";
 
 function HomeSidebarSearchbox() {
   const id = useId();
-  const router = useRouter();
   const [open, setOpen] = useQueryState("s", parseAsBoolean.withDefault(false));
 
   const [inputValue, setInputValue] = useQueryState(
@@ -28,15 +28,30 @@ function HomeSidebarSearchbox() {
     parseAsString.withDefault(""),
   );
 
-  const { searchResults, isSearching, handleSearch } = useCollectionSearch();
+  const [localInputValue, setLocalInputValue] = useState(inputValue || "");
+  const [isSearching, setIsSearching] = useState(false);
 
-  const debouncedHandleSearch = useDebouncedCallback((query: string) => {
-    if (query.trim()) {
-      handleSearch(query);
-    }
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    setInputValue(value);
+    setIsSearching(false);
   }, 300);
 
-  debouncedHandleSearch(inputValue);
+  const handleInputChange = (value: string) => {
+    setLocalInputValue(value);
+    setIsSearching(true);
+    debouncedSearch(value);
+  };
+
+  useEffect(() => {
+    if (open) {
+      setLocalInputValue(inputValue || "");
+    }
+  }, [open, inputValue]);
+
+  const { searchResults, isSearching: isApiSearching } =
+    useCollectionSearch(inputValue);
+
+  const showLoading = isSearching || isApiSearching;
 
   return (
     <>
@@ -56,42 +71,49 @@ function HomeSidebarSearchbox() {
           </div>
         </div>
       </div>
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        shouldFilter={showLoading}
+      >
         <CommandInput
-          placeholder="Type a command or search..."
-          value={inputValue}
-          onValueChange={setInputValue}
+          placeholder="Type to search collections..."
+          value={localInputValue}
+          onValueChange={handleInputChange}
         />
         <CommandList>
-          <CommandEmpty>
-            {isSearching ? "Searching..." : "No results found."}
-          </CommandEmpty>
-          {searchResults.length > 0 && (
-            <CommandGroup heading="Collections">
-              {searchResults.map((collection) => (
-                <CommandItem
-                  key={collection.name}
-                  onSelect={() => router.push(`/collection/${collection.id}`)}
-                >
-                  <FolderOpenIcon className="mr-2 h-4 w-4" />
-                  <span>{collection.name}</span>
-                  {collection.description && (
-                    <span className="text-muted-foreground ml-2">
-                      - {collection.description}
-                    </span>
-                  )}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+          {showLoading ? (
+            <div className="flex items-center justify-center gap-2 py-6">
+              <Loader text="Searching..." variant="text-shimmer" />
+            </div>
+          ) : searchResults.length > 0 ? (
+            <>
+              <CommandGroup heading="Collections">
+                {searchResults.map((collection) => (
+                  <CommandItem
+                    key={collection.id}
+                    onSelect={() => {
+                      redirect(`/collection/${collection.id}`);
+                    }}
+                  >
+                    <FolderOpenIcon className="mr-2 h-4 w-4" />
+                    <span>{collection.name}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          ) : (
+            <CommandEmpty>No collections found.</CommandEmpty>
           )}
-          <CommandSeparator />
           <CommandGroup heading="Actions">
             <CommandItem
               onSelect={() => {
                 redirect("/home?new=true");
               }}
             >
-              Create New Collections
+              <LibraryBigIcon />
+              <span>Create New Collection</span>
             </CommandItem>
           </CommandGroup>
         </CommandList>
