@@ -477,6 +477,9 @@ class ClusteringService:
         """Get a clustering child by ID with authorization check."""
         child = (
             self.db.query(ClusteringChild)
+            .options(
+                joinedload(ClusteringChild.topic).joinedload(ClusteringTopic.clustering)
+            )
             .filter(ClusteringChild.id == child_id)
             .first()
         )
