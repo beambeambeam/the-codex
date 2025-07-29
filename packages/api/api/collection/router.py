@@ -118,27 +118,12 @@ def list_collection_documents(
     "/{collection_id}/clustering", response_model=list[EnhancedClusteringResponse]
 )
 def get_collection_clustering(
-    collection_id: str,
+    collection=Depends(get_collection_or_404),
     current_user: User = Depends(get_current_user),
-    collection_service: CollectionService = Depends(get_collection_service),
     clustering_service: ClusteringService = Depends(get_clustering_service),
 ):
     """Get all clusterings for a collection, including virtual clusterings by file type and date."""
-    # Verify collection exists and user has access
-    collection = collection_service.get_collection(collection_id)
-    if not collection:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
-        )
-
-    # Check if user has access to this collection
-    if not collection_service._can_access_collection(collection, current_user):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not authorized to access this collection",
-        )
-
-    return clustering_service.get_clusterings_by_collection(collection_id, current_user)
+    return clustering_service.get_clusterings_by_collection(collection.id, current_user)
 
 
 # Collection Relation routes
