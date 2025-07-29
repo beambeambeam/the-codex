@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { useClusteringActions } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import FileQueueTable from "@/app/(protected)/collection/[id]/docs/_components/documents-queue-table";
 import CollectionFileForm, {
   FileArraySchemaType,
@@ -17,6 +18,8 @@ function CollectionIdFilePage() {
   const params = useParams<{ id: string }>();
   const formRef = useRef<{ reset: () => void }>(null);
   const queryClient = useQueryClient();
+
+  const { fetchClusterings } = useClusteringActions();
 
   const { mutate, isPending } = $api.useMutation(
     "post",
@@ -32,6 +35,8 @@ function CollectionIdFilePage() {
             { params: { path: { collection_id: params.id } } },
           ],
         });
+
+        await fetchClusterings(params.id);
       },
       onError: (error: unknown) => {
         const message =

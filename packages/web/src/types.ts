@@ -33,22 +33,6 @@ export interface Document {
   created_by?: string;
   updated_by?: string;
 }
-
-// Topic and Clustering-related types
-export interface Topic {
-  id: string;
-  title: string;
-  documents: Document[];
-}
-
-export interface Clustering {
-  id: string;
-  title: string;
-  topics: Topic[];
-  documents: Document[];
-}
-
-// Chat-related types
 export interface ChatCollectionItem {
   title: string;
   description: string;

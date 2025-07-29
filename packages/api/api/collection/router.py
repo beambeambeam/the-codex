@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
+from ..clustering.schemas import EnhancedClusteringResponse
+from ..clustering.service import ClusteringService, get_clustering_service
 from ..database import get_db
 from ..document.dependencies import get_document_service
 from ..document.schemas import DocumentResponse
@@ -110,6 +112,18 @@ def list_collection_documents(
 ):
     """List all documents in a collection."""
     return document_service.get_collection_documents(collection.id)
+
+
+@router.get(
+    "/{collection_id}/clustering", response_model=list[EnhancedClusteringResponse]
+)
+def get_collection_clustering(
+    collection=Depends(get_collection_or_404),
+    current_user: User = Depends(get_current_user),
+    clustering_service: ClusteringService = Depends(get_clustering_service),
+):
+    """Get all clusterings for a collection, including virtual clusterings by file type and date."""
+    return clustering_service.get_clusterings_by_collection(collection.id, current_user)
 
 
 # Collection Relation routes

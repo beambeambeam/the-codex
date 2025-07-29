@@ -11,6 +11,19 @@ const nextConfig = {
   nx: {
     svgr: false,
   },
+  images: {
+    remotePatterns:
+      process.env.NODE_ENV === "development"
+        ? [
+            {
+              protocol: "http",
+              hostname: "localhost",
+              port: "9000",
+              pathname: "/documents/**",
+            },
+          ]
+        : [],
+  },
 };
 
 const plugins = [

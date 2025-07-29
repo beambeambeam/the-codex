@@ -2,25 +2,24 @@ import React from "react";
 import type { ReactNode } from "react";
 import { createStore, useStore } from "zustand";
 import type { StoreApi } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 
 import { generateGraphNodes } from "@/app/(protected)/collection/[id]/_components/clustering/canvas/generate";
-import { Document } from "@/types";
+import { fetchClient } from "@/lib/api/client";
+import { components } from "@/lib/api/path";
 
-interface TopicCluster {
-  id: string;
-  title: string;
-  documents: Document[];
-}
+// Use the API types directly
+type EnhancedClusteringResponse =
+  components["schemas"]["EnhancedClusteringResponse"];
+type ClusteringTopicWithDocuments =
+  components["schemas"]["ClusteringTopicWithDocuments"];
 
-export interface Clustering {
-  id: string;
-  title: string;
-  topics: TopicCluster[];
-  documents: Document[];
-}
+export type Topic = ClusteringTopicWithDocuments;
+export type Clustering = EnhancedClusteringResponse;
 
 interface ClusteringState {
   clusterings: Clustering[];
+  selectedId: string;
   isPending: boolean;
   isEmpty: boolean;
   isError: boolean;
@@ -41,20 +40,24 @@ interface ClusteringActions {
   addClustering: (clustering: Clustering) => void;
   setPending: (isPending: boolean) => void;
   setError: (isError: boolean) => void;
+  setSelectedId: (id: string) => void;
   reset: () => void;
   getClustering: (id: string) => Clustering | undefined;
   getAllClusterings: () => Clustering[];
   clusteringToTree: (clustering: Clustering) => Record<string, Item>;
   clusteringToGraph: (clustering: Clustering) => GraphNode[];
+  fetchClusterings: (collectionId: string) => Promise<void>;
 }
-// Item interface for tree transformation
+
 export interface Item {
   id: string;
   name: string;
   children?: string[];
 }
 
-type ClusteringStore = ClusteringState & { actions: ClusteringActions };
+interface ClusteringStore extends ClusteringState {
+  actions: ClusteringActions;
+}
 
 const ClusteringStoreContext =
   React.createContext<StoreApi<ClusteringStore> | null>(null);
@@ -62,15 +65,18 @@ const ClusteringStoreContext =
 interface ClusteringProviderProps {
   children: ReactNode;
   initialClusterings?: Clustering[];
+  collectionId?: string;
 }
 
 export const ClusteringProvider = ({
   children,
   initialClusterings = [],
+  collectionId,
 }: ClusteringProviderProps) => {
   const [store] = React.useState(() =>
     createStore<ClusteringStore>((set, get) => ({
       clusterings: initialClusterings,
+      selectedId: initialClusterings.length > 0 ? initialClusterings[0].id : "",
       isPending: false,
       isEmpty: initialClusterings.length === 0,
       isError: false,
@@ -78,6 +84,7 @@ export const ClusteringProvider = ({
         setClusterings: (clusterings) =>
           set({
             clusterings,
+            selectedId: clusterings.length > 0 ? clusterings[0].id : "",
             isEmpty: clusterings.length === 0,
             isError: false,
           }),
@@ -91,9 +98,11 @@ export const ClusteringProvider = ({
           }),
         setPending: (isPending) => set({ isPending }),
         setError: (isError) => set({ isError }),
+        setSelectedId: (id) => set({ selectedId: id }),
         reset: () =>
           set({
             clusterings: [],
+            selectedId: "",
             isPending: false,
             isEmpty: true,
             isError: false,
@@ -141,9 +150,47 @@ export const ClusteringProvider = ({
           return items;
         },
         clusteringToGraph: generateGraphNodes,
+        fetchClusterings: async (collectionId: string) => {
+          const { setPending, setError, setClusterings } = get().actions;
+
+          setPending(true);
+          setError(false);
+
+          try {
+            const response = await fetchClient.GET(
+              "/collections/{collection_id}/clustering",
+              {
+                params: {
+                  path: {
+                    collection_id: collectionId,
+                  },
+                },
+              },
+            );
+
+            if (response?.data) {
+              setClusterings(response.data);
+            } else {
+              setClusterings([]);
+            }
+          } catch (error) {
+            console.error("Failed to fetch clusterings:", error);
+            setError(true);
+            setClusterings([]);
+          } finally {
+            setPending(false);
+          }
+        },
       },
     })),
   );
+
+  React.useEffect(() => {
+    if (collectionId) {
+      store.getState().actions.fetchClusterings(collectionId);
+    }
+  }, [collectionId, store]);
+
   return (
     <ClusteringStoreContext.Provider value={store}>
       {children}
@@ -162,12 +209,29 @@ export const useClusteringStore = <T,>(
 };
 
 export const useClusterings = () =>
-  useClusteringStore((state) => state.clusterings);
+  useClusteringStore(useShallow((state) => state.clusterings));
+
 export const useClusteringActions = () =>
-  useClusteringStore((state) => state.actions);
-export const useClusteringStatus = () =>
-  useClusteringStore((state) => ({
-    isPending: state.isPending,
-    isEmpty: state.isEmpty,
-    isError: state.isError,
-  }));
+  useClusteringStore(useShallow((state) => state.actions));
+
+export const useClusteringState = () =>
+  useClusteringStore(
+    useShallow((state) => ({
+      isPending: state.isPending,
+      isEmpty: state.isEmpty,
+      isError: state.isError,
+    })),
+  );
+
+export const useSelectedClusteringId = () =>
+  useClusteringStore(useShallow((state) => state.selectedId));
+
+export const useSelectedClustering = () =>
+  useClusteringStore(
+    useShallow((state) => {
+      const { selectedId, clusterings } = state;
+      return selectedId && selectedId !== ""
+        ? clusterings.find((c) => c.id === selectedId)
+        : undefined;
+    }),
+  );

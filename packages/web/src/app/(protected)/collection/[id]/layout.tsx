@@ -47,7 +47,7 @@ export default function CollectionIdLayout({
       initialTitle={data?.name}
       initialDescription={data?.description ?? ""}
     >
-      <ClusteringProvider>
+      <ClusteringProvider collectionId={params.id}>
         <ChatProvider>
           <SidebarProvider>
             <CollectionIdSidebar />

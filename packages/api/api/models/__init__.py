@@ -2,6 +2,7 @@
 
 from .base import Base
 from .chat import CollectionChat, CollectionChatHistory, CollectionChatReference
+from .clustering import Clustering, ClusteringChild, ClusteringTopic
 from .collection import (
     Collection,
     CollectionEdge,
@@ -32,4 +33,7 @@ __all__ = [
     "CollectionChat",
     "CollectionChatHistory",
     "CollectionChatReference",
+    "Clustering",
+    "ClusteringTopic",
+    "ClusteringChild",
 ]
