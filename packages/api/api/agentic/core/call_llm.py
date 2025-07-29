@@ -1,5 +1,5 @@
 import os
-from typing import TypeVar, Union
+from typing import Any, TypeVar, Union
 
 import instructor
 import litellm
@@ -100,7 +100,6 @@ async def call_structured_llm_async(
         model=structured_model,
         api_key=api_key,
         response_model=response_model,
-        max_retries=max_retries,
     )
 
     if response:
@@ -109,4 +108,49 @@ async def call_structured_llm_async(
     else:
         raise ValueError(
             f"Error: Could not extract message content from LLM response. Response: {response}"
+        )
+
+
+async def call_vlm_async(
+    prompt_text: Union[str, ChatHistory],
+    image_base64: str,
+    api_key: str = os.getenv("TYPHOON_API_KEY", "your-typhoon-api-key"),
+    *,
+    model: str = "openai/typhoon-ocr-preview",
+    litellm_params: dict[str, Any] = None,
+) -> str:
+    """Calls the unstructured VLM with the provided prompt and returns the response."""
+
+    litellm_args = {
+        "model": model,
+        "base_url": os.getenv("TYPHOON_BASE_URL", "https://api.opentyphoon.ai/v1"),
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": prompt_text},
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{image_base64}"},
+                    },
+                ],
+            }
+        ],
+        "api_key": api_key,
+        "max_tokens": 16384,
+        "temperature": 0.1,
+        "top_p": 0.6,
+        "presence_penalty": 1.2,
+    }
+    if litellm_params:
+        litellm_args.update(litellm_params)
+
+    response = await litellm.acompletion(**litellm_args)
+
+    if response:
+        return response.choices[0].message.content.strip()
+
+    else:
+        raise ValueError(
+            f"Error: Could not extract message content from VLM response. Response: {response}"
         )

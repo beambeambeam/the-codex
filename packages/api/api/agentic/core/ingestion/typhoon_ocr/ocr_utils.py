@@ -2,13 +2,15 @@
 
 import base64
 import io
-import json
 import os
 from dataclasses import dataclass
-from typing import Any, Callable, Union
+from typing import Any, Union
 
-from litellm import acompletion
 from PIL import Image
+
+from ...call_llm import call_vlm_async
+from ...prompts.prompt_manager import render_ocr_prompt
+from .schemas import TyphoonOCRResponse
 
 # -----------------------------
 # OCR Types & Data Structures
@@ -41,43 +43,6 @@ class PageReport:
     mediabox: BoundingBox
     text_elements: list[TextElement]
     image_elements: list[ImageElement]
-
-
-# -----------------------------
-# Prompt Templates
-# -----------------------------
-
-PROMPTS_SYS = {
-    "default": lambda base_text, text_length: (
-        f"You are provided with a document image and its dimensions. "
-        f"The image may contain printed text, tables, figures, or visual layout elements.\n\n"
-        f"Based on the image (and any text provided below), produce a descriptive markdown explanation of what appears on the page. "
-        f"If no text is available, infer the content and describe it naturally based on the layout, fonts, and visible elements.\n\n"
-        f"- Use **markdown** for structure (e.g., headings, lists, tables). "
-        f"- Format tables using **markdown tables** if present. "
-        f"- Insert `![Image](dummy.png)` wherever images or figures occur.\n\n"
-        f"The description should be roughly **{text_length} words** in length. You may use judgment to stay within a reasonable range.\n\n"
-        f"Return your final output in **JSON format** with a single key `natural_text` containing the markdown string.\n\n"
-        f"RAW_TEXT_START\n{base_text}\nRAW_TEXT_END"
-    ),
-    "structure": lambda base_text, text_length: (
-        f"You are provided with a document image and its dimensions. "
-        f"The document may contain structured content such as tables, forms, diagrams, or headings. "
-        f"Some raw text may be available, but could be partial or missing entirely.\n\n"
-        f"Reconstruct and describe the document in markdown format:\n"
-        f"- Use **HTML tables** for any detected tabular content.\n"
-        f"- Use markdown for section titles, paragraphs, and structural layout.\n"
-        f"- Insert `<figure>IMAGE_ANALYSIS</figure>` where visual diagrams or non-text elements appear.\n"
-        f"- If no readable text exists, describe what is visually present.\n\n"
-        f"The final description should be approximately **{text_length} words**. Focus on clarity and accuracy.\n\n"
-        f"Return your output as a **JSON object** with one key: `natural_text`, containing the markdown string.\n\n"
-        f"RAW_TEXT_START\n{base_text}\nRAW_TEXT_END"
-    ),
-}
-
-
-def get_prompt(prompt_name: str, text_length: int = 250) -> Callable[[str], str]:
-    return lambda base_text: PROMPTS_SYS.get(prompt_name)(base_text, text_length)
 
 
 # -----------------------------
@@ -120,29 +85,6 @@ def ensure_image_bytes(input_data: Union[str, bytes]) -> bytes:
     raise ValueError("Input must be a path, bytes, or base64-encoded image string.")
 
 
-def prepare_image_ocr_messages(
-    image_data: bytes, task_type: str = "default"
-) -> list[dict[str, Any]]:
-    img = Image.open(io.BytesIO(image_data))
-    image_base64 = image_to_base64png(img)
-    anchor_text = get_anchor_text_from_image(img)
-    prompt_fn = get_prompt(task_type, text_length=250)
-    prompt_text = prompt_fn(anchor_text)
-
-    return [
-        {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": prompt_text},
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/png;base64,{image_base64}"},
-                },
-            ],
-        }
-    ]
-
-
 # -----------------------------
 # Main OCR Function
 # -----------------------------
@@ -151,29 +93,21 @@ def prepare_image_ocr_messages(
 async def ocr_image_document(
     image_input: Union[str, bytes],
     task_type: str = "default",
-    base_url: str = os.getenv("TYPHOON_BASE_URL", "https://api.opentyphoon.ai/v1"),
-    api_key: str = None,
-    model: str = "typhoon-ocr-preview",
     litellm_params: dict[str, Any] = None,
 ) -> str:
+    # Ensure image data is in bytes
     image_data = ensure_image_bytes(image_input)
-    messages = prepare_image_ocr_messages(image_data, task_type=task_type)
+    img = Image.open(io.BytesIO(image_data))
+    image_base64 = image_to_base64png(img)
+    anchor_text = get_anchor_text_from_image(img)
+    prompt_text = render_ocr_prompt(anchor_text, task_type=task_type, text_length=1500)
 
-    litellm_args = {
-        "model": "openai/" + model,
-        "base_url": base_url,
-        "messages": messages,
-        "api_key": api_key
-        or os.getenv("TYPHOON_API_KEY")
-        or os.getenv("OPENAI_API_KEY"),
-        "max_tokens": 16384,
-        "temperature": 0.1,
-        "top_p": 0.6,
-        "repetition_penalty": 1.2,
-    }
-    if litellm_params:
-        litellm_args.update(litellm_params)
+    # Call the VLM with the image and prompt
+    response = await call_vlm_async(
+        prompt_text,
+        image_base64=image_base64,
+        litellm_params=litellm_params,
+    )
 
-    response = await acompletion(**litellm_args)
-    text_output = response["choices"][0]["message"]["content"]
-    return json.loads(text_output)["natural_text"]
+    # Return formatted response
+    return response.strip()

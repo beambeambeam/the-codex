@@ -212,3 +212,34 @@ def render_summary_generate_prompt(
         language=language,
         max_length=max_length,
     )
+
+
+def render_ocr_prompt(
+    base_text: str,
+    task_type: Literal["default", "structured"] = "default",
+    text_length: int = 1500,
+) -> str:
+    """
+    Convenience function to render the OCR prompt.
+
+    Args:
+        image_base64: Base64-encoded image string
+        task_type: Type of OCR task (default, table, etc.)
+        text_limit: Maximum characters to include from the text
+
+    Returns:
+        Rendered prompt string
+    """
+    manager = get_prompt_manager()
+    if task_type == "structured":
+        return manager.render_template(
+            "ocr/structured.j2",
+            base_text=base_text,
+            text_length=text_length,
+        )
+    else:
+        return manager.render_template(
+            "ocr/default.j2",
+            base_text=base_text,
+            text_length=text_length,
+        )

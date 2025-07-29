@@ -308,6 +308,10 @@ class DocumentIngestorService(DocumentIngestor):
 
             # extract document summary
             full_text = await self.extract_full_text(input_file)
+            print(
+                f"Extracted full text from {input_file.name}: {len(full_text)} characters"
+            )
+            print(full_text[:1000])  # Print first 1000 characters for debugging
             input_file.full_text = full_text
             document_summary = await self.get_document_summary(
                 full_text=input_file.full_text, language="en"
