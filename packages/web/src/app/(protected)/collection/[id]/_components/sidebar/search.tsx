@@ -103,30 +103,6 @@ function CollectionIdSidebarSearchbox() {
             )}
           </CommandEmpty>
 
-          {/* Static Actions */}
-          <CommandGroup heading="Actions">
-            <CommandItem
-              onSelect={() => {
-                setOpen(false);
-                redirect(`/collection/${params.id}/chat`);
-              }}
-            >
-              <PlusIcon className="mr-2 h-4 w-4" />
-              <span>Create New Chat</span>
-            </CommandItem>
-            <CommandItem
-              onSelect={() => {
-                setOpen(false);
-                redirect(`/collection/${params.id}/docs`);
-              }}
-            >
-              <UploadIcon className="mr-2 h-4 w-4" />
-              <span>Upload New File</span>
-            </CommandItem>
-          </CommandGroup>
-
-          <CommandSeparator />
-
           {documentResults.length > 0 && (
             <CommandGroup heading="Documents">
               {documentResults.map((document) => (
@@ -159,6 +135,31 @@ function CollectionIdSidebarSearchbox() {
               ))}
             </CommandGroup>
           )}
+
+          <CommandSeparator />
+
+          {/* Static Actions */}
+          <CommandGroup heading="Actions">
+            <CommandItem
+              onSelect={() => {
+                setOpen(false);
+                redirect(`/collection/${params.id}/chat`);
+              }}
+            >
+              <PlusIcon className="mr-2 h-4 w-4" />
+              <span>Create New Chat</span>
+            </CommandItem>
+            <CommandItem
+              onSelect={() => {
+                setOpen(false);
+                redirect(`/collection/${params.id}/docs`);
+              }}
+            >
+              <UploadIcon className="mr-2 h-4 w-4" />
+              <span>Upload New File</span>
+            </CommandItem>
+          </CommandGroup>
+
           <CommandSeparator />
         </CommandList>
       </CommandDialog>
