@@ -288,6 +288,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/collections/{collection_id}/clustering": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Collection Clustering
+     * @description Get all clusterings for a collection, including virtual clusterings by file type and date.
+     */
+    get: operations["get_collection_clustering_collections__collection_id__clustering_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/collections/relations": {
     parameters: {
       query?: never;
@@ -1044,6 +1064,117 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/clustering/": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Clusterings */
+    get: operations["list_clusterings_clustering__get"];
+    put?: never;
+    /** Create Clustering */
+    post: operations["create_clustering_clustering__post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/clustering/{clustering_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Clustering */
+    get: operations["get_clustering_clustering__clustering_id__get"];
+    /** Update Clustering */
+    put: operations["update_clustering_clustering__clustering_id__put"];
+    post?: never;
+    /** Delete Clustering */
+    delete: operations["delete_clustering_clustering__clustering_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/clustering/{clustering_id}/topics": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Clustering Topics */
+    get: operations["list_clustering_topics_clustering__clustering_id__topics_get"];
+    put?: never;
+    /** Create Clustering Topic */
+    post: operations["create_clustering_topic_clustering__clustering_id__topics_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/clustering/topics/{topic_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Clustering Topic */
+    get: operations["get_clustering_topic_clustering_topics__topic_id__get"];
+    /** Update Clustering Topic */
+    put: operations["update_clustering_topic_clustering_topics__topic_id__put"];
+    post?: never;
+    /** Delete Clustering Topic */
+    delete: operations["delete_clustering_topic_clustering_topics__topic_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/clustering/topics/{topic_id}/children": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Clustering Children */
+    get: operations["list_clustering_children_clustering_topics__topic_id__children_get"];
+    put?: never;
+    /** Create Clustering Child */
+    post: operations["create_clustering_child_clustering_topics__topic_id__children_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/clustering/children/{child_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Clustering Child */
+    get: operations["get_clustering_child_clustering_children__child_id__get"];
+    /** Update Clustering Child */
+    put: operations["update_clustering_child_clustering_children__child_id__put"];
+    post?: never;
+    /** Delete Clustering Child */
+    delete: operations["delete_clustering_child_clustering_children__child_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1264,6 +1395,118 @@ export interface components {
        */
       distance: number;
     };
+    /** ClusteringChildCreate */
+    ClusteringChildCreate: {
+      /**
+       * Clustering Topic Id
+       * @description Clustering Topic ID
+       */
+      clustering_topic_id: string;
+      /**
+       * Target
+       * @description Document ID
+       */
+      target: string;
+    };
+    /** ClusteringChildResponse */
+    ClusteringChildResponse: {
+      /**
+       * Clustering Topic Id
+       * @description Clustering Topic ID
+       */
+      clustering_topic_id: string;
+      /**
+       * Target
+       * @description Document ID
+       */
+      target: string;
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
+    };
+    /** ClusteringChildUpdate */
+    ClusteringChildUpdate: {
+      /**
+       * Target
+       * @description Document ID
+       */
+      target?: string | null;
+    };
+    /** ClusteringCreate */
+    ClusteringCreate: {
+      /**
+       * Collection Id
+       * @description Collection ID
+       */
+      collection_id: string;
+      /**
+       * Search Word
+       * @description Search word
+       */
+      search_word?: string | null;
+      /**
+       * Title
+       * @description Clustering title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Clustering description
+       */
+      description?: string | null;
+    };
+    /** ClusteringResponse */
+    ClusteringResponse: {
+      /**
+       * Collection Id
+       * @description Collection ID
+       */
+      collection_id: string;
+      /**
+       * Search Word
+       * @description Search word
+       */
+      search_word?: string | null;
+      /**
+       * Title
+       * @description Clustering title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Clustering description
+       */
+      description?: string | null;
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
+    };
     /**
      * ClusteringResult
      * @description Result of the clustering operation.
@@ -1273,6 +1516,119 @@ export interface components {
       topics: components["schemas"]["TopicCluster"][];
       /** Documents */
       documents: components["schemas"]["DocumentDistribution"][];
+    };
+    /** ClusteringTopicCreate */
+    ClusteringTopicCreate: {
+      /**
+       * Clustering Id
+       * @description Clustering ID
+       */
+      clustering_id: string;
+      /**
+       * Title
+       * @description Topic title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Topic description
+       */
+      description?: string | null;
+    };
+    /** ClusteringTopicResponse */
+    ClusteringTopicResponse: {
+      /**
+       * Clustering Id
+       * @description Clustering ID
+       */
+      clustering_id: string;
+      /**
+       * Title
+       * @description Topic title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Topic description
+       */
+      description?: string | null;
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
+    };
+    /** ClusteringTopicUpdate */
+    ClusteringTopicUpdate: {
+      /**
+       * Title
+       * @description Topic title
+       */
+      title?: string | null;
+      /**
+       * Description
+       * @description Topic description
+       */
+      description?: string | null;
+    };
+    /**
+     * ClusteringTopicWithDocuments
+     * @description Topic with documents for enhanced clustering response.
+     */
+    ClusteringTopicWithDocuments: {
+      /** Clustering Id */
+      clustering_id: string;
+      /** Title */
+      title: string;
+      /** Description */
+      description: string | null;
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
+      /** Documents */
+      documents: components["schemas"]["DocumentResponse"][];
+    };
+    /** ClusteringUpdate */
+    ClusteringUpdate: {
+      /**
+       * Search Word
+       * @description Search word
+       */
+      search_word?: string | null;
+      /**
+       * Title
+       * @description Clustering title
+       */
+      title?: string | null;
+      /**
+       * Description
+       * @description Clustering description
+       */
+      description?: string | null;
     };
     /** CollectionChatCreate */
     CollectionChatCreate: {
@@ -2251,6 +2607,38 @@ export interface components {
       /** @description Document ingestion status */
       status?: components["schemas"]["IngestionStatus"] | null;
     };
+    /**
+     * EnhancedClusteringResponse
+     * @description Enhanced clustering response with topics and documents.
+     */
+    EnhancedClusteringResponse: {
+      /** Collection Id */
+      collection_id: string;
+      /** Search Word */
+      search_word: string | null;
+      /** Title */
+      title: string;
+      /** Description */
+      description: string | null;
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
+      /** Topics */
+      topics: components["schemas"]["ClusteringTopicWithDocuments"][];
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -2941,6 +3329,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["DocumentResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_collection_clustering_collections__collection_id__clustering_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["EnhancedClusteringResponse"][];
         };
       };
       /** @description Validation Error */
@@ -3761,7 +4182,11 @@ export interface operations {
         session?: string | null;
       };
     };
-    requestBody?: never;
+    requestBody?: {
+      content: {
+        "application/json": string[];
+      };
+    };
     responses: {
       /** @description Successful Response */
       200: {
@@ -4441,6 +4866,515 @@ export interface operations {
         chat_id: string;
       };
       cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_clusterings_clustering__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_clustering_clustering__post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClusteringCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_clustering_clustering__clustering_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        clustering_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_clustering_clustering__clustering_id__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        clustering_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClusteringUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_clustering_clustering__clustering_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        clustering_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_clustering_topics_clustering__clustering_id__topics_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        clustering_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringTopicResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_clustering_topic_clustering__clustering_id__topics_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        clustering_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClusteringTopicCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringTopicResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_clustering_topic_clustering_topics__topic_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        topic_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringTopicResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_clustering_topic_clustering_topics__topic_id__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        topic_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClusteringTopicUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringTopicResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_clustering_topic_clustering_topics__topic_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        topic_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_clustering_children_clustering_topics__topic_id__children_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        topic_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringChildResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_clustering_child_clustering_topics__topic_id__children_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        topic_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClusteringChildCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringChildResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_clustering_child_clustering_children__child_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        child_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringChildResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_clustering_child_clustering_children__child_id__put: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        child_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ClusteringChildUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ClusteringChildResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_clustering_child_clustering_children__child_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        child_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
     };
     requestBody?: never;
     responses: {

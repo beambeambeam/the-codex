@@ -1,8 +1,6 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { useParams } from "next/navigation";
 import {
   expandAllFeature,
   hotkeysCoreFeature,
@@ -22,27 +20,23 @@ import {
   Item,
   useClusteringActions,
   useClusterings,
+  useClusteringState,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Loader } from "@/components/ui/loader";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
-import { getFileIcon } from "@/lib/files";
 
 const indent = 20;
 
 function ClusteringTree() {
-  const params = useParams<{ id: string }>();
-
   const { clusteringToTree } = useClusteringActions();
-  const clustering = useClusterings();
+  const clusterings = useClusterings();
+  const { isPending, isEmpty, isError } = useClusteringState();
 
-  const clusteringTree = clusteringToTree(clustering[0]);
-
-  const hasFiles =
-    clusteringTree &&
-    clusteringTree["root"] &&
-    clusteringTree["root"].children &&
-    clusteringTree["root"].children.length > 0;
+  // Use the first clustering for now, or we could add a selector
+  const clustering = clusterings[0];
+  const clusteringTree = clusteringToTree(clustering);
 
   const tree = useTree<Item>({
     indent,
@@ -56,85 +50,101 @@ function ClusteringTree() {
     features: [
       syncDataLoaderFeature,
       selectionFeature,
-      hotkeysCoreFeature,
       expandAllFeature,
+      hotkeysCoreFeature,
     ],
   });
 
+  if (isPending) {
+    return (
+      <div className="flex items-center justify-center p-4">
+        <Loader variant="text-shimmer" text="Loading..." />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground text-sm">
+          Failed to load clusterings
+        </p>
+      </div>
+    );
+  }
+
+  if (isEmpty || clusterings.length === 0) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground text-sm">
+          No clusterings available
+        </p>
+      </div>
+    );
+  }
+
+  const hasFiles =
+    clusteringTree &&
+    clusteringTree["root"] &&
+    clusteringTree["root"].children &&
+    clusteringTree["root"].children.length > 0;
+
   return (
-    <div className="flex h-full flex-col gap-2 *:nth-2:grow">
-      <div className="flex w-full items-center justify-between gap-2">
-        <p className="font-bold">Clustering</p>
-        <div className="flex items-center justify-end gap-2">
-          <Button size="icon" variant="ghost" onClick={() => tree.expandAll()}>
-            <ListTreeIcon size={16} aria-hidden="true" />
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium">Clustering</h3>
+        <div className="flex gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => tree.expandAll()}
+            className="h-6 w-6"
+          >
+            <ListTreeIcon className="h-3 w-3" />
           </Button>
-          <Button size="icon" variant="ghost" onClick={tree.collapseAll}>
-            <ListCollapseIcon size={16} aria-hidden="true" />
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => tree.collapseAll()}
+            className="h-6 w-6"
+          >
+            <ListCollapseIcon className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
       {hasFiles ? (
-        <Tree indent={indent} tree={tree}>
-          {tree.getItems().map((item) =>
-            item.isFolder() ? (
+        <Card className="p-2">
+          <Tree tree={tree}>
+            {tree.getItems().map((item) => (
               <TreeItem key={item.getId()} item={item}>
                 <TreeItemLabel>
-                  <span className="flex items-center gap-2">
-                    {item.isExpanded() ? (
-                      <FolderOpenIcon className="text-muted-foreground pointer-events-none size-4" />
+                  <div className="flex items-center gap-2">
+                    {item.isFolder() ? (
+                      item.isExpanded() ? (
+                        <FolderOpenIcon className="h-4 w-4" />
+                      ) : (
+                        <FolderIcon className="h-4 w-4" />
+                      )
                     ) : (
-                      <FolderIcon className="text-muted-foreground pointer-events-none size-4" />
+                      <CloudUploadIcon className="h-4 w-4" />
                     )}
-                    <span className="max-w-40 truncate">
-                      {item.getItemName()}
-                    </span>
-                    <span className="text-muted-foreground -ms-1">
-                      {`(${item.getChildren().length})`}
-                    </span>
-                  </span>
+                    <span className="truncate">{item.getItemData().name}</span>
+                  </div>
                 </TreeItemLabel>
               </TreeItem>
-            ) : (
-              <Link
-                href={`/collection/${params.id}/docs/${item.getItemData().id}`}
-                key={item.getId()}
-              >
-                <TreeItem key={item.getId()} item={item}>
-                  <TreeItemLabel>
-                    <span className="flex items-center gap-2">
-                      {getFileIcon({
-                        file: {
-                          name: item.getItemName(),
-                          type: item.getItemName(),
-                        },
-                      })}
-                      <span className="max-w-40 truncate">
-                        {item.getItemName()}
-                      </span>
-                    </span>
-                  </TreeItemLabel>
-                </TreeItem>
-              </Link>
-            ),
-          )}
-        </Tree>
+            ))}
+          </Tree>
+        </Card>
       ) : (
-        <Link href={`/collection/${params.id}/docs`}>
-          <Card className="text-muted-foreground hover:text-foreground border-muted-foreground hover:border-foreground flex h-[14rem] items-center justify-center gap-1 border border-dashed text-xs transition-colors">
-            <div className="flex flex-col items-center justify-center gap-0">
-              <CloudUploadIcon className="size-7" />
-              <p>Upload Files!</p>
-              <p>PDF,</p>
-              <p>Image (png, jpg or other)</p>
-              <p>Table data (CSV, JSON or excel)</p>
-              <p>Docs (doc, docx or pptx)</p>
-            </div>
-          </Card>
-        </Link>
+        <Card className="p-4 text-center">
+          <p className="text-muted-foreground text-sm">
+            No documents in clustering
+          </p>
+        </Card>
       )}
     </div>
   );
 }
+
 export default ClusteringTree;

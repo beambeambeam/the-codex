@@ -14,7 +14,10 @@ import ClusteringCustomNode from "@/app/(protected)/collection/[id]/_components/
 import {
   useClusteringActions,
   useClusterings,
+  useClusteringState,
+  type Clustering,
 } from "@/app/(protected)/collection/[id]/_components/clustering/context";
+import { Loader } from "@/components/ui/loader";
 
 const nodeTypes = {
   groupLabel: ClusteringGroupLabelNode,
@@ -22,10 +25,59 @@ const nodeTypes = {
 };
 
 function ClusteringCanvas() {
-  const clustering = useClusterings();
-  const { clusteringToGraph } = useClusteringActions();
-  const clusteringNode = clusteringToGraph(clustering[0]);
+  const clusterings = useClusterings();
+  const { isPending, isEmpty, isError } = useClusteringState();
 
+  if (isPending) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Loader
+          variant="text-shimmer"
+          text="Loading clusterings..."
+          className="text-2xl font-bold"
+        />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">Failed to load clusterings</h3>
+          <p className="text-muted-foreground">
+            Please try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isEmpty || clusterings.length === 0) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold">No clusterings found</h3>
+          <p className="text-muted-foreground">
+            Create a clustering to visualize your documents.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const clustering = clusterings[0];
+  if (!clustering) {
+    return null;
+  }
+
+  return <ClusteringCanvasChild clustering={clustering} />;
+}
+
+function ClusteringCanvasChild({ clustering }: { clustering: Clustering }) {
+  const { clusteringToGraph } = useClusteringActions();
+
+  const clusteringNode = clusteringToGraph(clustering);
   const [nodes, , onNodesChange] = useNodesState(clusteringNode);
 
   return (
@@ -44,4 +96,5 @@ function ClusteringCanvas() {
     </div>
   );
 }
+
 export default ClusteringCanvas;
