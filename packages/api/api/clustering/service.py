@@ -15,6 +15,7 @@ from ..models.document import Document
 from ..models.user import User
 from .schemas import (
     ClusteringChildCreate,
+    ClusteringChildResponse,
     ClusteringChildUpdate,
     ClusteringCreate,
     ClusteringResponse,
@@ -72,7 +73,7 @@ class ClusteringService:
 
         return clustering
 
-    def list_clusterings(self, user: User) -> list[Clustering]:
+    def list_clusterings(self, user: User) -> list[ClusteringResponse]:
         """Get all clusterings created by a user."""
         clusterings = (
             self.db.query(Clustering)
@@ -81,8 +82,7 @@ class ClusteringService:
             .order_by(Clustering.created_at.desc())
             .all()
         )
-        self._populate_clustering_usernames(clusterings)
-        return clusterings
+        return self._create_clustering_responses_with_usernames(clusterings)
 
     def get_clusterings_by_collection(
         self, collection_id: str, user: User
@@ -97,7 +97,6 @@ class ClusteringService:
             .order_by(Clustering.created_at.desc())
             .all()
         )
-        self._populate_clustering_usernames(clusterings)
 
         # Convert existing clusterings to Pydantic models
         result = []
@@ -130,18 +129,29 @@ class ClusteringService:
                     if doc_id in documents_map
                 ]
 
+                topic_response = self._create_topic_response_with_usernames(topic)
                 topic_with_docs = ClusteringTopicWithDocuments(
-                    **ClusteringTopicResponse.model_validate(topic).model_dump(),
+                    **topic_response.model_dump(),
                     documents=documents,
                 )
                 topics.append(topic_with_docs)
 
-            clustering_response = EnhancedClusteringResponse(
-                **ClusteringResponse.model_validate(clustering).model_dump(),
+            clustering_response = self._create_clustering_response_with_usernames(
+                clustering
+            )
+            enhanced_response = EnhancedClusteringResponse(
+                **clustering_response.model_dump(),
                 topics=topics,
             )
+            # Set computed field values for the enhanced response
+            enhanced_response._created_by_username = (
+                clustering_response._created_by_username
+            )
+            enhanced_response._updated_by_username = (
+                clustering_response._updated_by_username
+            )
 
-            result.append(clustering_response)
+            result.append(enhanced_response)
 
         # Add virtual clustering by file type
         file_type_clustering = self._create_file_type_clustering(collection_id, user)
@@ -190,10 +200,13 @@ class ClusteringService:
                 updated_by=user.id,
                 documents=documents,
             )
+            # Set computed field values
+            topic_with_docs._created_by_username = user.username
+            topic_with_docs._updated_by_username = user.username
 
             topics.append(topic_with_docs)
 
-        return EnhancedClusteringResponse(
+        enhanced_response = EnhancedClusteringResponse(
             collection_id=collection_id,
             search_word="by_file_type",
             title="Documents by File Type",
@@ -205,6 +218,11 @@ class ClusteringService:
             updated_by=user.id,
             topics=topics,
         )
+        # Set computed field values
+        enhanced_response._created_by_username = user.username
+        enhanced_response._updated_by_username = user.username
+
+        return enhanced_response
 
     def _create_date_clustering(
         self, collection_id: str, user: User
@@ -242,10 +260,13 @@ class ClusteringService:
                 updated_by=user.id,
                 documents=documents,
             )
+            # Set computed field values
+            topic_with_docs._created_by_username = user.username
+            topic_with_docs._updated_by_username = user.username
 
             topics.append(topic_with_docs)
 
-        return EnhancedClusteringResponse(
+        enhanced_response = EnhancedClusteringResponse(
             collection_id=collection_id,
             search_word="by_date",
             title="Documents by Creation Date",
@@ -257,6 +278,11 @@ class ClusteringService:
             updated_by=user.id,
             topics=topics,
         )
+        # Set computed field values
+        enhanced_response._created_by_username = user.username
+        enhanced_response._updated_by_username = user.username
+
+        return enhanced_response
 
     def update_clustering(
         self, clustering_id: str, update_data: ClusteringUpdate, user: User
@@ -351,7 +377,7 @@ class ClusteringService:
 
     def list_clustering_topics(
         self, clustering_id: str, user: User
-    ) -> list[ClusteringTopic]:
+    ) -> list[ClusteringTopicResponse]:
         """Get all topics for a clustering."""
         # Verify clustering exists and user has access
 
@@ -364,8 +390,7 @@ class ClusteringService:
             .order_by(ClusteringTopic.created_at.desc())
             .all()
         )
-        self._populate_topic_usernames(topics)
-        return topics
+        return self._create_clustering_topics_with_usernames(topics)
 
     def update_clustering_topic(
         self, topic_id: str, update_data: ClusteringTopicUpdate, user: User
@@ -411,7 +436,7 @@ class ClusteringService:
     ) -> ClusteringChild:
         """Create a new clustering child."""
         # Verify topic exists and user has access
-        topic = self.get_clustering_topic(topic_id)
+        topic = self.get_clustering_topic(topic_id, user)
         if not topic:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found"
@@ -460,10 +485,10 @@ class ClusteringService:
 
     def list_clustering_children(
         self, topic_id: str, user: User
-    ) -> list[ClusteringChild]:
+    ) -> list[ClusteringChildResponse]:
         """Get all children for a topic."""
         # Verify topic exists and user has access
-        topic = self.get_clustering_topic(topic_id)
+        topic = self.get_clustering_topic(topic_id, user)
         if not topic:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found"
@@ -484,14 +509,13 @@ class ClusteringService:
             .order_by(ClusteringChild.created_at.desc())
             .all()
         )
-        self._populate_child_usernames(children)
-        return children
+        return self._create_clustering_children_with_usernames(children)
 
     def update_clustering_child(
         self, child_id: str, update_data: ClusteringChildUpdate, user: User
     ) -> ClusteringChild:
         """Update a clustering child."""
-        child = self.get_clustering_child(child_id)
+        child = self.get_clustering_child(child_id, user)
         if not child:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Child not found"
@@ -515,7 +539,7 @@ class ClusteringService:
 
     def delete_clustering_child(self, child_id: str, user: User) -> bool:
         """Delete a clustering child."""
-        child = self.get_clustering_child(child_id)
+        child = self.get_clustering_child(child_id, user)
         if not child:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Child not found"
@@ -551,27 +575,84 @@ class ClusteringService:
         return child.created_by == user.id or self._can_modify_topic(child.topic, user)
 
     # Username population helpers
-    def _populate_clustering_usernames(self, clusterings: list[Clustering]) -> None:
-        """Helper to replace created_by and updated_by with usernames."""
+    def _create_clustering_responses_with_usernames(
+        self, clusterings: list[Clustering]
+    ) -> list[ClusteringResponse]:
+        """Create ClusteringResponse objects with usernames populated as computed fields."""
+        responses = []
         for clustering in clusterings:
-            clustering.created_by = (
+            response = ClusteringResponse.model_validate(clustering)
+            # Set the computed field values
+            response._created_by_username = (
                 clustering.creator.username if clustering.creator else None
             )
-            clustering.updated_by = (
+            response._updated_by_username = (
                 clustering.updater.username if clustering.updater else None
             )
+            responses.append(response)
+        return responses
 
-    def _populate_topic_usernames(self, topics: list[ClusteringTopic]) -> None:
-        """Helper to replace created_by and updated_by with usernames."""
+    def _create_clustering_response_with_usernames(
+        self, clustering: Clustering
+    ) -> ClusteringResponse:
+        """Create a single ClusteringResponse object with usernames populated as computed fields."""
+        response = ClusteringResponse.model_validate(clustering)
+        # Set the computed field values
+        response._created_by_username = (
+            clustering.creator.username if clustering.creator else None
+        )
+        response._updated_by_username = (
+            clustering.updater.username if clustering.updater else None
+        )
+        return response
+
+    def _create_topic_response_with_usernames(
+        self, topic: ClusteringTopic
+    ) -> ClusteringTopicResponse:
+        """Create a ClusteringTopicResponse object with usernames populated as computed fields."""
+        response = ClusteringTopicResponse.model_validate(topic)
+        # Set the computed field values
+        response._created_by_username = (
+            topic.creator.username if topic.creator else None
+        )
+        response._updated_by_username = (
+            topic.updater.username if topic.updater else None
+        )
+        return response
+
+    def _create_clustering_topics_with_usernames(
+        self, topics: list[ClusteringTopic]
+    ) -> list[ClusteringTopicResponse]:
+        """Create ClusteringTopicResponse objects with usernames populated as computed fields."""
+        responses = []
         for topic in topics:
-            topic.created_by = topic.creator.username if topic.creator else None
-            topic.updated_by = topic.updater.username if topic.updater else None
+            response = ClusteringTopicResponse.model_validate(topic)
+            # Set the computed field values
+            response._created_by_username = (
+                topic.creator.username if topic.creator else None
+            )
+            response._updated_by_username = (
+                topic.updater.username if topic.updater else None
+            )
+            responses.append(response)
+        return responses
 
-    def _populate_child_usernames(self, children: list[ClusteringChild]) -> None:
-        """Helper to replace created_by and updated_by with usernames."""
+    def _create_clustering_children_with_usernames(
+        self, children: list[ClusteringChild]
+    ) -> list[ClusteringChildResponse]:
+        """Create ClusteringChildResponse objects with usernames populated as computed fields."""
+        responses = []
         for child in children:
-            child.created_by = child.creator.username if child.creator else None
-            child.updated_by = child.updater.username if child.updater else None
+            response = ClusteringChildResponse.model_validate(child)
+            # Set the computed field values
+            response._created_by_username = (
+                child.creator.username if child.creator else None
+            )
+            response._updated_by_username = (
+                child.updater.username if child.updater else None
+            )
+            responses.append(response)
+        return responses
 
 
 def get_clustering_service(db: Session = Depends(get_db)) -> ClusteringService:
