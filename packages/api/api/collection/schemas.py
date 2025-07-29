@@ -33,13 +33,13 @@ class CollectionUpdate(BaseModel):
 
 
 class CollectionResponse(CollectionBase):
-    """Schema for collection response."""
+    """Schema for collection response. created_by and updated_by are usernames, not UUIDs."""
 
     id: str
     created_at: datetime
     updated_at: datetime
-    created_by: Optional[str]
-    updated_by: Optional[str]
+    created_by: Optional[str]  # username
+    updated_by: Optional[str]  # username
 
     class Config:
         from_attributes = True

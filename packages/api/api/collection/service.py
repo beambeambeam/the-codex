@@ -4,7 +4,7 @@ from typing import Optional
 from uuid import uuid4
 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session, aliased, joinedload
+from sqlalchemy.orm import Session, joinedload
 
 from ..models.collection import (
     Collection,
@@ -18,7 +18,6 @@ from .schemas import (
     CollectionEdgeCreate,
     CollectionNodeCreate,
     CollectionRelationCreate,
-    CollectionResponse,
     CollectionUpdate,
 )
 
@@ -54,12 +53,26 @@ class CollectionService:
 
     def get_user_collections(self, user_id: str) -> list[Collection]:
         """Get all collections created by a user."""
-        return (
+        from sqlalchemy.orm import joinedload
+
+        collections = (
             self.db.query(Collection)
+            .options(joinedload(Collection.creator), joinedload(Collection.updater))
             .filter(Collection.created_by == user_id)
             .order_by(Collection.created_at.desc())
             .all()
         )
+
+        # Replace created_by and updated_by with usernames
+        for collection in collections:
+            collection.created_by = (
+                collection.creator.username if collection.creator else None
+            )
+            collection.updated_by = (
+                collection.updater.username if collection.updater else None
+            )
+
+        return collections
 
     def update_collection(
         self, collection_id: str, update_data: CollectionUpdate, user: User
@@ -245,23 +258,38 @@ class CollectionService:
         )
 
     def search_collection_by_name(
-        self: str,
+        self,
         user: User,
         query: str,
     ) -> list[Collection]:
-        """Search for documents in a collection by name or description."""
-        creator_alias = aliased(User)
-        updater_alias = aliased(User)
+        """Search for collections by name or description."""
+        from sqlalchemy.orm import joinedload
 
-        results = (
-            self.db.query(
-                Collection,
-                creator_alias.username.label("creator_username"),
-                updater_alias.username.label("updater_username"),
+        # If query is empty, return all collections for the user
+        if not query.strip():
+            collections = (
+                self.db.query(Collection)
+                .options(joinedload(Collection.creator), joinedload(Collection.updater))
+                .filter(Collection.created_by == user.id)
+                .order_by(Collection.created_at.desc())
+                .all()
             )
-            .outerjoin(creator_alias, Collection.created_by == creator_alias.id)
-            .outerjoin(updater_alias, Collection.updated_by == updater_alias.id)
-            .filter(User.id == user.id)
+
+            for collection in collections:
+                collection.created_by = (
+                    collection.creator.username if collection.creator else None
+                )
+                collection.updated_by = (
+                    collection.updater.username if collection.updater else None
+                )
+
+            return collections
+
+        # Search by name or description
+        collections = (
+            self.db.query(Collection)
+            .options(joinedload(Collection.creator), joinedload(Collection.updater))
+            .filter(Collection.created_by == user.id)
             .filter(
                 Collection.name.ilike(f"%{query}%")
                 | Collection.description.ilike(f"%{query}%")
@@ -271,10 +299,12 @@ class CollectionService:
             .all()
         )
 
-        collections = []
-        for col, creator_username, updater_username in results:
-            col_dict = CollectionResponse.model_validate(col).model_dump()
-            col_dict["created_by"] = creator_username
-            col_dict["updated_by"] = updater_username
-            collections.append(col_dict)
+        for collection in collections:
+            collection.created_by = (
+                collection.creator.username if collection.creator else None
+            )
+            collection.updated_by = (
+                collection.updater.username if collection.updater else None
+            )
+
         return collections

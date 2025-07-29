@@ -56,6 +56,21 @@ def list_user_collections(
     return collection_service.get_user_collections(current_user.id)
 
 
+@router.get(
+    "/search", response_model=list[CollectionResponse], status_code=status.HTTP_200_OK
+)
+def search_collection_by_name(
+    current_user: User = Depends(get_current_user),
+    query: str = Query(
+        "",
+        description="Search query for collections by name/description. Leave empty to return all collections.",
+    ),
+    collection_service: CollectionService = Depends(get_collection_service),
+) -> list[CollectionResponse]:
+    """Search for collections by name or description."""
+    return collection_service.search_collection_by_name(current_user, query)
+
+
 @router.get("/{collection_id}", response_model=CollectionDetailResponse)
 def get_collection(
     collection=Depends(get_collection_or_404),
@@ -190,19 +205,3 @@ def create_collection_edge(
     # Ensure the relation_id in the data matches the URL parameter
     edge_data.collection_relation_id = relation.id
     return collection_service.create_collection_edge(edge_data, current_user)
-
-
-@router.post(
-    "/search", response_model=list[CollectionResponse], status_code=status.HTTP_200_OK
-)
-def search_collection_by_name(
-    current_user: User = Depends(get_current_user),
-    query: str = Query(
-        ...,
-        min_length=1,
-        description="Search query for documents by name/description",
-    ),
-    collection_service: CollectionService = Depends(get_collection_service),
-) -> list[CollectionResponse]:
-    """Search for documents in a collection by name or description."""
-    return collection_service.search_collection_by_name(current_user, query)
