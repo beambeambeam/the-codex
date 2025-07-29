@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { LibraryIcon, PlusIcon } from "lucide-react";
+import { parseAsBoolean, useQueryState } from "nuqs";
 import { toast } from "sonner";
 
 import { useHomeActions } from "@/app/(protected)/home/_components/context";
@@ -20,7 +20,10 @@ import {
 import { $api } from "@/lib/api/client";
 
 function CreateNewFormDialog() {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useQueryState(
+    "new",
+    parseAsBoolean.withDefault(false),
+  );
 
   const { fetch } = useHomeActions();
 

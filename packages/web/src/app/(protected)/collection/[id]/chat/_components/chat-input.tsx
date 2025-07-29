@@ -91,8 +91,7 @@ export function ChatInputWithMentions({
         return response.data;
       }
       return [];
-    } catch (error) {
-      console.error("Error searching documents:", error);
+    } catch {
       return [];
     }
   };

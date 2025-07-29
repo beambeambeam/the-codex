@@ -48,6 +48,19 @@ class ChatService:
             .all()
         )
 
+    def search_chats_by_title(
+        self, collection_id: str, query: str
+    ) -> list[CollectionChat]:
+        """Search for chats in a collection by title."""
+        return (
+            self.db.query(CollectionChat)
+            .filter(
+                CollectionChat.collection_id == collection_id,
+                CollectionChat.title.ilike(f"%{query}%"),
+            )
+            .all()
+        )
+
     def update_chat(
         self, chat_id: str, update_data: CollectionChatUpdate, user: User
     ) -> CollectionChat:

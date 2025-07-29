@@ -1,6 +1,6 @@
 """Collection API routes."""
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
@@ -54,6 +54,21 @@ def list_user_collections(
 ):
     """List all collections for the current user."""
     return collection_service.get_user_collections(current_user.id)
+
+
+@router.get(
+    "/search", response_model=list[CollectionResponse], status_code=status.HTTP_200_OK
+)
+def search_collection_by_name(
+    current_user: User = Depends(get_current_user),
+    query: str = Query(
+        "",
+        description="Search query for collections by name/description. Leave empty to return all collections.",
+    ),
+    collection_service: CollectionService = Depends(get_collection_service),
+) -> list[CollectionResponse]:
+    """Search for collections by name or description."""
+    return collection_service.search_collection_by_name(current_user, query)
 
 
 @router.get("/{collection_id}", response_model=CollectionDetailResponse)

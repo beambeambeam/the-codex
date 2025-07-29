@@ -1,7 +1,16 @@
 "use client";
 
-import { useId, useState } from "react";
-import { FilePenIcon, SearchIcon } from "lucide-react";
+import { useEffect, useId, useState } from "react";
+import { redirect, useParams } from "next/navigation";
+import {
+  FilePenIcon,
+  MessageSquareIcon,
+  PlusIcon,
+  SearchIcon,
+  UploadIcon,
+} from "lucide-react";
+import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
+import { useDebouncedCallback } from "use-debounce";
 
 import {
   CommandDialog,
@@ -13,11 +22,50 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
+import { Loader } from "@/components/ui/loader";
+import { useChatSearch } from "@/hooks/use-chat-search";
+import { useDocumentSearch } from "@/hooks/use-document-search";
 
 function CollectionIdSidebarSearchbox() {
   const id = useId();
+  const params = useParams<{ id: string }>();
 
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useQueryState("s", parseAsBoolean.withDefault(false));
+  const [inputValue, setInputValue] = useQueryState(
+    "search",
+    parseAsString.withDefault(""),
+  );
+
+  const [localInputValue, setLocalInputValue] = useState(inputValue || "");
+  const [isSearching, setIsSearching] = useState(false);
+
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    setInputValue(value);
+    setIsSearching(false);
+  }, 300);
+
+  const handleInputChange = (value: string) => {
+    setLocalInputValue(value);
+    setIsSearching(true);
+    debouncedSearch(value);
+  };
+
+  useEffect(() => {
+    if (open) {
+      setLocalInputValue(inputValue || "");
+    }
+  }, [open, inputValue]);
+
+  const { searchResults: documentResults, isSearching: isDocumentSearching } =
+    useDocumentSearch(inputValue || "", params.id);
+
+  const { searchResults: chatResults, isSearching: isChatSearching } =
+    useChatSearch(inputValue || "", params.id);
+
+  const showLoading =
+    (isSearching || isDocumentSearching || isChatSearching) &&
+    inputValue &&
+    inputValue.trim() !== "";
 
   return (
     <>
@@ -37,26 +85,88 @@ function CollectionIdSidebarSearchbox() {
           </div>
         </div>
       </div>
-      <CommandDialog open={open} onOpenChange={setOpen}>
-        <CommandInput placeholder="Type a command or search..." />
+      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+        <CommandInput
+          placeholder="Type a command or search..."
+          value={localInputValue}
+          onValueChange={handleInputChange}
+        />
         <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup heading="Documents Suggestions">
-            <CommandItem>
-              <FilePenIcon />
-              <span>Document #1</span>
+          {inputValue.trim() === "" && !showLoading && (
+            <div className="flex items-center justify-center py-6">
+              <div className="text-muted-foreground text-center">
+                Ask about the data, Search the Chat titles
+              </div>
+            </div>
+          )}
+
+          {showLoading && (
+            <div className="flex items-center justify-center py-6">
+              <Loader className="h-4 w-4" />
+              <span className="ml-2">Searching...</span>
+            </div>
+          )}
+
+          {inputValue.trim() !== "" &&
+            !showLoading &&
+            documentResults.length === 0 &&
+            chatResults.length === 0 && (
+              <CommandEmpty>No results found.</CommandEmpty>
+            )}
+
+          {documentResults.length > 0 && (
+            <CommandGroup heading="Documents">
+              {documentResults.map((document) => (
+                <CommandItem
+                  key={document.id}
+                  onSelect={() => {
+                    redirect(`/collection/${params.id}/docs/${document.id}`);
+                  }}
+                >
+                  <FilePenIcon className="mr-2 h-4 w-4" />
+                  <span>{document.title || document.file_name}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+          {chatResults.length > 0 && (
+            <CommandGroup heading="Chats">
+              {chatResults.map((chat) => (
+                <CommandItem
+                  key={chat.id}
+                  onSelect={() => {
+                    redirect(`/collection/${params.id}/chat/${chat.id}`);
+                  }}
+                >
+                  <MessageSquareIcon className="mr-2 h-4 w-4" />
+                  <span>{chat.title}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
+          <CommandSeparator />
+
+          {/* Static Actions */}
+          <CommandGroup heading="Actions">
+            <CommandItem
+              onSelect={() => {
+                redirect(`/collection/${params.id}/chat`);
+              }}
+            >
+              <PlusIcon className="mr-2 h-4 w-4" />
+              <span>Create New Chat</span>
             </CommandItem>
-            <CommandItem>
-              <FilePenIcon />
-              <span>Document #2</span>
+            <CommandItem
+              onSelect={() => {
+                redirect(`/collection/${params.id}/docs`);
+              }}
+            >
+              <UploadIcon className="mr-2 h-4 w-4" />
+              <span>Upload New File</span>
             </CommandItem>
           </CommandGroup>
-          <CommandGroup heading="Command Suggestions">
-            <CommandItem>
-              <FilePenIcon />
-              <span>Create new chat</span>
-            </CommandItem>
-          </CommandGroup>
+
           <CommandSeparator />
         </CommandList>
       </CommandDialog>

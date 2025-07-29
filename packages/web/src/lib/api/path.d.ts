@@ -220,6 +220,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/collections/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search Collection By Name
+     * @description Search for collections by name or description.
+     */
+    get: operations["search_collection_by_name_collections_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/collections/{collection_id}": {
     parameters: {
       query?: never;
@@ -929,6 +949,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/chats/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search Chats By Title
+     * @description Search for chats in a collection by title.
+     */
+    get: operations["search_chats_by_title_chats_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/chats/{chat_id}": {
     parameters: {
       query?: never;
@@ -1632,7 +1672,7 @@ export interface components {
     };
     /**
      * CollectionResponse
-     * @description Schema for collection response.
+     * @description Schema for collection response. created_by and updated_by are usernames, not UUIDs.
      */
     CollectionResponse: {
       /**
@@ -2733,6 +2773,40 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CollectionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  search_collection_by_name_collections_search_get: {
+    parameters: {
+      query?: {
+        /** @description Search query for collections by name/description. Leave empty to return all collections. */
+        query?: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CollectionResponse"][];
         };
       };
       /** @description Validation Error */
@@ -4116,6 +4190,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CollectionChatResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  search_chats_by_title_chats_search_get: {
+    parameters: {
+      query: {
+        collection_id: string;
+        /** @description Search query for chats by title */
+        query: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CollectionChatResponse"][];
         };
       };
       /** @description Validation Error */
