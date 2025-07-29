@@ -28,8 +28,8 @@ import {
   type Parser,
   type UseQueryStateOptions,
 } from "nuqs";
+import { useDebouncedCallback } from "use-debounce";
 
-import { useDebouncedCallback } from "@/hooks/use-debounced-callback";
 import { getSortingStateParser } from "@/lib/parsers";
 import type { ExtendedColumnSort } from "@/types/data-table";
 
