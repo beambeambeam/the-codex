@@ -229,7 +229,7 @@ def extract_chunks_from_text(
     min_characters_per_chunk: int = 24,
     embedding_model: Optional[Union[str, SentenceTransformerEmbeddings]] = None,
 ) -> list[DocumentChunk]:
-    """Extract and chunk text from an image file using OCR."""
+    """Extract and chunk text from a string."""
     if not file_text.strip():
         print(f"No text provided for chunking from {file_name}")
         return []
