@@ -1,9 +1,11 @@
 """Collection API routes."""
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session, joinedload
 
 from ..auth.dependencies import get_current_user
+from ..clustering.schemas import ClusteringResponse
+from ..clustering.service import get_clustering_service
 from ..database import get_db
 from ..document.dependencies import get_document_service
 from ..document.schemas import DocumentResponse
@@ -110,6 +112,24 @@ def list_collection_documents(
 ):
     """List all documents in a collection."""
     return document_service.get_collection_documents(collection.id)
+
+
+@router.get("/{collection_id}/clustering", response_model=list[ClusteringResponse])
+def get_collection_clustering(
+    collection_id: str,
+    current_user: User = Depends(get_current_user),
+    collection_service: CollectionService = Depends(get_collection_service),
+    clustering_service=Depends(get_clustering_service),
+):
+    """Get clustering data for a specific collection."""
+    # Verify collection exists and user has access
+    collection = collection_service.get_collection(collection_id, current_user)
+    if not collection:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
+        )
+
+    return clustering_service.get_clusterings_by_collection(collection_id, current_user)
 
 
 # Collection Relation routes
