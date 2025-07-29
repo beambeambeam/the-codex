@@ -15,9 +15,9 @@ from ..graph.graph_extract import ExtractedGraph, KnowledgeGraphExtractor
 from .ingest_methods import (
     extract_chunks_from_pdf,
     extract_chunks_from_text,
-    extract_chunks_from_text_file,
     extract_text_from_image_file,
     extract_text_from_pdf_file,
+    extract_text_from_text_file,
 )
 from .schemas import FileInput, document_details
 from .summary import SummaryGenerator
