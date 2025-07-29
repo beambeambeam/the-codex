@@ -1,7 +1,6 @@
 from typing import Optional
 from uuid import uuid4
 
-from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from ..models.chat import CollectionChat, CollectionChatHistory, CollectionChatReference
