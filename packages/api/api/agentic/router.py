@@ -101,14 +101,15 @@ async def upload_and_ingest_documents(
             )
             input_file_model: FileInput = normalize_file_input(formatted_input)
 
-            # detach user
+            # detach user/ document
             current_user = UserResponse.model_validate(current_user)
+            current_document = DocumentResponse.model_validate(document)
 
             # Schedule ingestion concurrently using asyncio
             asyncio.create_task(
                 document_ingestor.ingest_file(
                     input_file=input_file_model,
-                    document=document,
+                    document=current_document,
                     graph_extract=True,
                     user=current_user,
                 )

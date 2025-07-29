@@ -1,3 +1,4 @@
+import traceback
 from typing import Literal, Union
 
 from ....document.schemas import (
@@ -13,7 +14,10 @@ from ..embedding.embedding import TextEmbedder
 from ..graph.graph_extract import ExtractedGraph, KnowledgeGraphExtractor
 from .ingest_methods import (
     extract_chunks_from_pdf,
+    extract_chunks_from_text,
     extract_chunks_from_text_file,
+    extract_text_from_image_file,
+    extract_text_from_pdf_file,
 )
 from .schemas import FileInput, document_details
 from .summary import SummaryGenerator
@@ -46,83 +50,36 @@ class DocumentIngestor:
         self.kg_extractor: KnowledgeGraphExtractor = kg_extractor
         self.summary_generator: SummaryGenerator = summary_generator
 
-    def extract_full_text(self, file_input: FileInput) -> str:
+    async def extract_full_text(self, file_input: FileInput) -> str:
         """Extract full text from file input."""
-        import fitz
-
-        text_extensions = {
-            ".txt",
-            ".md",
-            ".py",
-            ".json",
-            ".html",
-            ".css",
-            ".js",
-            ".csv",
-            ".log",
-            ".xml",
-            ".yml",
-            ".yaml",
-        }
-
         try:
             print(
                 f"Extracting full text from file: {file_input.name} (type: {file_input.type})"
             )
 
             if file_input.type == ".pdf":
-                if file_input.is_path:
-                    doc = fitz.open(file_input.content)
-                else:
-                    # Validate that content is not empty before opening
-                    if not file_input.content:
-                        raise ValueError("PDF content is empty")
-                    doc = fitz.open(stream=file_input.content, filetype="pdf")
+                full_text = extract_text_from_pdf_file(
+                    file_input.content,
+                )
 
-                full_text = ""
-                try:
-                    for page in doc:
-                        full_text += page.get_text("text") + "\n"
-                finally:
-                    doc.close()
-
-                return full_text.strip()
-
-            elif file_input.type in text_extensions:
-                if file_input.is_path:
-                    with open(
-                        file_input.content, encoding="utf-8", errors="ignore"
-                    ) as f:
-                        raw_text = f.read().strip()
-                else:
-                    # Validate that content is not empty
-                    if not file_input.content:
-                        raise ValueError("Text file content is empty")
-                    raw_text = file_input.content.decode(
-                        "utf-8", errors="ignore"
-                    ).strip()
-                # Sanitize text file content
-                return raw_text
+            elif file_input.type in {".jpg", ".jpeg", ".png", ".gif"}:
+                full_text = await extract_text_from_image_file(
+                    file_input.content,
+                )
 
             else:
-                # Fallback: try to read as text
                 print(
                     f"Treating file type {file_input.type} as text, attempting text extraction"
                 )
-                if file_input.is_path:
-                    with open(
-                        file_input.content, encoding="utf-8", errors="ignore"
-                    ) as f:
-                        raw_text = f.read().strip()
-                else:
-                    # Validate that content is not empty
-                    if not file_input.content:
-                        raise ValueError("Fallback text content is empty")
-                    raw_text = file_input.content.decode(
-                        "utf-8", errors="ignore"
-                    ).strip()
-                # Sanitize fallback text
-                return raw_text
+                full_text = extract_chunks_from_text_file(
+                    file_input.content,
+                )
+            if not full_text.strip():
+                print(f"No text extracted from {file_input.name}")
+                return ""
+
+            print(f"Successfully extracted text from {file_input.name}")
+            return full_text.strip()
 
         except Exception as e:
             print(f"Error extracting text from {file_input.name}: {e}")
@@ -139,9 +96,16 @@ class DocumentIngestor:
                 file_name=file_input.name,
                 # embedding_model=self.text_embedder.model,
             )
+
+        elif file_input.type in {".jpg", ".jpeg", ".png", ".gif"}:
+            chunks = extract_chunks_from_text(
+                file_input.full_text,
+                file_name=file_input.name,
+                file_type=file_input.type,
+            )
         else:
-            chunks = extract_chunks_from_text_file(
-                file_input.content,
+            chunks = extract_chunks_from_text(
+                file_input.full_text,
                 file_name=file_input.name,
                 file_type=file_input.type,
                 # embedding_model=self.text_embedder.model,
@@ -184,7 +148,7 @@ class DocumentIngestor:
 
     async def extract_knowledge_graph(self, file_input: FileInput) -> ExtractedGraph:
         """Extract knowledge graph from file content."""
-        full_text = self.extract_full_text(file_input)
+        full_text = file_input.full_text
         if not full_text:
             print(
                 f"No text content for knowledge graph extraction from {file_input.name}"
@@ -204,18 +168,16 @@ class DocumentIngestor:
         return None
 
     async def get_document_summary(
-        self, file_input: FileInput, language: Literal["en", "th"] = "en"
+        self, full_text: str, language: Literal["en", "th"] = "en"
     ) -> document_details:
         """Generate a summary of the document."""
-        full_text = self.extract_full_text(file_input)
         if not full_text:
-            print(f"No text content for summary generation from {file_input.name}")
+            print("No text content for summary generation")
             return document_details()
 
         summary = await self.summary_generator.async_generate_summary(
             full_text, language=language
         )
-        print(f"Summary generated for {file_input.name}")
         return summary
 
 
@@ -336,62 +298,76 @@ class DocumentIngestorService(DocumentIngestor):
         Returns:
             Document: The created document record
         """
-        # update document status to processing
-        self.document_service.update_document(
-            document_id=document.id,
-            update_data=DocumentUpdate(status=enum.IngestionStatus.processing),
-            user=user,
-        )
-
-        # extract document summary
-        document_summary = await self.get_document_summary(
-            file_input=input_file, language="en"
-        )
-        self.document_service.update_document(
-            document_id=document.id,
-            update_data=DocumentUpdate(
-                title=document_summary.title,
-                description=document_summary.description,
-            ),
-            user=user,
-        )
-        print(
-            f"Document summary extracted for {input_file.name}: {document_summary.title} {document_summary.description[:100]}..."
-        )
-
-        # Extract and store vector chunks if not already done
-        if not document.is_vectorized:
-            embedded_chunks = self.chunk_and_embed(
-                file_input=input_file, document_id=document.id
+        try:
+            # update document status to processing
+            self.document_service.update_document(
+                document_id=document.id,
+                update_data=DocumentUpdate(status=enum.IngestionStatus.processing),
+                user=user,
             )
-            if embedded_chunks:
-                for chunk in embedded_chunks:
-                    self.document_service.create_chunk(
-                        chunk_data=chunk,
+
+            # extract document summary
+            full_text = await self.extract_full_text(input_file)
+            input_file.full_text = full_text
+            document_summary = await self.get_document_summary(
+                full_text=input_file.full_text, language="en"
+            )
+            self.document_service.update_document(
+                document_id=document.id,
+                update_data=DocumentUpdate(
+                    title=document_summary.title,
+                    description=document_summary.description,
+                ),
+                user=user,
+            )
+            print(
+                f"Document summary extracted for {input_file.name}: {document_summary.title} {document_summary.description[:100]}..."
+            )
+
+            # Extract and store vector chunks if not already done
+            if not document.is_vectorized:
+                embedded_chunks = self.chunk_and_embed(
+                    file_input=input_file, document_id=document.id
+                )
+                if embedded_chunks:
+                    for chunk in embedded_chunks:
+                        self.document_service.create_chunk(
+                            chunk_data=chunk,
+                            user=user,
+                        )
+
+                    document = self.document_service.update_document(
+                        document_id=document.id,
+                        update_data=DocumentUpdate(is_vectorized=True),
                         user=user,
                     )
 
-                document = self.document_service.update_document(
+            # Extract knowledge graph if not already done (Optional)
+            if not document.is_graph_extracted and graph_extract:
+                document = await self.extract_and_store_knowledge_graph(
+                    file_input=input_file,
                     document_id=document.id,
-                    update_data=DocumentUpdate(is_vectorized=True),
                     user=user,
                 )
+                if not document:
+                    print(f"Failed to extract knowledge graph for {input_file.name}")
 
-        # Extract knowledge graph if not already done (Optional)
-        if not document.is_graph_extracted and graph_extract:
-            document = await self.extract_and_store_knowledge_graph(
-                file_input=input_file,
+            print(f"Finished processing {input_file.name}")
+
+            # update status to completed
+            self.document_service.update_document(
                 document_id=document.id,
+                update_data=DocumentUpdate(status=enum.IngestionStatus.ready),
                 user=user,
             )
-            if not document:
-                print(f"Failed to extract knowledge graph for {input_file.name}")
 
-        print(f"Finished processing {input_file.name}")
-
-        # update status to completed
-        self.document_service.update_document(
-            document_id=document.id,
-            update_data=DocumentUpdate(status=enum.IngestionStatus.ready),
-            user=user,
-        )
+        except Exception as e:
+            print(f"Error ingesting file {input_file.name}: {e}")
+            traceback.print_exc()
+            # update status to failed
+            self.document_service.update_document(
+                document_id=document.id,
+                update_data=DocumentUpdate(status=enum.IngestionStatus.failed),
+                user=user,
+            )
+            raise e

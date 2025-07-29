@@ -10,6 +10,9 @@ class FileInput(BaseModel):
         ..., description="File content as string or bytes"
     )
     file_name: str = Field(..., description="Name of the file")
+    full_text: Optional[str] = Field(
+        None, description="Full text content of the file, if applicable"
+    )
     name: str = Field(..., description="File name without path")
     type: str = Field(..., description="File type (e.g., pdf, txt, docx)")
     is_path: bool = Field(False, description="Indicates if the content is a file path")
