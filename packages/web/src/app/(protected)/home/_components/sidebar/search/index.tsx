@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useId } from "react";
+import { useId } from "react";
 import { redirect, useRouter } from "next/navigation";
 import { FolderOpenIcon, SearchIcon } from "lucide-react";
 import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
+import { useDebouncedCallback } from "use-debounce";
 
 import {
   CommandDialog,
@@ -29,15 +30,13 @@ function HomeSidebarSearchbox() {
 
   const { searchResults, isSearching, handleSearch } = useCollectionSearch();
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (inputValue.trim()) {
-        handleSearch(inputValue);
-      }
-    }, 300);
+  const debouncedHandleSearch = useDebouncedCallback((query: string) => {
+    if (query.trim()) {
+      handleSearch(query);
+    }
+  }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [inputValue, handleSearch]);
+  debouncedHandleSearch(inputValue);
 
   return (
     <>
@@ -71,7 +70,7 @@ function HomeSidebarSearchbox() {
             <CommandGroup heading="Collections">
               {searchResults.map((collection) => (
                 <CommandItem
-                  key={collection.id}
+                  key={collection.name}
                   onSelect={() => router.push(`/collection/${collection.id}`)}
                 >
                   <FolderOpenIcon className="mr-2 h-4 w-4" />
