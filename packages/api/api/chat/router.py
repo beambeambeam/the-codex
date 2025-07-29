@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from ..auth.dependencies import get_current_user
 from ..models.user import User
@@ -36,6 +36,20 @@ def list_chats(
     chat_service: ChatService = Depends(get_chat_service),
 ):
     return chat_service.list_chats(collection_id)
+
+
+@router.get("/search", response_model=list[CollectionChatResponse])
+def search_chats_by_title(
+    collection_id: str,
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for chats by title",
+    ),
+    chat_service: ChatService = Depends(get_chat_service),
+):
+    """Search for chats in a collection by title."""
+    return chat_service.search_chats_by_title(collection_id, query)
 
 
 @router.get("/{chat_id}", response_model=CollectionChatResponse)

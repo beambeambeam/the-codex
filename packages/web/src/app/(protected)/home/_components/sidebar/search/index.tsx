@@ -51,7 +51,8 @@ function HomeSidebarSearchbox() {
   const { searchResults, isSearching: isApiSearching } =
     useCollectionSearch(inputValue);
 
-  const showLoading = isSearching || isApiSearching;
+  const showLoading =
+    (isSearching || isApiSearching) && inputValue && inputValue.trim() !== "";
 
   return (
     <>
@@ -71,11 +72,7 @@ function HomeSidebarSearchbox() {
           </div>
         </div>
       </div>
-      <CommandDialog
-        open={open}
-        onOpenChange={setOpen}
-        shouldFilter={showLoading}
-      >
+      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
         <CommandInput
           placeholder="Type to search collections..."
           value={localInputValue}
