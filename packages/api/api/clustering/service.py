@@ -17,13 +17,13 @@ from .schemas import (
     ClusteringChildCreate,
     ClusteringChildUpdate,
     ClusteringCreate,
+    ClusteringResponse,
     ClusteringTopicCreate,
+    ClusteringTopicResponse,
     ClusteringTopicUpdate,
+    ClusteringTopicWithDocuments,
     ClusteringUpdate,
     EnhancedClusteringResponse,
-    ClusteringTopicWithDocuments,
-    ClusteringResponse,
-    ClusteringTopicResponse,
 )
 
 
@@ -72,7 +72,7 @@ class ClusteringService:
 
     def get_clusterings_by_collection(
         self, collection_id: str, user: User
-    ) -> list[dict]:
+    ) -> list[EnhancedClusteringResponse]:
         """Get all clusterings for a specific collection, including virtual clusterings by file type and date."""
         # Get existing clusterings
         clusterings = (
@@ -85,7 +85,7 @@ class ClusteringService:
         )
         self._populate_clustering_usernames(clusterings)
 
-        # Convert existing clusterings to dict format using Pydantic schemas
+        # Convert existing clusterings to Pydantic models
         result = []
         for clustering in clusterings:
             topics = []
@@ -99,20 +99,20 @@ class ClusteringService:
                     )
                     if document:
                         doc_response = DocumentResponse.model_validate(document)
-                        documents.append(doc_response.model_dump())
+                        documents.append(doc_response)
 
                 topic_with_docs = ClusteringTopicWithDocuments(
                     **ClusteringTopicResponse.model_validate(topic).model_dump(),
                     documents=documents,
                 )
-                topics.append(topic_with_docs.model_dump())
+                topics.append(topic_with_docs)
 
-            clustering_dict = EnhancedClusteringResponse(
+            clustering_response = EnhancedClusteringResponse(
                 **ClusteringResponse.model_validate(clustering).model_dump(),
                 topics=topics,
-            ).model_dump()
+            )
 
-            result.append(clustering_dict)
+            result.append(clustering_response)
 
         # Add virtual clustering by file type
         file_type_clustering = self._create_file_type_clustering(collection_id, user)
@@ -128,7 +128,7 @@ class ClusteringService:
 
     def _create_file_type_clustering(
         self, collection_id: str, user: User
-    ) -> Optional[dict]:
+    ) -> Optional[EnhancedClusteringResponse]:
         """Create virtual clustering grouped by file type."""
         # Get all documents in the collection
         documents = (
@@ -148,11 +148,9 @@ class ClusteringService:
         # Create topics for each file type
         topics = []
         for file_type, docs in file_type_groups.items():
-            documents = [
-                DocumentResponse.model_validate(doc).model_dump() for doc in docs
-            ]
+            documents = [DocumentResponse.model_validate(doc) for doc in docs]
 
-            topic_dict = ClusteringTopicWithDocuments(
+            topic_with_docs = ClusteringTopicWithDocuments(
                 clustering_id="virtual_file_type_clustering",
                 title=f"{file_type.upper()} Documents",
                 description=f"Documents with file type {file_type}",
@@ -162,9 +160,9 @@ class ClusteringService:
                 created_by=user.id,
                 updated_by=user.id,
                 documents=documents,
-            ).model_dump()
+            )
 
-            topics.append(topic_dict)
+            topics.append(topic_with_docs)
 
         return EnhancedClusteringResponse(
             collection_id=collection_id,
@@ -177,9 +175,11 @@ class ClusteringService:
             created_by=user.id,
             updated_by=user.id,
             topics=topics,
-        ).model_dump()
+        )
 
-    def _create_date_clustering(self, collection_id: str, user: User) -> Optional[dict]:
+    def _create_date_clustering(
+        self, collection_id: str, user: User
+    ) -> Optional[EnhancedClusteringResponse]:
         """Create virtual clustering grouped by creation date."""
         # Get all documents in the collection
         documents = (
@@ -200,11 +200,9 @@ class ClusteringService:
         # Create topics for each date
         topics = []
         for date_key, docs in sorted(date_groups.items(), reverse=True):
-            documents = [
-                DocumentResponse.model_validate(doc).model_dump() for doc in docs
-            ]
+            documents = [DocumentResponse.model_validate(doc) for doc in docs]
 
-            topic_dict = ClusteringTopicWithDocuments(
+            topic_with_docs = ClusteringTopicWithDocuments(
                 clustering_id="virtual_date_clustering",
                 title=date_key,
                 description=f"Documents created on {date_key}",
@@ -214,9 +212,9 @@ class ClusteringService:
                 created_by=user.id,
                 updated_by=user.id,
                 documents=documents,
-            ).model_dump()
+            )
 
-            topics.append(topic_dict)
+            topics.append(topic_with_docs)
 
         return EnhancedClusteringResponse(
             collection_id=collection_id,
@@ -229,7 +227,7 @@ class ClusteringService:
             created_by=user.id,
             updated_by=user.id,
             topics=topics,
-        ).model_dump()
+        )
 
     def update_clustering(
         self, clustering_id: str, update_data: ClusteringUpdate, user: User
