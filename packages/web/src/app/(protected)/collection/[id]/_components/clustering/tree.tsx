@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useParams, useRouter } from "next/navigation";
 import {
   expandAllFeature,
   hotkeysCoreFeature,
@@ -74,6 +75,8 @@ function ClusteringTree() {
 function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
   const { clusteringToTree } = useClusteringActions();
   const clusteringTree = clusteringToTree(clustering);
+  const router = useRouter();
+  const params = useParams<{ id: string }>();
 
   const tree = useTree<Item>({
     indent,
@@ -97,6 +100,17 @@ function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
     clusteringTree["root"] &&
     clusteringTree["root"].children &&
     clusteringTree["root"].children.length > 0;
+
+  const handleItemDoubleClick = (item: ReturnType<typeof tree.getItems>[0]) => {
+    if (
+      item.getId() !== "root" &&
+      !item.isFolder() &&
+      item.getItemData()?.id &&
+      !item.getItemData()?.id.startsWith("id-")
+    ) {
+      router.push(`/collection/${params.id}/docs/${item.getItemData().id}`);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -126,7 +140,17 @@ function ClusteringTreeChild({ clustering }: { clustering: Clustering }) {
         <Tree tree={tree}>
           {tree.getItems().map((item) => (
             <TreeItem key={item.getId()} item={item}>
-              <TreeItemLabel>
+              <TreeItemLabel
+                onDoubleClick={() => handleItemDoubleClick(item)}
+                className={
+                  item.isFolder()
+                    ? ""
+                    : "hover:bg-accent cursor-pointer transition-colors"
+                }
+                title={
+                  item.isFolder() ? undefined : "Double-click to view document"
+                }
+              >
                 <div className="flex items-center gap-2">
                   {item.isFolder() ? (
                     item.isExpanded() ? (
