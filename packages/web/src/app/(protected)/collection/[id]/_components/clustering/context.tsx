@@ -43,7 +43,6 @@ interface ClusteringActions {
   setSelectedId: (id: string) => void;
   reset: () => void;
   getClustering: (id: string) => Clustering | undefined;
-  getSelectedClustering: () => Clustering | undefined;
   getAllClusterings: () => Clustering[];
   clusteringToTree: (clustering: Clustering) => Record<string, Item>;
   clusteringToGraph: (clustering: Clustering) => GraphNode[];
@@ -109,12 +108,6 @@ export const ClusteringProvider = ({
             isError: false,
           }),
         getClustering: (id) => get().clusterings.find((c) => c.id === id),
-        getSelectedClustering: () => {
-          const state = get();
-          return state.selectedId && state.selectedId !== ""
-            ? state.clusterings.find((c) => c.id === state.selectedId)
-            : undefined;
-        },
         getAllClusterings: () => get().clusterings,
         clusteringToTree: (clustering) => {
           if (!clustering || !Array.isArray(clustering.topics)) {
