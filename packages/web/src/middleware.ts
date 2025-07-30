@@ -2,33 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { fetchServer } from "@/lib/api/server";
 
-const authPages = ["/sign-in", "/register"];
-const protectedPages = ["/collections/*"];
+// Define route patterns
+const AUTH_ROUTES = ["/sign-in", "/register"];
+const PROTECTED_ROUTES = ["/collection", "/home"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const { data: user, error } = await fetchServer.GET("/auth/me");
 
-  if (error) {
-    const response = NextResponse.redirect(new URL("/sign-in", request.url));
-    response.cookies.delete("session");
-    return response;
-  }
+  try {
+    const { data: user } = await fetchServer.GET("/auth/me");
 
-  if (authPages.includes(pathname)) {
-    if (user) {
-      return NextResponse.redirect(new URL("/home", request.url));
+    if (AUTH_ROUTES.includes(pathname)) {
+      return user
+        ? NextResponse.redirect(new URL("/home", request.url))
+        : NextResponse.next();
     }
-  }
 
-  for (const protectedPage of protectedPages) {
-    const pattern = new RegExp("^" + protectedPage.replace("*", ".*") + "$");
-    if (pattern.test(pathname)) {
-      if (!user) {
-        return NextResponse.redirect(new URL("/sign-in", request.url));
-      }
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    );
+
+    if (isProtectedRoute && !user) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
     }
-  }
 
-  return NextResponse.next();
+    return NextResponse.next();
+  } catch {
+    const isProtectedRoute = PROTECTED_ROUTES.some((route) =>
+      pathname.startsWith(route),
+    );
+
+    if (isProtectedRoute) {
+      return NextResponse.redirect(new URL("/sign-in", request.url));
+    }
+
+    return NextResponse.next();
+  }
 }
