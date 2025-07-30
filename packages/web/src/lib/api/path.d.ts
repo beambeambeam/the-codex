@@ -901,28 +901,11 @@ export interface paths {
     /** List Chats */
     get: operations["list_chats_chats__get"];
     put?: never;
-    /** Create Chat */
-    post: operations["create_chat_chats__post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/with_rag": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
     /**
      * Create Chat With Rag
      * @description Create a new chat and trigger RAG processing in the background.
      */
-    post: operations["create_chat_with_rag_chats_with_rag_post"];
+    post: operations["create_chat_with_rag_chats__post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1603,6 +1586,10 @@ export interface components {
        * @description Chat description
        */
       description?: string | null;
+      /** Message */
+      message: string;
+      /** Reference */
+      reference: string[];
     };
     /** CollectionChatHistoryResponse */
     CollectionChatHistoryResponse: {
@@ -4466,42 +4453,7 @@ export interface operations {
       };
     };
   };
-  create_chat_chats__post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CollectionChatCreate"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  create_chat_with_rag_chats_with_rag_post: {
+  create_chat_with_rag_chats__post: {
     parameters: {
       query?: never;
       header?: never;

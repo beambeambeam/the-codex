@@ -29,7 +29,7 @@ function ChatContent() {
 
   const { mutate: createChatWithRag, isPending: isCreating } = $api.useMutation(
     "post",
-    "/chats/with_rag",
+    "/chats/",
     {
       onSuccess: (data) => {
         toast.success(
@@ -64,9 +64,15 @@ function ChatContent() {
       body: {
         collection_id: params.id,
         title:
-          values.chat_message.substring(0, 50) +
-          (values.chat_message.length > 50 ? "..." : ""),
-        description: values.chat_message,
+          values.chat_message.length > 50
+            ? values.chat_message.slice(0, 50) + "..."
+            : values.chat_message,
+        description:
+          values.chat_message.length > 100
+            ? values.chat_message.slice(0, 100) + "..."
+            : values.chat_message,
+        message: values.chat_message,
+        reference: values.reference,
       },
     });
   };

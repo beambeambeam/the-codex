@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -13,6 +13,8 @@ class CollectionChatBase(BaseModel):
 
 
 class CollectionChatCreate(CollectionChatBase):
+    message: str
+    reference: list[str]
     pass
 
 
@@ -41,7 +43,7 @@ class CollectionChatWithHistoryResponse(CollectionChatBase):
     updated_by: Optional[str]
     updated_at: datetime
     status: ChatStatus
-    histories: List["CollectionChatHistoryResponse"] = Field(
+    histories: list["CollectionChatHistoryResponse"] = Field(
         default_factory=list, description="Chat history messages"
     )
 

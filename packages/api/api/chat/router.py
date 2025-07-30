@@ -1,12 +1,15 @@
 import asyncio
+
 from fastapi import APIRouter, Depends, Query, status
 
+from ..agentic.agent import rag_agent
+from ..agentic.dependencies import get_rag_agent
 from ..auth.dependencies import get_current_user
+from ..message_queue.service import get_queue_service
 from ..models.user import User
 from .dependencies import (
-    get_chat_or_404,
-    get_chat_with_history_or_404,
     get_chat_service,
+    get_chat_with_history_or_404,
 )
 from .schemas import (
     CollectionChatCreate,
@@ -15,27 +18,13 @@ from .schemas import (
     CollectionChatWithHistoryResponse,
 )
 from .service import ChatService
-from ..agentic.agent import rag_agent
-from ..agentic.dependencies import get_rag_agent
-from ..message_queue.service import get_queue_service
 
 router = APIRouter(prefix="/chats", tags=["chats"])
 
 
 # CollectionChat endpoints
 @router.post(
-    "/", response_model=CollectionChatResponse, status_code=status.HTTP_201_CREATED
-)
-def create_chat(
-    chat_data: CollectionChatCreate,
-    current_user: User = Depends(get_current_user),
-    chat_service: ChatService = Depends(get_chat_service),
-):
-    return chat_service.create_chat(chat_data, current_user)
-
-
-@router.post(
-    "/with_rag",
+    "/",
     response_model=CollectionChatResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -46,40 +35,32 @@ async def create_chat_with_rag(
     rag_agent_instance: rag_agent = Depends(get_rag_agent),
 ):
     """Create a new chat and trigger RAG processing in the background."""
-    # Create the chat first
     chat = chat_service.create_chat(chat_data, current_user)
 
-    # Get queue service for background processing
     queue_service = get_queue_service()
 
-    # Schedule RAG processing in the background
     async def process_rag_background():
         try:
-            # Initialize RAG flow for collection
             rag_agent_instance.create_flow(flow_type="collection")
 
-            # Run RAG processing
-            shared_store = rag_agent_instance.run(
+            rag_agent_instance.run(
                 collection_chat_id=chat.id,
-                user_question="",  # Empty question to initialize RAG
+                user_question=chat_data.message,
                 references=None,
             )
 
-            # Publish completion event
             queue_service.publish_chat_event(
                 chat_id=chat.id,
                 event_type="rag_processing_completed",
                 data={"status": "completed", "chat_id": chat.id},
             )
         except Exception as e:
-            # Publish error event
             queue_service.publish_chat_event(
                 chat_id=chat.id,
                 event_type="rag_processing_failed",
                 data={"status": "failed", "error": str(e), "chat_id": chat.id},
             )
 
-    # Start background processing
     asyncio.create_task(process_rag_background())
 
     return chat

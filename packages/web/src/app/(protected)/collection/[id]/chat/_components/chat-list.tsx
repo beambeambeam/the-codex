@@ -1,9 +1,15 @@
+"use client";
+
+import { useParams, useRouter } from "next/navigation";
+
 import { useChatContext } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
 import { Pill, PillAvatar } from "@/components/ui/pill";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFallbackUsername } from "@/lib/utils";
 
 function ChatList() {
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
   const { chats, isError, isLoading } = useChatContext();
 
   return (
@@ -12,6 +18,15 @@ function ChatList() {
         <h1 className="group-hover:text-accent-foreground text-foreground text-md inline-flex w-full items-center gap-2 font-bold text-wrap transition-colors">
           Other Chats
         </h1>
+      </div>
+
+      <div className="w-full p-4">
+        <li
+          onClick={() => router.push(`/collection/${params.id}/chat`)}
+          className="hover:bg-accent border-primary/40 flex cursor-pointer flex-col gap-1 rounded-md border border-dashed px-3 py-2 transition-colors"
+        >
+          <div className="text-primary font-medium">+ Create New Chat</div>
+        </li>
       </div>
 
       {isLoading && (
@@ -40,6 +55,9 @@ function ChatList() {
             <li
               key={chat.id}
               className="hover:bg-accent flex cursor-pointer flex-col gap-1 rounded-md border px-3 py-2 transition-colors"
+              onClick={() =>
+                router.push(`/collection/${params.id}/chat/${chat.id}`)
+              }
             >
               <div className="font-medium">{chat.title || "Untitled Chat"}</div>
               {chat.created_by && (
