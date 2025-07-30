@@ -29,9 +29,9 @@ class PublishMessageRequest(BaseModel):
 
 
 class TestPublishRequest(BaseModel):
-    """Request to test publish a message to a document, collection, or message."""
+    """Request to test publish a message to a document, collection, or chat."""
 
-    target_type: str  # 'document', 'collection', or 'message'
+    target_type: str  # 'document', 'collection', or 'chat'
     target_id: str
     event_type: str
     data: dict
@@ -84,12 +84,12 @@ def test_publish(
             queue_service.publish_collection_event(
                 req.target_id, req.event_type, req.data
             )
-        elif req.target_type == "message":
-            queue_service.publish_message_event(req.target_id, req.event_type, req.data)
+        elif req.target_type == "chat":
+            queue_service.publish_chat_event(req.target_id, req.event_type, req.data)
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid target_type. Must be one of: document, collection, message.",
+                detail="Invalid target_type. Must be one of: document, collection, chat.",
             )
         return {
             "message": f"Published {req.event_type} to {req.target_type}_{req.target_id}"

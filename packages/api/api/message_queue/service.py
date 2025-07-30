@@ -154,16 +154,16 @@ class QueueService:
         with self.client:
             self.client.publish_to_queue(channel, message)
 
-    def publish_message_event(
-        self, message_id: str, event_type: str, data: dict[str, Any]
+    def publish_chat_event(
+        self, chat_id: str, event_type: str, data: dict[str, Any]
     ) -> None:
-        """Publish an SSE event for a specific message."""
+        """Publish an SSE event for a specific chat."""
         message = {
             "event_type": event_type,
-            "message_id": message_id,
+            "chat_id": chat_id,
             "data": data,
         }
-        channel = f"message_{message_id}"
+        channel = f"chat_{chat_id}"
         with self.client:
             self.client.publish_to_queue(channel, message)
 

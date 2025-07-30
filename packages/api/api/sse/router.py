@@ -59,12 +59,12 @@ async def stream_document_events(
     return sse_service.create_event_response(str(current_user.id), [channel])
 
 
-@router.get("/messages/{message_id}")
-async def stream_message_events(
-    message_id: str = Path(..., description="Message ID to stream events for"),
+@router.get("/chats/{chat_id}")
+async def stream_chat_events(
+    chat_id: str = Path(..., description="Chat ID to stream events for"),
     current_user: User = Depends(get_current_user),
     sse_service: SSEService = Depends(get_sse_service),
 ):
-    """Stream SSE events for a specific message."""
-    channel = f"message_{message_id}"
+    """Stream SSE events for a specific chat."""
+    channel = f"chat_{chat_id}"
     return sse_service.create_event_response(str(current_user.id), [channel])

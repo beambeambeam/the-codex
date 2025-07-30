@@ -101,8 +101,8 @@ class SSEService:
                         elif channel.startswith("collection_"):
                             # Handle collection-specific channels
                             queue_type = None  # These are handled differently
-                        elif channel.startswith("message_"):
-                            # Handle message-specific channels
+                        elif channel.startswith("chat_"):
+                            # Handle chat-specific channels
                             queue_type = None  # These are handled differently
                         else:
                             # Try to match any valid queue type

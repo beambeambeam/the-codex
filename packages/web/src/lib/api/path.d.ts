@@ -871,7 +871,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/sse/messages/{message_id}": {
+  "/sse/chats/{chat_id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -879,10 +879,10 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Stream Message Events
-     * @description Stream SSE events for a specific message.
+     * Stream Chat Events
+     * @description Stream SSE events for a specific chat.
      */
-    get: operations["stream_message_events_sse_messages__message_id__get"];
+    get: operations["stream_chat_events_sse_chats__chat_id__get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -2673,7 +2673,7 @@ export interface components {
     };
     /**
      * TestPublishRequest
-     * @description Request to test publish a message to a document, collection, or message.
+     * @description Request to test publish a message to a document, collection, or chat.
      */
     TestPublishRequest: {
       /** Target Type */
@@ -4397,13 +4397,13 @@ export interface operations {
       };
     };
   };
-  stream_message_events_sse_messages__message_id__get: {
+  stream_chat_events_sse_chats__chat_id__get: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description Message ID to stream events for */
-        message_id: string;
+        /** @description Chat ID to stream events for */
+        chat_id: string;
       };
       cookie?: {
         session?: string | null;
