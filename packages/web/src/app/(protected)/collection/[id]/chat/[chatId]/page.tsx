@@ -28,7 +28,7 @@ function ChatIdPage() {
     },
   );
 
-  const { mutate } = $api.useMutation("post", "/agentic/rag_query");
+  const { mutate, isPending } = $api.useMutation("post", "/agentic/rag_query");
 
   if (isLoading) {
     return <ChatIdPageSkeleton />;
@@ -79,7 +79,11 @@ function ChatIdPage() {
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
           <div className="p-4 px-12">
-            <ChatForm onSubmit={handleSubmit} suggest={true} />
+            <ChatForm
+              onSubmit={handleSubmit}
+              suggest={true}
+              disabled={isPending}
+            />
           </div>
         </div>
       </div>
