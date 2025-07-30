@@ -102,7 +102,9 @@ class ClusteringChild(Base):
     clustering_topic_id: Mapped[str] = mapped_column(
         Text, ForeignKey("clustering_topic.id", ondelete="CASCADE"), nullable=False
     )
-    target: Mapped[str] = mapped_column(Text, nullable=False)  # document_id
+    target: Mapped[str] = mapped_column(
+        Text, ForeignKey("document.id", ondelete="CASCADE"), nullable=False
+    )  # document_id
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.current_timestamp()
     )

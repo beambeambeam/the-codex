@@ -1,5 +1,7 @@
 import asyncio
 
+from api.agentic.core.clustering.service import TopicModellingService
+from api.clustering.schemas import ClusteringResponse
 from fastapi import (
     APIRouter,
     Depends,
@@ -21,12 +23,12 @@ from .core.clustering.schemas import (
 )  # TODO: This is for quick use future will be use with database
 from .core.ingestion.schemas import FileInput
 from .dependencies import (
-    DocumentClusteringService,
+    TopicModellingService,
     DocumentIngestorService,
     DocumentService,
     User,
     get_current_user,
-    get_document_clustering_service,
+    get_topic_modelling_service,
     get_document_ingestor,
     get_document_service,
     get_rag_agent,
@@ -126,15 +128,16 @@ async def upload_and_ingest_documents(
 
 @router.post(
     "/cluster_topic",
-    response_model=ClusteringResult,
+    response_model=ClusteringResponse,
     tags=["agentic"],
     status_code=status.HTTP_200_OK,
 )
 def cluster_documents(
     collection_id: str,
-    document_clustering_service: DocumentClusteringService = Depends(
-        get_document_clustering_service
+    topic_modelling_service: TopicModellingService = Depends(
+        get_topic_modelling_service
     ),
+    user: User = Depends(get_current_user),
 ):
     """
     Clusters document chunks in a collection and generates descriptive topic titles.
@@ -144,8 +147,9 @@ def cluster_documents(
     - cluster_title_top_n_topics: The number of top contributing topics to use for generating a cluster title.
     - cluster_title_top_n_words: The number of keywords to extract from each contributing topic.
     """
-    return document_clustering_service.cluster_documents(
+    return topic_modelling_service.cluster_and_store_documents(
         collection_id=collection_id,
+        user=user,
         cluster_title_top_n_topics=5,
         cluster_title_top_n_words=50,
         title_generated_methods="by_summaries",

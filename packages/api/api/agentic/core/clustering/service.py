@@ -1,5 +1,7 @@
 from collections import Counter, defaultdict
 
+from api.models.clustering import Clustering
+from api.models.user import User
 import numpy as np
 import pandas as pd
 import umap
@@ -9,25 +11,39 @@ from loguru import logger
 from tqdm.auto import tqdm
 from typing_extensions import Literal
 
-from api.agentic.core.prompts.prompt_manager import render_summary_to_topic_extraction
-
 from ....document.schemas import ChunkResponse, DocumentResponse
 from ....document.service import DocumentService
-from ...core import call_llm
+from ....clustering.service import (
+    ClusteringCreate,
+    ClusteringTopicCreate,
+    ClusteringChildCreate,
+)
+from ....clustering.service import ClusteringService
+from ...core import call_llm, call_structured_llm
 from ..embedding.embedding import TextEmbedder
-from ..prompts import render_keyword_to_topic_extraction
-from .schemas import ClusteringResult, DocumentDistribution, TopicCluster
+from ..prompts import (
+    render_keyword_to_topic_extraction,
+    render_summary_to_topic_extraction,
+)
+from .schemas import (
+    ClusteringResult,
+    DocumentDistribution,
+    TopicCluster,
+    ClusteringDetails,
+)
 
 
-class DocumentClusteringService:
-    """Service for clustering document chunks based on their embeddings."""
+class TopicModellingService:
+    """Service for topic modelling document chunks based on their embeddings."""
 
     def __init__(
         self,
         document_service: DocumentService,
+        clustering_service: ClusteringService,
         embedding_model: TextEmbedder = None,
     ):
         self._DOCUMENT_SERVICE = document_service
+        self._CLUSTERING_SERVICE = clustering_service
         self._EMBEDDING_MODEL = embedding_model
         self._UMAP_MODEL = umap.UMAP(
             n_neighbors=15, metric="cosine", random_state=42, n_components=2
@@ -71,7 +87,9 @@ class DocumentClusteringService:
 
         return chunk_embeddings, doc_id_to_doc
 
-    def llm_generate_cluster_title_by_keywords(self, keywords: list[str]) -> str:
+    def llm_generate_cluster_title_by_keywords(
+        self, keywords: list[str]
+    ) -> ClusteringDetails:
         """
         Generates a descriptive title for a cluster of topics using an LLM.
 
@@ -84,9 +102,11 @@ class DocumentClusteringService:
         keywords = ", ".join(keywords)
         prompt = render_keyword_to_topic_extraction(keywords=keywords)
         print(f"/nGenerating cluster title with keywords: {keywords[:50]}")
-        return call_llm(prompt)
+        return call_structured_llm(prompt, response_model=ClusteringDetails)
 
-    def llm_generate_cluster_title_by_summaries(self, summaries: list[str]) -> str:
+    def llm_generate_cluster_title_by_summaries(
+        self, summaries: list[str]
+    ) -> ClusteringDetails:
         """
         Generates a descriptive title for a cluster of topics using an LLM.
 
@@ -99,7 +119,7 @@ class DocumentClusteringService:
         summaries = "\n\n---\n\n".join(summaries)
         prompt = render_summary_to_topic_extraction(summaries=summaries)
         print(f"/nGenerating cluster title with summaries: {summaries[:50]}")
-        return call_llm(prompt)
+        return call_structured_llm(prompt, response_model=ClusteringDetails)
 
     def _get_topic_keyword_map(
         self, topic_info_df, top_words: int
@@ -128,7 +148,7 @@ class DocumentClusteringService:
         doc_primary_topic: dict[str, int],
         doc_id_to_doc: dict[str, DocumentResponse],
         topic_id_to_name: dict[int, str],
-        cluster_titles: dict[int, str],
+        cluster_details: dict[int, ClusteringDetails],
     ) -> ClusteringResult:
         """
         Assembles the final ClusteringResult object from processed data.
@@ -142,9 +162,14 @@ class DocumentClusteringService:
             primary_topic_id = doc_primary_topic[doc_id]
 
             # Use generated title, fall back to BERTopic name, then to generic name
-            top_topic_title = cluster_titles.get(
+            top_topic_title = cluster_details.get(
                 primary_topic_id,
-                topic_id_to_name.get(primary_topic_id, f"Topic {primary_topic_id}"),
+                ClusteringDetails(
+                    title=topic_id_to_name.get(
+                        primary_topic_id, f"Topic {primary_topic_id}"
+                    ),
+                    description="",
+                ),
             )
 
             label_distribution = {
@@ -155,7 +180,8 @@ class DocumentClusteringService:
             final_documents.append(
                 DocumentDistribution(
                     document_id=doc_id,
-                    top_topic=top_topic_title,
+                    title=top_topic_title.title,
+                    description=top_topic_title.description,
                     distribution=label_distribution,
                 )
             )
@@ -165,14 +191,35 @@ class DocumentClusteringService:
         # Create the list of TopicCluster objects
         final_topics: list[TopicCluster] = []
         for topic_id, docs in topic_clusters_by_id.items():
-            title = cluster_titles.get(
-                topic_id, topic_id_to_name.get(topic_id, f"Topic {topic_id}")
+            title = cluster_details.get(
+                topic_id,
+                ClusteringDetails(
+                    title=topic_id_to_name.get(topic_id, f"Topic {topic_id}"),
+                    description="",
+                ),
             )
-            final_topics.append(TopicCluster(id=topic_id, title=title, documents=docs))
+            final_topics.append(
+                TopicCluster(
+                    id=topic_id,
+                    title=title.title,
+                    description=title.description,
+                    documents=docs,
+                )
+            )
 
         logger.info(f"Clustering complete. Found {len(final_topics)} clusters.")
 
-        return ClusteringResult(topics=final_topics, documents=final_documents)
+        # Generate a descriptive title for the clustering result
+        clustering_group_detail = self.llm_generate_cluster_title_by_summaries(
+            summaries=[doc.description for doc in final_documents if doc.description]
+        )
+
+        return ClusteringResult(
+            title=clustering_group_detail.title,
+            description=clustering_group_detail.description,
+            topics=final_topics,
+            documents=final_documents,
+        )
 
     def cluster_documents(
         self,
@@ -281,7 +328,7 @@ class DocumentClusteringService:
                 and doc.id in doc_primary_topic  # only use those in clustering
             }
 
-            cluster_titles = {}
+            cluster_titles: dict[int, ClusteringDetails] = {}
             for topic_id, _ in tqdm(
                 list(cluster_topic_counters.items()), desc="Generating cluster titles"
             ):
@@ -298,15 +345,15 @@ class DocumentClusteringService:
                     if doc_id in doc_id_to_summary
                 ]
                 if summaries:
-                    cluster_titles[topic_id] = (
-                        self.llm_generate_cluster_title_by_summaries(summaries)
-                    )
+                    details = self.llm_generate_cluster_title_by_summaries(summaries)
+                    cluster_titles[topic_id] = details
                     print(
-                        f"Generated title for topic {topic_id}: {cluster_titles[topic_id]}"
+                        f"Generated details for topic {topic_id}: {cluster_titles[topic_id].title} with description {cluster_titles[topic_id].description[:50]}..."
                     )
                 else:
-                    cluster_titles[topic_id] = (
-                        f"Topic {topic_id} (No summaries available)"
+                    cluster_titles[topic_id] = ClusteringDetails(
+                        title=topic_id_to_name.get(topic_id, f"Topic {topic_id}"),
+                        description="",
                     )
                     print(
                         f"No summaries available for topic {topic_id}, using default title."
@@ -323,5 +370,75 @@ class DocumentClusteringService:
             doc_primary_topic=doc_primary_topic,
             doc_id_to_doc=doc_id_to_doc,
             topic_id_to_name=topic_id_to_name,
-            cluster_titles=cluster_titles,
+            cluster_details=cluster_titles,
         )
+
+    def store_clustering_result(
+        self,
+        collection_id: str,
+        clustering_result: ClusteringResult,
+        user: User,
+    ) -> Clustering:
+        """
+        Stores the clustering result in the database.
+        """
+        created_clustering = self._CLUSTERING_SERVICE.create_clustering(
+            clustering_data=ClusteringCreate(
+                collection_id=collection_id,
+                search_word=None,
+                title=clustering_result.title,
+                description=clustering_result.description,
+            ),
+            user=user,
+        )
+
+        for topic in clustering_result.topics:
+            topic_data = ClusteringTopicCreate(
+                clustering_id=collection_id,
+                title=topic.title,
+                description=topic.description,
+            )
+            created_topic = self._CLUSTERING_SERVICE.create_clustering_topic(
+                clustering_id=created_clustering.id,
+                topic_data=topic_data,
+                user=user,
+            )
+
+            for doc in topic.documents:
+                child_data = ClusteringChildCreate(
+                    clustering_topic_id=created_topic.id,
+                    target=doc.id,
+                )
+                self._CLUSTERING_SERVICE.create_clustering_child(
+                    topic_id=created_topic.id, child_data=child_data, user=user
+                )
+
+        logger.info(f"Clustering result stored for collection {collection_id}.")
+        return created_clustering
+
+    def cluster_and_store_documents(
+        self,
+        collection_id: str,
+        user: User,
+        cluster_title_top_n_topics: int = 10,
+        cluster_title_top_n_words: int = 20,
+        title_generated_methods: Literal[
+            "by_keywords", "by_summaries"
+        ] = "by_summaries",
+    ) -> Clustering:
+        """
+        Clusters documents in a collection and stores the result in the database.
+        """
+        clustering_result = self.cluster_documents(
+            collection_id=collection_id,
+            cluster_title_top_n_topics=cluster_title_top_n_topics,
+            cluster_title_top_n_words=cluster_title_top_n_words,
+            title_generated_methods=title_generated_methods,
+        )
+
+        saved_cluster = self.store_clustering_result(
+            collection_id=collection_id, clustering_result=clustering_result, user=user
+        )
+
+        logger.info(f"Clustering and storage complete for collection {collection_id}.")
+        return saved_cluster
