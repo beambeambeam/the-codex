@@ -50,13 +50,13 @@ class UserIntent(BaseModel):
 
         Q: "How does photosynthesis work?"
         A: "generic_qa"
-        
+
         - summarization: For requests to summarize information
 
         Example:
         Q: "Summarize the key points of this article."
         A: "summarization"
- 
+
         Q: "Can you provide overview of this document?"
         A: "summarization"
 
@@ -186,3 +186,15 @@ class SharedStore(ShareStoreBase):
 
     class Config:
         arbitrary_types_allowed = True
+
+
+class RAGQueryRequest(BaseModel):
+    """Schema for RAG query request body."""
+
+    user_question: str = Field(
+        ..., description="The user's question or query for the RAG system"
+    )
+    reference: list[str] = Field(
+        default_factory=list,
+        description="Optional list of document references to use for the query",
+    )

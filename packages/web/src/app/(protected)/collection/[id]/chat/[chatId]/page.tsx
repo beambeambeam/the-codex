@@ -16,7 +16,7 @@ import { $api } from "@/lib/api/client";
 function ChatIdPage() {
   const params = useParams<{ id: string; chatId: string }>();
 
-  const { data, isPending, isError } = $api.useQuery(
+  const { data, isLoading, isError } = $api.useQuery(
     "get",
     "/chats/{chat_id}",
     {
@@ -28,7 +28,9 @@ function ChatIdPage() {
     },
   );
 
-  if (isPending) {
+  const { mutate } = $api.useMutation("post", "/agentic/rag_query");
+
+  if (isLoading) {
     return <ChatIdPageSkeleton />;
   }
 
@@ -51,7 +53,17 @@ function ChatIdPage() {
   }
 
   const handleSubmit = (values: ChatFormSchemaType) => {
-    console.log(values);
+    mutate({
+      params: {
+        query: {
+          chat_id: params.chatId,
+        },
+      },
+      body: {
+        user_question: values.chat_message,
+        reference: values.reference.length > 0 ? values.reference : undefined,
+      },
+    });
   };
 
   return (

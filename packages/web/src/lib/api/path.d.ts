@@ -2641,6 +2641,22 @@ export interface components {
       message: string;
     };
     /**
+     * RAGQueryRequest
+     * @description Schema for RAG query request body.
+     */
+    RAGQueryRequest: {
+      /**
+       * User Question
+       * @description The user's question or query for the RAG system
+       */
+      user_question: string;
+      /**
+       * Reference
+       * @description Optional list of document references to use for the query
+       */
+      reference?: string[];
+    };
+    /**
      * Role
      * @enum {string}
      */
@@ -4134,7 +4150,6 @@ export interface operations {
   rag_query_agentic_rag_query_post: {
     parameters: {
       query: {
-        user_question: string;
         chat_id: string;
       };
       header?: never;
@@ -4143,9 +4158,9 @@ export interface operations {
         session?: string | null;
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
-        "application/json": string[];
+        "application/json": components["schemas"]["RAGQueryRequest"];
       };
     };
     responses: {
