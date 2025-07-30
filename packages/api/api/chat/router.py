@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import APIRouter, Depends, Query, status
 
 from ..agentic.agent import rag_agent
@@ -39,29 +37,31 @@ async def create_chat_with_rag(
 
     queue_service = get_queue_service()
 
-    async def process_rag_background():
-        try:
+    try:
+        # Check if chat_data.references is not empty (not None and not empty list)
+        references = getattr(chat_data, "references", None)
+        if references is not None and references != []:
+            rag_agent_instance.create_flow(flow_type="document")
+        else:
             rag_agent_instance.create_flow(flow_type="collection")
 
-            rag_agent_instance.run(
-                collection_chat_id=chat.id,
-                user_question=chat_data.message,
-                references=None,
-            )
+        rag_agent_instance.run(
+            collection_chat_id=chat.id,
+            user_question=chat_data.message,
+            references=None,
+        )
 
-            queue_service.publish_chat_event(
-                chat_id=chat.id,
-                event_type="rag_processing_completed",
-                data={"status": "completed", "chat_id": chat.id},
-            )
-        except Exception as e:
-            queue_service.publish_chat_event(
-                chat_id=chat.id,
-                event_type="rag_processing_failed",
-                data={"status": "failed", "error": str(e), "chat_id": chat.id},
-            )
-
-    asyncio.create_task(process_rag_background())
+        queue_service.publish_chat_event(
+            chat_id=chat.id,
+            event_type="rag_processing_completed",
+            data={"status": "completed", "chat_id": chat.id},
+        )
+    except Exception as e:
+        queue_service.publish_chat_event(
+            chat_id=chat.id,
+            event_type="rag_processing_failed",
+            data={"status": "failed", "error": str(e), "chat_id": chat.id},
+        )
 
     return chat
 
