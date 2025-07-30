@@ -7,6 +7,6 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getFallbackUsername(username: string): string {
   if (!username || typeof username !== "string") return "user";
-  const parts = username.split(" ").filter(Boolean);
-  return parts.slice(0, 2).join(" ") || "user";
+  const parts = username.split(" ");
+  return parts.map((item) => item[0]).join("");
 }
