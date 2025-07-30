@@ -771,86 +771,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/queue/stats/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get Queue Stats
-     * @description Get statistics for a specific queue.
-     */
-    get: operations["get_queue_stats_queue_stats__queue_type__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/queue/purge/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Purge Queue
-     * @description Purge all messages from a queue (admin only).
-     */
-    post: operations["purge_queue_queue_purge__queue_type__post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/queue/debug/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Debug Queue Info
-     * @description Debug endpoint to check queue information (admin only).
-     */
-    get: operations["debug_queue_info_queue_debug__queue_type__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/queue/peek/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Peek Queue Message
-     * @description Peek at a message in the queue (consumes one message for testing).
-     */
-    get: operations["peek_queue_message_queue_peek__queue_type__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/queue/test-publish": {
     parameters: {
       query?: never;
@@ -891,7 +811,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/sse/documents/{document_id}": {
+  "/sse/system": {
     parameters: {
       query?: never;
       header?: never;
@@ -899,10 +819,10 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Stream Document Events
-     * @description Stream SSE events for a specific document.
+     * Stream System Events
+     * @description Stream system events.
      */
-    get: operations["stream_document_events_sse_documents__document_id__get"];
+    get: operations["stream_system_events_sse_system_get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -931,7 +851,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/sse/chats/{chat_id}": {
+  "/sse/documents/{document_id}": {
     parameters: {
       query?: never;
       header?: never;
@@ -939,10 +859,30 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Stream Chat Events
-     * @description Stream SSE events for a specific chat.
+     * Stream Document Events
+     * @description Stream SSE events for a specific document.
      */
-    get: operations["stream_chat_events_sse_chats__chat_id__get"];
+    get: operations["stream_document_events_sse_documents__document_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/sse/messages/{message_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Stream Message Events
+     * @description Stream SSE events for a specific message.
+     */
+    get: operations["stream_message_events_sse_messages__message_id__get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -1410,16 +1350,6 @@ export interface components {
     };
     /** ClusteringChildResponse */
     ClusteringChildResponse: {
-      /**
-       * Clustering Topic Id
-       * @description Clustering Topic ID
-       */
-      clustering_topic_id: string;
-      /**
-       * Target
-       * @description Document ID
-       */
-      target: string;
       /** Id */
       id: string;
       /**
@@ -1436,6 +1366,26 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /**
+       * Clustering Topic Id
+       * @description Clustering Topic ID
+       */
+      clustering_topic_id: string;
+      /**
+       * Target
+       * @description Document ID
+       */
+      target: string;
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** ClusteringChildUpdate */
     ClusteringChildUpdate: {
@@ -1470,6 +1420,22 @@ export interface components {
     };
     /** ClusteringResponse */
     ClusteringResponse: {
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
       /**
        * Collection Id
        * @description Collection ID
@@ -1490,22 +1456,16 @@ export interface components {
        * @description Clustering description
        */
       description?: string | null;
-      /** Id */
-      id: string;
       /**
-       * Created At
-       * Format: date-time
+       * Created By Username
+       * @description Get the username of the creator.
        */
-      created_at: string;
+      readonly created_by_username: string | null;
       /**
-       * Updated At
-       * Format: date-time
+       * Updated By Username
+       * @description Get the username of the updater.
        */
-      updated_at: string;
-      /** Created By */
-      created_by: string | null;
-      /** Updated By */
-      updated_by: string | null;
+      readonly updated_by_username: string | null;
     };
     /**
      * ClusteringResult
@@ -1537,21 +1497,6 @@ export interface components {
     };
     /** ClusteringTopicResponse */
     ClusteringTopicResponse: {
-      /**
-       * Clustering Id
-       * @description Clustering ID
-       */
-      clustering_id: string;
-      /**
-       * Title
-       * @description Topic title
-       */
-      title: string;
-      /**
-       * Description
-       * @description Topic description
-       */
-      description?: string | null;
       /** Id */
       id: string;
       /**
@@ -1568,6 +1513,31 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /**
+       * Clustering Id
+       * @description Clustering ID
+       */
+      clustering_id: string;
+      /**
+       * Title
+       * @description Topic title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Topic description
+       */
+      description?: string | null;
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** ClusteringTopicUpdate */
     ClusteringTopicUpdate: {
@@ -1587,12 +1557,6 @@ export interface components {
      * @description Topic with documents for enhanced clustering response.
      */
     ClusteringTopicWithDocuments: {
-      /** Clustering Id */
-      clustering_id: string;
-      /** Title */
-      title: string;
-      /** Description */
-      description: string | null;
       /** Id */
       id: string;
       /**
@@ -1609,8 +1573,24 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /** Clustering Id */
+      clustering_id: string;
+      /** Title */
+      title: string;
+      /** Description */
+      description: string | null;
       /** Documents */
       documents: components["schemas"]["DocumentResponse"][];
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** ClusteringUpdate */
     ClusteringUpdate: {
@@ -2612,14 +2592,6 @@ export interface components {
      * @description Enhanced clustering response with topics and documents.
      */
     EnhancedClusteringResponse: {
-      /** Collection Id */
-      collection_id: string;
-      /** Search Word */
-      search_word: string | null;
-      /** Title */
-      title: string;
-      /** Description */
-      description: string | null;
       /** Id */
       id: string;
       /**
@@ -2636,8 +2608,26 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /** Collection Id */
+      collection_id: string;
+      /** Search Word */
+      search_word: string | null;
+      /** Title */
+      title: string;
+      /** Description */
+      description: string | null;
       /** Topics */
       topics: components["schemas"]["ClusteringTopicWithDocuments"][];
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -2659,26 +2649,6 @@ export interface components {
       /** Message */
       message: string;
     };
-    /**
-     * QueueStatsResponse
-     * @description Queue statistics response.
-     */
-    QueueStatsResponse: {
-      /** Queue Name */
-      queue_name: string;
-      /** Message Count */
-      message_count: number;
-    };
-    /**
-     * QueueType
-     * @description Predefined queue types.
-     * @enum {string}
-     */
-    QueueType:
-      | "document_processing"
-      | "collection_processing"
-      | "chat_notifications"
-      | "system_events";
     /**
      * Role
      * @enum {string}
@@ -2703,7 +2673,7 @@ export interface components {
     };
     /**
      * TestPublishRequest
-     * @description Request to test publish a message to a document, collection, or chat.
+     * @description Request to test publish a message to a document, collection, or message.
      */
     TestPublishRequest: {
       /** Target Type */
@@ -4259,138 +4229,6 @@ export interface operations {
       };
     };
   };
-  get_queue_stats_queue_stats__queue_type__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["QueueStatsResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  purge_queue_queue_purge__queue_type__post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  debug_queue_info_queue_debug__queue_type__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  peek_queue_message_queue_peek__queue_type__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
   test_publish_queue_test_publish_post: {
     parameters: {
       query?: never;
@@ -4460,14 +4298,11 @@ export interface operations {
       };
     };
   };
-  stream_document_events_sse_documents__document_id__get: {
+  stream_system_events_sse_system_get: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description Document ID to stream events for */
-        document_id: string;
-      };
+      path?: never;
       cookie?: {
         session?: string | null;
       };
@@ -4528,13 +4363,47 @@ export interface operations {
       };
     };
   };
-  stream_chat_events_sse_chats__chat_id__get: {
+  stream_document_events_sse_documents__document_id__get: {
     parameters: {
       query?: never;
       header?: never;
       path: {
-        /** @description Chat ID to stream events for */
-        chat_id: string;
+        /** @description Document ID to stream events for */
+        document_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  stream_message_events_sse_messages__message_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Message ID to stream events for */
+        message_id: string;
       };
       cookie?: {
         session?: string | null;

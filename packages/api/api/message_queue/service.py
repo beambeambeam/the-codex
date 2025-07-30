@@ -12,9 +12,6 @@ logger = logging.getLogger(__name__)
 class QueueType(str, Enum):
     """Predefined queue types."""
 
-    DOCUMENT_PROCESSING = "document_processing"
-    COLLECTION_PROCESSING = "collection_processing"
-    CHAT_NOTIFICATIONS = "chat_notifications"
     SYSTEM_EVENTS = "system_events"
 
 
@@ -35,23 +32,13 @@ class QueueService:
         """Initialize all default queues and exchanges."""
         with self.client:
             # Declare default exchanges
-            self.client.declare_exchange("notifications", "direct")
-            self.client.declare_exchange("processing", "direct")
             self.client.declare_exchange("events", "fanout")
 
             # Declare and bind queues
             for queue_type in QueueType:
                 queue_name = queue_type.value
                 self.client.declare_queue(queue_name, durable=True)
-
-                # Bind to appropriate exchange
-                if "notification" in queue_name:
-                    self.client.bind_queue(queue_name, "notifications", queue_name)
-                elif "processing" in queue_name:
-                    self.client.bind_queue(queue_name, "processing", queue_name)
-                else:
-                    self.client.bind_queue(queue_name, "events", "")
-
+                self.client.bind_queue(queue_name, "events", "")
                 self._initialized_queues.add(queue_name)
 
             logger.info("Default queues initialized")
@@ -109,6 +96,20 @@ class QueueService:
             logger.error(f"Error getting message from queue {queue_name}: {e}")
             return None
 
+    def get_queue_message_from_channel(self, channel: str) -> Optional[dict[str, Any]]:
+        """Get a single message from a specific channel (for entity-specific queues)."""
+        try:
+            with self.client:
+                message = self.client.get_message(channel)
+                if message:
+                    logger.info(f"Retrieved message from channel {channel}: {message}")
+                else:
+                    logger.debug(f"No messages in channel {channel}")
+                return message
+        except Exception as e:
+            logger.error(f"Error getting message from channel {channel}: {e}")
+            return None
+
     def purge_queue(self, queue_type: QueueType) -> int:
         """Purge all messages from a queue."""
         queue_name = queue_type.value
@@ -153,16 +154,16 @@ class QueueService:
         with self.client:
             self.client.publish_to_queue(channel, message)
 
-    def publish_chat_event(
-        self, chat_id: str, event_type: str, data: dict[str, Any]
+    def publish_message_event(
+        self, message_id: str, event_type: str, data: dict[str, Any]
     ) -> None:
-        """Publish an SSE event for a specific chat."""
+        """Publish an SSE event for a specific message."""
         message = {
             "event_type": event_type,
-            "chat_id": chat_id,
+            "message_id": message_id,
             "data": data,
         }
-        channel = f"chat_{chat_id}"
+        channel = f"message_{message_id}"
         with self.client:
             self.client.publish_to_queue(channel, message)
 
