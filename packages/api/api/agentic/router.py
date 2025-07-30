@@ -127,6 +127,50 @@ async def upload_and_ingest_documents(
 
 
 @router.post(
+    "/graph_extract/{document_id}",
+    response_model=DocumentResponse,
+    tags=["agentic"],
+    status_code=status.HTTP_200_OK,
+)
+async def graph_extract(
+    document_id: str,
+    document_service: DocumentService = Depends(get_document_service),
+    document_ingestor: DocumentIngestorService = Depends(get_document_ingestor),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Extracts a knowledge graph from the documents in a collection.
+    """
+    document = document_service.get_document(document_id)
+    if not document:
+        raise HTTPException(
+            status_code=404, detail=f"Document with ID {document_id} not found"
+        )
+
+    # Extract knowledge graph from the document
+    full_text = document.document or ""
+    if not full_text:
+        raise HTTPException(
+            status_code=400, detail="Document content is empty or not available"
+        )
+
+    document = await document_ingestor.extract_and_store_knowledge_graph(
+        full_text=full_text,
+        title=document.title,
+        description=document.description,
+        document_id=document.id,
+        user=current_user,
+    )
+
+    if not document:
+        raise HTTPException(
+            status_code=404, detail=f"Document with ID {document_id} not found"
+        )
+
+    return document
+
+
+@router.post(
     "/cluster_topic",
     response_model=ClusteringResponse,
     tags=["agentic"],

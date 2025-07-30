@@ -146,25 +146,20 @@ class DocumentIngestor:
         )
         return embedded_chunks
 
-    async def extract_knowledge_graph(self, file_input: FileInput) -> ExtractedGraph:
+    async def extract_knowledge_graph(self, full_text: str) -> ExtractedGraph:
         """Extract knowledge graph from file content."""
-        full_text = file_input.full_text
         if not full_text:
-            print(
-                f"No text content for knowledge graph extraction from {file_input.name}"
-            )
+            print(f"No text content for knowledge graph extraction")
             return None
 
         kg = await self.kg_extractor.extract(full_text=full_text)
         if kg and (kg.nodes or kg.edges):
             node_count = len(kg.nodes)
             edge_count = len(kg.edges)
-            print(
-                f"Knowledge graph extracted from {file_input.name}: {node_count} nodes, {edge_count} edges"
-            )
+            print(f"Knowledge graph extracted: {node_count} nodes, {edge_count} edges")
             return kg
 
-        print(f"No knowledge graph extracted from {file_input.name}")
+        print(f"No knowledge graph extracted")
         return None
 
     async def get_document_summary(
@@ -204,44 +199,47 @@ class DocumentIngestorService(DocumentIngestor):
 
     async def extract_and_store_knowledge_graph(
         self,
-        file_input: FileInput,
+        full_text: str,
+        title: str,
+        description: str,
         document_id: str,
         user: User,
     ) -> Document:
         """Extract and store knowledge graph from file input into the document system."""
         # Extract knowledge graph from file input
-        kg = await self.extract_knowledge_graph(file_input)
+        kg = await self.extract_knowledge_graph(full_text)
         if not kg:
-            print(f"No knowledge graph extracted from {file_input.name}")
+            print(f"No knowledge graph extracted from {title}")
             return None
 
         # Store the knowledge graph in the document system
         document = await self.store_knowledge_graph(
-            file_input=file_input,
+            title=title,
+            description=description,
             kg=kg,
             document_id=document_id,
             user=user,
         )
 
         if not document:
-            print(f"Failed to store knowledge graph for {file_input.name}")
+            print(f"Failed to store knowledge graph for {title}")
 
         return document
 
     async def store_knowledge_graph(
         self,
-        file_input: FileInput,
+        title: str,
+        description: str,
         kg: ExtractedGraph,
         document_id: str,
         user: User,
     ) -> Document:
         """Store the knowledge graph extracted from a file into the document system."""
-
         # update_document_with_graph(db_session, document.id, kg)
         relation = self.document_service.create_document_relation(
             relation_data=DocumentRelationCreate(
-                title=file_input.name,
-                description="Knowledge graph extracted from file",
+                title=title,
+                description=description,
                 document_id=document_id,
             ),
             user=user,
@@ -320,6 +318,7 @@ class DocumentIngestorService(DocumentIngestor):
                 document_id=document.id,
                 update_data=DocumentUpdate(
                     title=document_summary.title,
+                    document=full_text,
                     description=document_summary.description,
                 ),
                 user=user,
@@ -349,7 +348,9 @@ class DocumentIngestorService(DocumentIngestor):
             # Extract knowledge graph if not already done (Optional)
             if not document.is_graph_extracted and graph_extract:
                 document = await self.extract_and_store_knowledge_graph(
-                    file_input=input_file,
+                    full_text=input_file.full_text,
+                    title=input_file.name,
+                    description=input_file.full_text[:200],
                     document_id=document.id,
                     user=user,
                 )
