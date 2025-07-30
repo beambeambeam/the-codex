@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ..models.enum import CollectionChatReferenceType, Role
+from ..models.enum import ChatStatus, CollectionChatReferenceType, Role
 
 
 class CollectionChatBase(BaseModel):
@@ -19,6 +19,7 @@ class CollectionChatCreate(CollectionChatBase):
 class CollectionChatUpdate(BaseModel):
     title: Optional[str] = Field(None, description="Chat title")
     description: Optional[str] = Field(None, description="Chat description")
+    status: Optional[ChatStatus] = Field(None, description="Chat status")
 
 
 class CollectionChatResponse(CollectionChatBase):
@@ -27,6 +28,7 @@ class CollectionChatResponse(CollectionChatBase):
     created_at: datetime
     updated_by: Optional[str]
     updated_at: datetime
+    status: ChatStatus
 
     class Config:
         from_attributes = True

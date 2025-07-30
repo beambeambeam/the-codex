@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 import { ChatProvider } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
 import ChatForm, {
@@ -9,12 +11,43 @@ import ChatForm, {
 import ChatList from "@/app/(protected)/collection/[id]/chat/_components/chat-list";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/header";
-import { components } from "@/lib/api/path";
+import { $api } from "@/lib/api/client";
+
+interface ChatMessage {
+  collection_chat_id: string;
+  content: string;
+  created_at: string;
+  created_by: string;
+  id: string;
+  role: "user" | "assistant" | "system";
+}
 
 function ChatContent() {
-  const [msg, setMsg] = useState<
-    components["schemas"]["CollectionChatHistoryResponse"][]
-  >([]);
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [msg, setMsg] = useState<ChatMessage[]>([]);
+
+  const { mutate: createChatWithRag, isPending: isCreating } = $api.useMutation(
+    "post",
+    "/chats/with_rag",
+    {
+      onSuccess: (data) => {
+        toast.success(
+          "Collection chat created successfully! RAG processing started in background.",
+        );
+        router.push(`/collection/${data.collection_id}/chat/${data.id}`);
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(
+          message || "Failed to create collection chat. Please try again.",
+        );
+      },
+    },
+  );
 
   const handleSubmit = (values: ChatFormSchemaType) => {
     setMsg([
@@ -27,6 +60,15 @@ function ChatContent() {
         role: "user",
       },
     ]);
+    createChatWithRag({
+      body: {
+        collection_id: params.id,
+        title:
+          values.chat_message.substring(0, 50) +
+          (values.chat_message.length > 50 ? "..." : ""),
+        description: values.chat_message,
+      },
+    });
   };
 
   return (
@@ -38,7 +80,11 @@ function ChatContent() {
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
           <div className="p-4">
-            <ChatForm onSubmit={handleSubmit} suggest={true} />
+            <ChatForm
+              onSubmit={handleSubmit}
+              suggest={true}
+              disabled={isCreating}
+            />
           </div>
         </div>
       </div>

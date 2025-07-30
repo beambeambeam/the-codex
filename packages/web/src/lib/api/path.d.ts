@@ -909,6 +909,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/chats/with_rag": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Create Chat With Rag
+     * @description Create a new chat and trigger RAG processing in the background.
+     */
+    post: operations["create_chat_with_rag_chats_with_rag_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/chats/search": {
     parameters: {
       query?: never;
@@ -943,62 +963,6 @@ export interface paths {
     post?: never;
     /** Delete Chat */
     delete: operations["delete_chat_chats__chat_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/{chat_id}/histories": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List Histories */
-    get: operations["list_histories_chats__chat_id__histories_get"];
-    put?: never;
-    /** Create History */
-    post: operations["create_history_chats__chat_id__histories_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/{chat_id}/histories/{history_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get History */
-    get: operations["get_history_chats__chat_id__histories__history_id__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/{chat_id}/clear": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /**
-     * Clear Chat History
-     * @description Clear all chat history for the specified chat ID.
-     *     This endpoint removes all messages associated with the chat.
-     */
-    put: operations["clear_chat_history_chats__chat_id__clear_put"];
-    post?: never;
-    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -1187,6 +1151,18 @@ export interface components {
        */
       retrieved_contexts?: components["schemas"]["ChunkSearchResponse"][];
     };
+    /**
+     * ChatStatus
+     * @enum {string}
+     */
+    ChatStatus:
+      | "NEW_SESSION"
+      | "AWAITING_USER_INPUT"
+      | "PROCESSING_INPUT"
+      | "RESPONDING"
+      | "RESPONSE_COMPLETE"
+      | "ERROR_STATE"
+      | "SESSION_ENDED";
     /**
      * ChunkCreate
      * @description Schema for creating a chunk.
@@ -1628,45 +1604,6 @@ export interface components {
        */
       description?: string | null;
     };
-    /** CollectionChatHistoryCreate */
-    CollectionChatHistoryCreate: {
-      /**
-       * Collection Chat Id
-       * @description Collection Chat ID
-       */
-      collection_chat_id: string;
-      /** @description Role of the message sender (user/assistant/system) */
-      role: components["schemas"]["Role"];
-      /**
-       * Content
-       * @description Content of the chat message
-       */
-      content: string;
-    };
-    /** CollectionChatHistoryResponse */
-    CollectionChatHistoryResponse: {
-      /**
-       * Collection Chat Id
-       * @description Collection Chat ID
-       */
-      collection_chat_id: string;
-      /** @description Role of the message sender (user/assistant/system) */
-      role: components["schemas"]["Role"];
-      /**
-       * Content
-       * @description Content of the chat message
-       */
-      content: string;
-      /** Id */
-      id: string;
-      /** Created By */
-      created_by: string | null;
-      /**
-       * Created At
-       * Format: date-time
-       */
-      created_at: string;
-    };
     /** CollectionChatResponse */
     CollectionChatResponse: {
       /**
@@ -1700,6 +1637,7 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
+      status: components["schemas"]["ChatStatus"];
     };
     /** CollectionChatUpdate */
     CollectionChatUpdate: {
@@ -1713,6 +1651,8 @@ export interface components {
        * @description Chat description
        */
       description?: string | null;
+      /** @description Chat status */
+      status?: components["schemas"]["ChatStatus"] | null;
     };
     /**
      * CollectionCreate
@@ -4497,6 +4437,41 @@ export interface operations {
       };
     };
   };
+  create_chat_with_rag_chats_with_rag_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CollectionChatCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CollectionChatResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   search_chats_by_title_chats_search_get: {
     parameters: {
       query: {
@@ -4599,135 +4574,6 @@ export interface operations {
     };
   };
   delete_chat_chats__chat_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  list_histories_chats__chat_id__histories_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatHistoryResponse"][];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  create_history_chats__chat_id__histories_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CollectionChatHistoryCreate"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatHistoryResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_history_chats__chat_id__histories__history_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-        history_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatHistoryResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  clear_chat_history_chats__chat_id__clear_put: {
     parameters: {
       query?: never;
       header?: never;

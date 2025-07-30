@@ -4,6 +4,7 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from ..models.chat import CollectionChat, CollectionChatHistory, CollectionChatReference
+from ..models.enum import ChatStatus
 from ..models.user import User
 from .schemas import (
     CollectionChatCreate,
@@ -30,6 +31,7 @@ class ChatService:
             description=chat_data.description,
             created_by=user.id,
             updated_by=user.id,
+            status=ChatStatus.new_session,
         )
         self.db.add(chat)
         self.db.commit()
@@ -71,6 +73,8 @@ class ChatService:
             chat.title = update_data.title
         if update_data.description is not None:
             chat.description = update_data.description
+        if update_data.status is not None:
+            chat.status = update_data.status
         chat.updated_by = user.id
         self.db.commit()
         self.db.refresh(chat)
