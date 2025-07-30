@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { CheckIcon, ChevronsUpDownIcon, ClockFadingIcon } from "lucide-react";
 
 import { useChatContext } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
@@ -29,6 +30,8 @@ interface ChatHeaderProps {
 }
 
 function ChatHeader(props: ChatHeaderProps) {
+  const router = useRouter();
+
   const [open, setOpen] = useState(false);
 
   const { chats, isLoading } = useChatContext();
@@ -80,7 +83,11 @@ function ChatHeader(props: ChatHeaderProps) {
                     <CommandItem
                       key={c.id}
                       value={c.id}
-                      onSelect={() => setOpen(false)}
+                      onSelect={() => {
+                        router.push(
+                          `/collection/${c.collection_id}/chat/${c.id}`,
+                        );
+                      }}
                     >
                       <CheckIcon
                         className={cn(
