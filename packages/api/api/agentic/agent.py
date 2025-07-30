@@ -131,7 +131,7 @@ class rag_agent(agentic_base):
             >> generate_ans_based_on_context_node
             >> save_chat_node
         )
-        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node >> save_chat_node
         (
             get_intent_node - INTENT.SUMMARIZATION
             >> embed_q_node
@@ -167,7 +167,7 @@ class rag_agent(agentic_base):
             >> generate_ans_based_on_context_node
             >> save_chat_node
         )
-        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node >> save_chat_node
         (
             get_intent_node - INTENT.SUMMARIZATION
             >> embed_q_node
