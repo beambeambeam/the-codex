@@ -11,6 +11,7 @@ export const fetchServer = createFetchClient<paths>({
         cookie: (await cookies()).toString(),
       },
       cache: "no-store",
+      credentials: "include",
     });
   },
 });
