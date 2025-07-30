@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
+import ChatList from "@/app/(protected)/collection/[id]/chat/_components/chat-list";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/header";
 import ChatIdPageSkeleton from "@/app/(protected)/collection/[id]/chat/[chatId]/skeleton";
@@ -49,27 +50,21 @@ function ChatIdPage() {
     );
   }
 
+  const handleSubmit = (values: ChatFormSchemaType) => {
+    console.log(values);
+  };
+
   return (
-    <>
+    <div className="grid h-full grid-cols-[3fr_1fr]">
       <div className="h-full w-full">
-        <ChatHeader title={""} />
+        <ChatHeader title="Start a new Conversation" />
         <ChatTemplate message={[]} />
+        <div>
+          <ChatForm onSubmit={handleSubmit} suggest={true} />
+        </div>
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10">
-        <ChatForm
-          onSubmit={function (
-            values: ChatFormSchemaType,
-          ): void | Promise<void> {
-            throw new Error("Function not implemented.");
-          }}
-          defaultValues={{
-            chat_message: "",
-            reference: [],
-          }}
-          suggest={false}
-        />
-      </div>
-    </>
+      <ChatList />
+    </div>
   );
 }
 export default ChatIdPage;

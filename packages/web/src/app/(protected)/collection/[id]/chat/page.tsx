@@ -1,54 +1,29 @@
 "use client";
 
-import {
-  ChatProvider,
-  useChatContext,
-} from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
+import { ChatProvider } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
+import ChatList from "@/app/(protected)/collection/[id]/chat/_components/chat-list";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/header";
 
 function ChatContent() {
-  const { isLoading, isError } = useChatContext();
-
-  if (isLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        Loading chats...
-      </div>
-    );
-  }
-  if (isError) {
-    return (
-      <div className="flex h-full w-full items-center justify-center text-red-500">
-        Failed to load chats.
-      </div>
-    );
-  }
+  const handleSubmit = (values: ChatFormSchemaType) => {
+    console.log(values);
+  };
 
   return (
-    <>
+    <div className="grid h-full grid-cols-[3fr_1fr]">
       <div className="h-full w-full">
         <ChatHeader title="Start a new Conversation" />
         <ChatTemplate message={[]} />
+        <div>
+          <ChatForm onSubmit={handleSubmit} suggest={true} />
+        </div>
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10 lg:mx-20">
-        <ChatForm
-          onSubmit={function (
-            values: ChatFormSchemaType,
-          ): void | Promise<void> {
-            console.log(values);
-          }}
-          defaultValues={{
-            chat_message: "",
-            reference: [],
-          }}
-          suggest={true}
-        />
-      </div>
-    </>
+      <ChatList />
+    </div>
   );
 }
 
