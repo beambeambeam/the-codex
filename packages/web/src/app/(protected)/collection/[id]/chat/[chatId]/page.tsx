@@ -59,9 +59,7 @@ function ChatIdPage() {
       <div className="h-full w-full">
         <ChatHeader title="Start a new Conversation" />
         <ChatTemplate message={[]} />
-        <div>
-          <ChatForm onSubmit={handleSubmit} suggest={true} />
-        </div>
+        <ChatForm onSubmit={handleSubmit} suggest={true} />
       </div>
       <ChatList />
     </div>
