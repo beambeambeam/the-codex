@@ -62,11 +62,11 @@ function ChatIdPage() {
           by={data.created_by ?? undefined}
           date={new Date(data.updated_at)}
         />
-        <div className="w-full">
+        <div className="w-full px-8">
           <ChatTemplate message={data.histories ?? []} />
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
-          <div className="p-4">
+          <div className="p-4 px-12">
             <ChatForm onSubmit={handleSubmit} suggest={true} />
           </div>
         </div>

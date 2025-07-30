@@ -78,11 +78,11 @@ function ChatContent() {
     <div className="grid h-full grid-cols-[3fr_1fr]">
       <div className="relative h-full w-full">
         <ChatHeader title="Start a new Conversation" />
-        <div className="w-full">
+        <div className="w-full px-8">
           <ChatTemplate message={msg} />
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
-          <div className="p-4">
+          <div className="p-4 px-12">
             <ChatForm
               onSubmit={handleSubmit}
               suggest={true}
