@@ -57,7 +57,11 @@ function ChatIdPage() {
   return (
     <div className="grid h-full grid-cols-[3fr_1fr]">
       <div className="relative h-full w-full">
-        <ChatHeader title="Start a new Conversation" />
+        <ChatHeader
+          title={data.title}
+          by={data.created_by ?? undefined}
+          date={new Date(data.updated_at)}
+        />
         <div className="h-full w-full">
           <ChatTemplate message={[]} />
         </div>

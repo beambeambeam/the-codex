@@ -1,5 +1,7 @@
 import { useChatContext } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
+import { Pill, PillAvatar } from "@/components/ui/pill";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getFallbackUsername } from "@/lib/utils";
 
 function ChatList() {
   const { chats, isError, isLoading } = useChatContext();
@@ -37,12 +39,15 @@ function ChatList() {
           {chats.map((chat) => (
             <li
               key={chat.id}
-              className="hover:bg-accent cursor-pointer rounded-md px-3 py-2 transition-colors"
+              className="hover:bg-accent flex cursor-pointer flex-col gap-1 rounded-md border px-3 py-2 transition-colors"
             >
               <div className="font-medium">{chat.title || "Untitled Chat"}</div>
-              <div className="text-muted-foreground truncate text-xs">
-                {chat.title || "No messages yet."}
-              </div>
+              {chat.created_by && (
+                <Pill>
+                  <PillAvatar fallback={getFallbackUsername(chat.created_by)} />
+                  {chat.created_by}
+                </Pill>
+              )}
             </li>
           ))}
         </ul>
