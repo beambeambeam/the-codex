@@ -32,9 +32,6 @@ function ChatContent() {
     "/chats/",
     {
       onSuccess: (data) => {
-        toast.success(
-          "Collection chat created successfully! RAG processing started in background.",
-        );
         router.push(`/collection/${data.collection_id}/chat/${data.id}`);
       },
       onError: (error: unknown) => {

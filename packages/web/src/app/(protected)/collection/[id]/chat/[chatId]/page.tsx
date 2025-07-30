@@ -54,8 +54,6 @@ function ChatIdPage() {
     console.log(values);
   };
 
-  console.log(data);
-
   return (
     <div className="grid h-full grid-cols-[3fr_1fr]">
       <div className="relative h-full w-full">
