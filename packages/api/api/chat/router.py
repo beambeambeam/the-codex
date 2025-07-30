@@ -5,12 +5,14 @@ from ..auth.dependencies import get_current_user
 from ..models.user import User
 from .dependencies import (
     get_chat_or_404,
+    get_chat_with_history_or_404,
     get_chat_service,
 )
 from .schemas import (
     CollectionChatCreate,
     CollectionChatResponse,
     CollectionChatUpdate,
+    CollectionChatWithHistoryResponse,
 )
 from .service import ChatService
 from ..agentic.agent import rag_agent
@@ -105,8 +107,8 @@ def search_chats_by_title(
     return chat_service.search_chats_by_title(collection_id, query)
 
 
-@router.get("/{chat_id}", response_model=CollectionChatResponse)
-def get_chat(chat=Depends(get_chat_or_404)):
+@router.get("/{chat_id}", response_model=CollectionChatWithHistoryResponse)
+def get_chat(chat=Depends(get_chat_with_history_or_404)):
     return chat
 
 

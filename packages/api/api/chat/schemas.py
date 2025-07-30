@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 
 from pydantic import BaseModel, Field
 
@@ -29,6 +29,21 @@ class CollectionChatResponse(CollectionChatBase):
     updated_by: Optional[str]
     updated_at: datetime
     status: ChatStatus
+
+    class Config:
+        from_attributes = True
+
+
+class CollectionChatWithHistoryResponse(CollectionChatBase):
+    id: str
+    created_by: Optional[str]
+    created_at: datetime
+    updated_by: Optional[str]
+    updated_at: datetime
+    status: ChatStatus
+    histories: List["CollectionChatHistoryResponse"] = Field(
+        default_factory=list, description="Chat history messages"
+    )
 
     class Config:
         from_attributes = True
@@ -90,3 +105,7 @@ class CollectionChatReferenceResponse(CollectionChatReferenceBase):
 
     class Config:
         from_attributes = True
+
+
+# Update forward references
+CollectionChatWithHistoryResponse.model_rebuild()

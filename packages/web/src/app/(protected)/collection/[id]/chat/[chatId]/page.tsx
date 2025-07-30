@@ -54,6 +54,8 @@ function ChatIdPage() {
     console.log(values);
   };
 
+  console.log(data);
+
   return (
     <div className="grid h-full grid-cols-[3fr_1fr]">
       <div className="relative h-full w-full">
@@ -63,7 +65,7 @@ function ChatIdPage() {
           date={new Date(data.updated_at)}
         />
         <div className="h-full w-full">
-          <ChatTemplate message={[]} />
+          <ChatTemplate message={data.histories ?? []} />
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
           <div className="p-4">

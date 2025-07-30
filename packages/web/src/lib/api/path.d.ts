@@ -1604,6 +1604,30 @@ export interface components {
        */
       description?: string | null;
     };
+    /** CollectionChatHistoryResponse */
+    CollectionChatHistoryResponse: {
+      /**
+       * Collection Chat Id
+       * @description Collection Chat ID
+       */
+      collection_chat_id: string;
+      /** @description Role of the message sender (user/assistant/system) */
+      role: components["schemas"]["Role"];
+      /**
+       * Content
+       * @description Content of the chat message
+       */
+      content: string;
+      /** Id */
+      id: string;
+      /** Created By */
+      created_by: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
     /** CollectionChatResponse */
     CollectionChatResponse: {
       /**
@@ -1653,6 +1677,46 @@ export interface components {
       description?: string | null;
       /** @description Chat status */
       status?: components["schemas"]["ChatStatus"] | null;
+    };
+    /** CollectionChatWithHistoryResponse */
+    CollectionChatWithHistoryResponse: {
+      /**
+       * Collection Id
+       * @description Collection ID
+       */
+      collection_id: string;
+      /**
+       * Title
+       * @description Chat title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Chat description
+       */
+      description?: string | null;
+      /** Id */
+      id: string;
+      /** Created By */
+      created_by: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Updated By */
+      updated_by: string | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      status: components["schemas"]["ChatStatus"];
+      /**
+       * Histories
+       * @description Chat history messages
+       */
+      histories?: components["schemas"]["CollectionChatHistoryResponse"][];
     };
     /**
      * CollectionCreate
@@ -4522,7 +4586,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["CollectionChatResponse"];
+          "application/json": components["schemas"]["CollectionChatWithHistoryResponse"];
         };
       };
       /** @description Validation Error */

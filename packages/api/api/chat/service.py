@@ -43,6 +43,12 @@ class ChatService:
             self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
         )
 
+    def get_chat_with_history(self, chat_id: str) -> Optional[CollectionChat]:
+        """Get a chat with its history included."""
+        return (
+            self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
+        )
+
     def list_chats(self, collection_id: str) -> list[CollectionChat]:
         return (
             self.db.query(CollectionChat)
