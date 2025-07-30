@@ -8,8 +8,6 @@ from .dependencies import (
 )
 from .schemas import (
     CollectionChatCreate,
-    CollectionChatHistoryCreate,
-    CollectionChatHistoryResponse,
     CollectionChatResponse,
     CollectionChatUpdate,
 )
@@ -80,58 +78,3 @@ def delete_chat(
     chat_service: ChatService = Depends(get_chat_service),
 ):
     chat_service.delete_chat(chat_id)
-
-
-# CollectionChatHistory endpoints
-@router.post(
-    "/{chat_id}/histories",
-    response_model=CollectionChatHistoryResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-def create_history(
-    chat_id: str,
-    history_data: CollectionChatHistoryCreate,
-    current_user: User = Depends(get_current_user),
-    chat_service: ChatService = Depends(get_chat_service),
-):
-    # Ensure the chat_id in the data matches the URL parameter
-    history_data.collection_chat_id = chat_id
-    return chat_service.create_history(history_data, current_user)
-
-
-@router.get("/{chat_id}/histories", response_model=list[CollectionChatHistoryResponse])
-def list_histories(
-    chat_id: str,
-    chat_service: ChatService = Depends(get_chat_service),
-):
-    return chat_service.list_histories(chat_id)
-
-
-@router.get(
-    "/{chat_id}/histories/{history_id}", response_model=CollectionChatHistoryResponse
-)
-def get_history(
-    chat_id: str,
-    history_id: str,
-    chat_service: ChatService = Depends(get_chat_service),
-):
-    history = chat_service.get_history(history_id)
-    if not history or history.collection_chat_id != chat_id:
-        from fastapi import HTTPException, status
-
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Chat history not found"
-        )
-    return history
-
-
-@router.put("/{chat_id}/clear", status_code=status.HTTP_204_NO_CONTENT)
-def clear_chat_history(
-    chat_id: str,
-    chat_service: ChatService = Depends(get_chat_service),
-):
-    """
-    Clear all chat history for the specified chat ID.
-    This endpoint removes all messages associated with the chat.
-    """
-    chat_service.clear_history(chat_id)
