@@ -17,3 +17,13 @@ class IngestionStatus(enum.Enum):
 class CollectionChatReferenceType(str, enum.Enum):
     chunk = "chunk"
     graph = "graph"
+
+
+class ChatStatus(enum.Enum):
+    new_session = "NEW_SESSION"
+    awaiting_user_input = "AWAITING_USER_INPUT"
+    processing_input = "PROCESSING_INPUT"
+    responding = "RESPONDING"
+    response_complete = "RESPONSE_COMPLETE"
+    error_state = "ERROR_STATE"
+    session_ended = "SESSION_ENDED"

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
-from .enum import CollectionChatReferenceType, Role
+from .enum import ChatStatus, CollectionChatReferenceType, Role
 
 
 class CollectionChat(Base):
@@ -32,6 +32,9 @@ class CollectionChat(Base):
         nullable=False,
         server_default=func.current_timestamp(),
         onupdate=func.current_timestamp(),
+    )
+    status: Mapped[ChatStatus] = mapped_column(
+        Enum(ChatStatus, native_enum=False), nullable=False
     )
 
     histories = relationship(
