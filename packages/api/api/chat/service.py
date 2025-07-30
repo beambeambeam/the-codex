@@ -44,23 +44,58 @@ class ChatService:
         )
 
     def get_chat_with_history(self, chat_id: str) -> Optional[CollectionChat]:
-        """Get a chat with its history included."""
-        return (
+        """Get a chat with its history included and usernames instead of UUIDs."""
+        chat = (
             self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
         )
 
+        if chat:
+            # Replace UUIDs with usernames for the chat
+            if chat.created_by:
+                creator = self.db.query(User).filter(User.id == chat.created_by).first()
+                chat.created_by = creator.username if creator else None
+
+            if chat.updated_by:
+                updater = self.db.query(User).filter(User.id == chat.updated_by).first()
+                chat.updated_by = updater.username if updater else None
+
+            # Replace UUIDs with usernames for chat history
+            for history in chat.histories:
+                if history.created_by:
+                    creator = (
+                        self.db.query(User)
+                        .filter(User.id == history.created_by)
+                        .first()
+                    )
+                    history.created_by = creator.username if creator else None
+
+        return chat
+
     def list_chats(self, collection_id: str) -> list[CollectionChat]:
-        return (
+        """List chats with usernames instead of UUIDs for created_by and updated_by."""
+        chats = (
             self.db.query(CollectionChat)
             .filter(CollectionChat.collection_id == collection_id)
             .all()
         )
 
+        # Replace UUIDs with usernames
+        for chat in chats:
+            if chat.created_by:
+                creator = self.db.query(User).filter(User.id == chat.created_by).first()
+                chat.created_by = creator.username if creator else None
+
+            if chat.updated_by:
+                updater = self.db.query(User).filter(User.id == chat.updated_by).first()
+                chat.updated_by = updater.username if updater else None
+
+        return chats
+
     def search_chats_by_title(
         self, collection_id: str, query: str
     ) -> list[CollectionChat]:
-        """Search for chats in a collection by title."""
-        return (
+        """Search for chats in a collection by title with usernames instead of UUIDs."""
+        chats = (
             self.db.query(CollectionChat)
             .filter(
                 CollectionChat.collection_id == collection_id,
@@ -68,6 +103,18 @@ class ChatService:
             )
             .all()
         )
+
+        # Replace UUIDs with usernames
+        for chat in chats:
+            if chat.created_by:
+                creator = self.db.query(User).filter(User.id == chat.created_by).first()
+                chat.created_by = creator.username if creator else None
+
+            if chat.updated_by:
+                updater = self.db.query(User).filter(User.id == chat.updated_by).first()
+                chat.updated_by = updater.username if updater else None
+
+        return chats
 
     def update_chat(
         self, chat_id: str, update_data: CollectionChatUpdate, user: User
@@ -116,11 +163,22 @@ class ChatService:
         )
 
     def list_histories(self, chat_id: str) -> list[CollectionChatHistory]:
-        return (
+        """List chat histories with usernames instead of UUIDs for created_by."""
+        histories = (
             self.db.query(CollectionChatHistory)
             .filter(CollectionChatHistory.collection_chat_id == chat_id)
             .all()
         )
+
+        # Replace UUIDs with usernames
+        for history in histories:
+            if history.created_by:
+                creator = (
+                    self.db.query(User).filter(User.id == history.created_by).first()
+                )
+                history.created_by = creator.username if creator else None
+
+        return histories
 
     def update_history(
         self, history_id: str, update_data: CollectionChatHistoryUpdate

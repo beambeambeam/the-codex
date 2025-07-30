@@ -26,9 +26,13 @@ class CollectionChatUpdate(BaseModel):
 
 class CollectionChatResponse(CollectionChatBase):
     id: str
-    created_by: Optional[str]
+    created_by: Optional[str] = Field(
+        None, description="Username of the user who created the chat"
+    )
     created_at: datetime
-    updated_by: Optional[str]
+    updated_by: Optional[str] = Field(
+        None, description="Username of the user who last updated the chat"
+    )
     updated_at: datetime
     status: ChatStatus
 
@@ -38,9 +42,13 @@ class CollectionChatResponse(CollectionChatBase):
 
 class CollectionChatWithHistoryResponse(CollectionChatBase):
     id: str
-    created_by: Optional[str]
+    created_by: Optional[str] = Field(
+        None, description="Username of the user who created the chat"
+    )
     created_at: datetime
-    updated_by: Optional[str]
+    updated_by: Optional[str] = Field(
+        None, description="Username of the user who last updated the chat"
+    )
     updated_at: datetime
     status: ChatStatus
     histories: list["CollectionChatHistoryResponse"] = Field(
@@ -72,7 +80,9 @@ class CollectionChatHistoryUpdate(BaseModel):
 
 class CollectionChatHistoryResponse(CollectionChatHistoryBase):
     id: str
-    created_by: Optional[str]
+    created_by: Optional[str] = Field(
+        None, description="Username of the user who created the message"
+    )
     created_at: datetime
 
     class Config:

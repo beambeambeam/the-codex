@@ -1607,8 +1607,11 @@ export interface components {
       content: string;
       /** Id */
       id: string;
-      /** Created By */
-      created_by: string | null;
+      /**
+       * Created By
+       * @description Username of the user who created the message
+       */
+      created_by?: string | null;
       /**
        * Created At
        * Format: date-time
@@ -1634,15 +1637,21 @@ export interface components {
       description?: string | null;
       /** Id */
       id: string;
-      /** Created By */
-      created_by: string | null;
+      /**
+       * Created By
+       * @description Username of the user who created the chat
+       */
+      created_by?: string | null;
       /**
        * Created At
        * Format: date-time
        */
       created_at: string;
-      /** Updated By */
-      updated_by: string | null;
+      /**
+       * Updated By
+       * @description Username of the user who last updated the chat
+       */
+      updated_by?: string | null;
       /**
        * Updated At
        * Format: date-time
@@ -1684,15 +1693,21 @@ export interface components {
       description?: string | null;
       /** Id */
       id: string;
-      /** Created By */
-      created_by: string | null;
+      /**
+       * Created By
+       * @description Username of the user who created the chat
+       */
+      created_by?: string | null;
       /**
        * Created At
        * Format: date-time
        */
       created_at: string;
-      /** Updated By */
-      updated_by: string | null;
+      /**
+       * Updated By
+       * @description Username of the user who last updated the chat
+       */
+      updated_by?: string | null;
       /**
        * Updated At
        * Format: date-time
