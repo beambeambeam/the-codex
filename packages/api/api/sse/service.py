@@ -26,13 +26,8 @@ class SSEService:
     ) -> AsyncGenerator[dict[str, Any], None]:
         """Stream events to a client via SSE."""
         if channels is None:
-            # Default to all available queue types
-            channels = [
-                "chat_notifications",
-                "system_events",
-                "document_processing",
-                "collection_processing",
-            ]
+            # Default to system events only
+            channels = ["system_events"]
 
         # Create a queue for this connection
         connection_id = f"{user_id}_{int(time.time())}"
@@ -98,14 +93,17 @@ class SSEService:
                     try:
                         # Map channel names to queue types
                         queue_type = None
-                        if channel == "chat_notifications":
-                            queue_type = QueueType.CHAT_NOTIFICATIONS
-                        elif channel == "system_events":
+                        if channel == "system_events":
                             queue_type = QueueType.SYSTEM_EVENTS
-                        elif channel == "document_processing":
-                            queue_type = QueueType.DOCUMENT_PROCESSING
-                        elif channel == "collection_processing":
-                            queue_type = QueueType.COLLECTION_PROCESSING
+                        elif channel.startswith("document_"):
+                            # Handle document-specific channels
+                            queue_type = None  # These are handled differently
+                        elif channel.startswith("collection_"):
+                            # Handle collection-specific channels
+                            queue_type = None  # These are handled differently
+                        elif channel.startswith("message_"):
+                            # Handle message-specific channels
+                            queue_type = None  # These are handled differently
                         else:
                             # Try to match any valid queue type
                             try:
@@ -114,26 +112,56 @@ class SSEService:
                                 # Skip unknown channels
                                 continue
 
-                        # Get a message from the queue
-                        message = queue_service.get_queue_message(queue_type)
+                        # Handle different channel types
+                        if queue_type:
+                            # Get a message from the queue
+                            message = queue_service.get_queue_message(queue_type)
 
-                        if message:
-                            logger.info(f"SSE: Got message from {channel}: {message}")
-                            event_data = {
-                                "event": channel,
-                                "data": message,
-                                "id": str(int(time.time())),
-                            }
-
-                            try:
-                                connection_queue.put_nowait(event_data)
-                                logger.info(f"SSE: Queued event for {channel}")
-                            except asyncio.QueueFull:
-                                logger.warning(
-                                    "Connection queue full, dropping message"
+                            if message:
+                                logger.info(
+                                    f"SSE: Got message from {channel}: {message}"
                                 )
+                                event_data = {
+                                    "event": channel,
+                                    "data": message,
+                                    "id": str(int(time.time())),
+                                }
+
+                                try:
+                                    connection_queue.put_nowait(event_data)
+                                    logger.info(f"SSE: Queued event for {channel}")
+                                except asyncio.QueueFull:
+                                    logger.warning(
+                                        "Connection queue full, dropping message"
+                                    )
+                            else:
+                                logger.debug(f"SSE: No message in {channel}")
                         else:
-                            logger.debug(f"SSE: No message in {channel}")
+                            # Handle specific entity channels (document, collection, message)
+                            # These are handled by direct queue polling
+                            message = queue_service.get_queue_message_from_channel(
+                                channel
+                            )
+
+                            if message:
+                                logger.info(
+                                    f"SSE: Got message from {channel}: {message}"
+                                )
+                                event_data = {
+                                    "event": channel,
+                                    "data": message,
+                                    "id": str(int(time.time())),
+                                }
+
+                                try:
+                                    connection_queue.put_nowait(event_data)
+                                    logger.info(f"SSE: Queued event for {channel}")
+                                except asyncio.QueueFull:
+                                    logger.warning(
+                                        "Connection queue full, dropping message"
+                                    )
+                            else:
+                                logger.debug(f"SSE: No message in {channel}")
 
                     except Exception as e:
                         logger.error(f"Error polling {channel}: {e}")
