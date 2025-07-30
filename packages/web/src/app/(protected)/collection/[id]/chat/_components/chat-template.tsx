@@ -11,6 +11,7 @@ import {
   MessageAvatar,
   MessageContent,
 } from "@/components/ui/message";
+import { useTextStream } from "@/components/ui/response-stream";
 import { Scroller } from "@/components/ui/scroller";
 import { components } from "@/lib/api/path";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,28 @@ interface ChatTemplateProps {
 function ChatTemplate(props: ChatTemplateProps) {
   const [copied, setCopied] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+
+  // Find the latest AI message
+  const latestAiMessage = props.message
+    .filter((msg) => msg.role === "assistant")
+    .pop();
+
+  // Check if the latest AI message is very recent (within 10 seconds)
+  const isMessageRecent = latestAiMessage?.created_at
+    ? Date.now() - new Date(latestAiMessage.created_at).getTime() < 10000
+    : false;
+
+  const { displayedText, startStreaming } = useTextStream({
+    textStream: latestAiMessage?.content || "",
+    mode: "typewriter",
+    speed: 50,
+  });
+
+  useEffect(() => {
+    if (latestAiMessage && isMessageRecent) {
+      startStreaming();
+    }
+  }, [latestAiMessage, isMessageRecent, startStreaming]);
 
   const handleCopy = async (content: string, messageId: string) => {
     try {
@@ -62,7 +85,9 @@ function ChatTemplate(props: ChatTemplateProps) {
                     markdown
                     className="prose border bg-transparent p-4"
                   >
-                    {msg.content}
+                    {msg.id === latestAiMessage?.id && isMessageRecent
+                      ? displayedText
+                      : msg.content}
                   </MessageContent>
 
                   <MessageActions className="self-start">
