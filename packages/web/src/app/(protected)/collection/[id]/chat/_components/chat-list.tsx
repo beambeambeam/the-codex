@@ -14,7 +14,7 @@ function ChatList() {
 
   return (
     <div className="h-full w-full border-l">
-      <div className="relative z-20 flex h-14 items-center justify-center gap-2 border-b p-2">
+      <div className="relative z-20 flex h-[3.7rem] items-center justify-center gap-2 border-b p-2">
         <h1 className="group-hover:text-accent-foreground text-foreground text-md inline-flex w-full items-center gap-2 font-bold text-wrap transition-colors">
           Other Chats
         </h1>

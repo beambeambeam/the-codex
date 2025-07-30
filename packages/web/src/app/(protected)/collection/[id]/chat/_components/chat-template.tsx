@@ -43,12 +43,12 @@ function ChatTemplate(props: ChatTemplateProps) {
   return (
     <Scroller
       ref={scrollerRef}
-      className="h-full max-h-[calc(100vh-380px)] px-8 pb-32"
+      className="h-full max-h-[calc(100vh-300px)] px-8 pb-32"
       hideScrollbar
       withNavigation
     >
       <div className="flex flex-col gap-8">
-        {props.message.map((msg, index) =>
+        {props.message.map((msg) =>
           msg.role === "user" ? (
             <Message key={msg.id} className="justify-end">
               <MessageContent>{msg.content}</MessageContent>
