@@ -4,6 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import { useChatContext } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
 import { Pill, PillAvatar } from "@/components/ui/pill";
+import { Scroller } from "@/components/ui/scroller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getFallbackUsername } from "@/lib/utils";
 
@@ -49,27 +50,33 @@ function ChatList() {
         </div>
       )}
 
-      {!isLoading && !isError && chats.length > 0 && (
-        <ul className="flex flex-col gap-2 p-4">
-          {chats.map((chat) => (
-            <li
-              key={chat.id}
-              className="hover:bg-accent flex cursor-pointer flex-col gap-1 rounded-md border px-3 py-2 transition-colors"
-              onClick={() =>
-                router.push(`/collection/${params.id}/chat/${chat.id}`)
-              }
-            >
-              <div className="font-medium">{chat.title || "Untitled Chat"}</div>
-              {chat.created_by && (
-                <Pill>
-                  <PillAvatar fallback={getFallbackUsername(chat.created_by)} />
-                  {chat.created_by}
-                </Pill>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      <Scroller className="h-[calc(100vh-300px)]" hideScrollbar withNavigation>
+        {!isLoading && !isError && chats.length > 0 && (
+          <ul className="flex flex-col gap-2 p-4">
+            {chats.map((chat) => (
+              <li
+                key={chat.id}
+                className="hover:bg-accent flex cursor-pointer flex-col gap-1 rounded-md border px-3 py-2 transition-colors"
+                onClick={() =>
+                  router.push(`/collection/${params.id}/chat/${chat.id}`)
+                }
+              >
+                <div className="font-medium">
+                  {chat.title || "Untitled Chat"}
+                </div>
+                {chat.created_by && (
+                  <Pill>
+                    <PillAvatar
+                      fallback={getFallbackUsername(chat.created_by)}
+                    />
+                    {chat.created_by}
+                  </Pill>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </Scroller>
     </div>
   );
 }
