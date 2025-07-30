@@ -30,7 +30,7 @@ async def create_chat_with_rag(
     chat_data: CollectionChatCreate,
     current_user: User = Depends(get_current_user),
     chat_service: ChatService = Depends(get_chat_service),
-    rag_agent_instance: rag_agent = Depends(get_rag_agent),
+    rag_agent: rag_agent = Depends(get_rag_agent),
 ):
     """Create a new chat and trigger RAG processing in the background."""
     chat = chat_service.create_chat(chat_data, current_user)
@@ -38,18 +38,26 @@ async def create_chat_with_rag(
     queue_service = get_queue_service()
 
     try:
-        # Check if chat_data.references is not empty (not None and not empty list)
         references = getattr(chat_data, "references", None)
-        if references is not None and references != []:
-            rag_agent_instance.create_flow(flow_type="document")
-        else:
-            rag_agent_instance.create_flow(flow_type="collection")
 
-        rag_agent_instance.run(
+        if references is not None and references != []:
+            rag_agent.create_flow(flow_type="document")
+        else:
+            rag_agent.create_flow(flow_type="collection")
+
+        shared_store = rag_agent.run(
             collection_chat_id=chat.id,
             user_question=chat_data.message,
             references=None,
         )
+
+        if shared_store.retrieved_contexts:
+            for context in shared_store.retrieved_contexts:
+                context.chunk_text = (
+                    context.chunk_text[:100] + "..."
+                    if len(context.chunk_text) > 100
+                    else context.chunk_text
+                )
 
         queue_service.publish_chat_event(
             chat_id=chat.id,
