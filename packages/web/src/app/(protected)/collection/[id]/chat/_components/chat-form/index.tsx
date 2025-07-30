@@ -88,7 +88,13 @@ function ChatForm(
                   onReferencesChange={(references) =>
                     form.setValue("reference", references)
                   }
-                  onSubmit={() => form.handleSubmit(props.onSubmit)()}
+                  onSubmit={() => {
+                    form.handleSubmit(props.onSubmit)();
+                    form.reset({
+                      chat_message: "",
+                      reference: [],
+                    });
+                  }}
                   placeholder="Type @ to mention a document..."
                   disabled={props.disabled}
                   collectionId={params.id}

@@ -12,17 +12,11 @@ import {
   MessageContent,
 } from "@/components/ui/message";
 import { Scroller } from "@/components/ui/scroller";
+import { components } from "@/lib/api/path";
 import { cn } from "@/lib/utils";
 
 interface ChatTemplateProps {
-  message: {
-    role: string;
-    content: string;
-    id: string;
-    collection_chat_id: string;
-    created_at: string;
-    created_by: string;
-  }[];
+  message: components["schemas"]["CollectionChatHistoryResponse"][];
 }
 
 function ChatTemplate(props: ChatTemplateProps) {

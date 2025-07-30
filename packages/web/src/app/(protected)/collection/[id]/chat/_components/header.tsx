@@ -15,7 +15,7 @@ interface ChatHeaderProps {
 
 function ChatHeader(props: ChatHeaderProps) {
   return (
-    <header className="relative z-20 h-14 border-b p-2">
+    <header className="relative z-20 mb-2 h-14 border-b p-2">
       <div className="group w-full max-w-full cursor-pointer justify-between">
         <div className="grid w-full grid-cols-1 items-center gap-2 p-1 sm:grid-cols-[auto_auto_1fr]">
           <div className="flex min-w-0 gap-2">
