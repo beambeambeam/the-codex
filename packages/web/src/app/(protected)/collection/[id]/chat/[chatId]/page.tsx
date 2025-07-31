@@ -16,7 +16,7 @@ import { $api } from "@/lib/api/client";
 function ChatIdPage() {
   const params = useParams<{ id: string; chatId: string }>();
 
-  const { data, isLoading, isError } = $api.useQuery(
+  const { data, isPending, isError } = $api.useQuery(
     "get",
     "/chats/{chat_id}",
     {
@@ -28,9 +28,12 @@ function ChatIdPage() {
     },
   );
 
-  const { mutate, isPending } = $api.useMutation("post", "/agentic/rag_query");
+  const { mutate, isPending: isPendingMutate } = $api.useMutation(
+    "post",
+    "/agentic/rag_query",
+  );
 
-  if (isLoading) {
+  if (isPending) {
     return <ChatIdPageSkeleton />;
   }
 
@@ -79,7 +82,7 @@ function ChatIdPage() {
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
           <div className="p-4 px-12">
-            <ChatForm onSubmit={handleSubmit} disabled={isPending} />
+            <ChatForm onSubmit={handleSubmit} disabled={isPendingMutate} />
           </div>
         </div>
       </div>
