@@ -10,7 +10,14 @@ from api.models.user import User
 from .core import TextEmbedder, call_llm, call_structured_llm
 from .core.prompts import render_collection_rag_agent_prompt
 from .pocketflow_custom import Node
-from .schemas import ChatHistory, ChatMessage, NodeStatus, SharedStore, UserIntent
+from .schemas import (
+    ChatHistoryCreate,
+    ChatHistoryResponse,
+    ChatMessageCreate,
+    NodeStatus,
+    SharedStore,
+    UserIntent,
+)
 
 # Order: EmbedQueryNode -> SearchPgvectorNode -> GenerateResponseNode
 
@@ -51,7 +58,7 @@ class CollectionNode(Node):
         self,
         collection_chat_id: str,
         current_user: User,
-        message: ChatMessage,
+        message: ChatMessageCreate,
     ):
         """
         Save the current chat history to the database.
@@ -76,7 +83,7 @@ class CollectionNode(Node):
         self,
         collection_chat_id: str,
         current_user: User,
-        chat_history: ChatHistory,
+        chat_history: ChatHistoryCreate,
     ) -> CollectionChatHistoryCreate:
         for message in chat_history.messages:
             self._save_chat_message(
@@ -104,7 +111,7 @@ class GetInputAppendHistoryNode(Node):
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.user_question = exec_res
-        new_message = ChatMessage(
+        new_message = ChatMessageCreate(
             collection_chat_id=shared.chat_session.id,
             role="user",
             content=exec_res,
@@ -310,14 +317,14 @@ class GenerateResponseNode(Node):
             return None
         return chat_history
 
-    def exec(self, chat_history: ChatHistory) -> str:
+    def exec(self, chat_history: ChatHistoryResponse) -> str:
         return call_llm(chat_history)
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
         shared.llm_answer = exec_res
         print(f"GenericAnswerNode: Generated answer: {exec_res[:50]}...")
 
-        new_message = ChatMessage(
+        new_message = ChatMessageCreate(
             collection_chat_id=shared.chat_session.id,
             role="assistant",
             content=exec_res,
@@ -353,10 +360,10 @@ class GenerateResponseFromContextNode(Node):
         )
 
         # Temporarily append the user question to the chat history
-        chat_history: ChatHistory = inputs["chat_history"]
+        chat_history: ChatHistoryResponse = inputs["chat_history"]
 
         chat_history.messages.append(
-            ChatMessage(
+            ChatMessageCreate(
                 collection_chat_id=inputs["collection_chat_id"],
                 role="user",
                 content=prompt,
@@ -375,14 +382,13 @@ class GenerateResponseFromContextNode(Node):
         shared.llm_answer = exec_res
         print(f"GenerateResponseNode: LLM response generated: {exec_res[:1000]}...")
 
-        new_message = ChatMessage(
+        new_message = ChatMessageCreate(
             collection_chat_id=shared.chat_session.id,
             role="assistant",
             content=exec_res,
             retrieved_contexts=shared.retrieved_contexts,
         )
         shared.new_chat_history.messages.append(new_message)
-        shared.chat_history.messages.append(new_message)
 
         return NodeStatus.DEFAULT.value
 

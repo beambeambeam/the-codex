@@ -36,21 +36,8 @@ class CollectionChatResponse(CollectionChatBase):
     updated_at: datetime
     status: ChatStatus
 
-    class Config:
-        from_attributes = True
 
-
-class CollectionChatWithHistoryResponse(CollectionChatBase):
-    id: str
-    created_by: Optional[str] = Field(
-        None, description="Username of the user who created the chat"
-    )
-    created_at: datetime
-    updated_by: Optional[str] = Field(
-        None, description="Username of the user who last updated the chat"
-    )
-    updated_at: datetime
-    status: ChatStatus
+class CollectionChatWithHistoryResponse(CollectionChatResponse):
     histories: list["CollectionChatHistoryResponse"] = Field(
         default_factory=list, description="Chat history messages"
     )

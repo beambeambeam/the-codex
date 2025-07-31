@@ -40,6 +40,12 @@ class CollectionChat(Base):
     histories = relationship(
         "CollectionChatHistory", back_populates="chat", cascade="all, delete-orphan"
     )
+    creator = relationship(
+        "User", back_populates="created_chats", foreign_keys=[created_by]
+    )
+    updater = relationship(
+        "User", back_populates="updated_chats", foreign_keys=[updated_by]
+    )
 
 
 class CollectionChatHistory(Base):
@@ -55,6 +61,8 @@ class CollectionChatHistory(Base):
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
+    # create username by user id, user.username
+
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.current_timestamp()
     )
@@ -64,6 +72,11 @@ class CollectionChatHistory(Base):
         "CollectionChatReference",
         back_populates="history",
         cascade="all, delete-orphan",
+    )
+    creator = relationship(
+        "User",
+        back_populates="created_chat_histories",
+        foreign_keys=[created_by],
     )
 
 

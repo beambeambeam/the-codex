@@ -71,6 +71,9 @@ async def create_chat_with_rag(
             data={"status": "failed", "error": str(e), "chat_id": chat.id},
         )
 
+    chat.created_by = current_user.username if current_user else None
+    chat.updated_by = current_user.username if current_user else None
+
     return chat
 
 
@@ -79,7 +82,12 @@ def list_chats(
     collection_id: str,
     chat_service: ChatService = Depends(get_chat_service),
 ):
-    return chat_service.list_chats(collection_id)
+    chat_list = chat_service.list_chats(collection_id)
+    for chat in chat_list:
+        chat.created_by = chat.creator.username if chat.creator else None
+        chat.updated_by = chat.updater.username if chat.updater else None
+
+    return chat_list
 
 
 @router.get("/search", response_model=list[CollectionChatResponse])
@@ -93,11 +101,21 @@ def search_chats_by_title(
     chat_service: ChatService = Depends(get_chat_service),
 ):
     """Search for chats in a collection by title."""
-    return chat_service.search_chats_by_title(collection_id, query)
+    chat_list = chat_service.search_chats_by_title(collection_id, query)
+    for chat in chat_list:
+        chat.created_by = chat.creator.username if chat.creator else None
+        chat.updated_by = chat.updater.username if chat.updater else None
+    return chat_list
 
 
 @router.get("/{chat_id}", response_model=CollectionChatWithHistoryResponse)
 def get_chat(chat=Depends(get_chat_with_history_or_404)):
+    """Get chat with its history by chat ID."""
+    chat.created_by = chat.creator.username if chat.creator else None
+    chat.updated_by = chat.updater.username if chat.updater else None
+    for history in chat.histories:
+        history.created_by = history.creator.username if history.creator else None
+
     return chat
 
 
@@ -115,6 +133,11 @@ def update_chat(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
         )
+
+    updated_chat.created_by = (
+        updated_chat.creator.username if updated_chat.creator else None
+    )
+    updated_chat.updated_by = current_user.username if current_user else None
     return updated_chat
 
 

@@ -44,50 +44,20 @@ class ChatService:
         )
 
     def get_chat_with_history(self, chat_id: str) -> Optional[CollectionChat]:
-        """Get a chat with its history included and usernames instead of UUIDs."""
+        """Get chat with its history by chat ID."""
         chat = (
             self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
         )
 
-        if chat:
-            # Replace UUIDs with usernames for the chat
-            if chat.created_by:
-                creator = self.db.query(User).filter(User.id == chat.created_by).first()
-                chat.created_by = creator.username if creator else None
-
-            if chat.updated_by:
-                updater = self.db.query(User).filter(User.id == chat.updated_by).first()
-                chat.updated_by = updater.username if updater else None
-
-            # Replace UUIDs with usernames for chat history
-            for history in chat.histories:
-                if history.created_by:
-                    creator = (
-                        self.db.query(User)
-                        .filter(User.id == history.created_by)
-                        .first()
-                    )
-                    history.created_by = creator.username if creator else None
-
         return chat
 
     def list_chats(self, collection_id: str) -> list[CollectionChat]:
-        """List chats with usernames instead of UUIDs for created_by and updated_by."""
+        """List all chats in a collection."""
         chats = (
             self.db.query(CollectionChat)
             .filter(CollectionChat.collection_id == collection_id)
             .all()
         )
-
-        # Replace UUIDs with usernames
-        for chat in chats:
-            if chat.created_by:
-                creator = self.db.query(User).filter(User.id == chat.created_by).first()
-                chat.created_by = creator.username if creator else None
-
-            if chat.updated_by:
-                updater = self.db.query(User).filter(User.id == chat.updated_by).first()
-                chat.updated_by = updater.username if updater else None
 
         return chats
 
@@ -103,16 +73,6 @@ class ChatService:
             )
             .all()
         )
-
-        # Replace UUIDs with usernames
-        for chat in chats:
-            if chat.created_by:
-                creator = self.db.query(User).filter(User.id == chat.created_by).first()
-                chat.created_by = creator.username if creator else None
-
-            if chat.updated_by:
-                updater = self.db.query(User).filter(User.id == chat.updated_by).first()
-                chat.updated_by = updater.username if updater else None
 
         return chats
 
@@ -150,6 +110,7 @@ class ChatService:
             content=history_data.content,
             created_by=user.id,
         )
+
         self.db.add(history)
         self.db.commit()
         self.db.refresh(history)
@@ -163,20 +124,12 @@ class ChatService:
         )
 
     def list_histories(self, chat_id: str) -> list[CollectionChatHistory]:
-        """List chat histories with usernames instead of UUIDs for created_by."""
+        """List chat histories for a given chat ID."""
         histories = (
             self.db.query(CollectionChatHistory)
             .filter(CollectionChatHistory.collection_chat_id == chat_id)
             .all()
         )
-
-        # Replace UUIDs with usernames
-        for history in histories:
-            if history.created_by:
-                creator = (
-                    self.db.query(User).filter(User.id == history.created_by).first()
-                )
-                history.created_by = creator.username if creator else None
 
         return histories
 
