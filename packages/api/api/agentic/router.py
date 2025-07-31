@@ -21,7 +21,6 @@ from api.document.schemas import (
 from api.models.chat import CollectionChat
 from api.storage import storage_service
 
-from .agent import rag_agent
 from .core.ingestion.schemas import FileInput
 from .dependencies import (
     DocumentIngestorService,
@@ -34,7 +33,6 @@ from .dependencies import (
     get_rag_agent,
     get_topic_modelling_service,
 )
-from .schemas import AgentResponse
 from .utils import normalize_file_input
 
 router = APIRouter(prefix="/agentic", tags=["agentic"])
