@@ -8,7 +8,7 @@ from ..clustering.schemas import EnhancedClusteringResponse
 from ..clustering.service import ClusteringService, get_clustering_service
 from ..database import get_db
 from ..document.dependencies import get_document_service
-from ..document.schemas import DocumentResponse
+from ..document.schemas import DocumentResponseTruncated
 from ..document.service import DocumentService
 from ..models.collection import CollectionRelation
 from ..models.user import User
@@ -105,7 +105,9 @@ def delete_collection(
     collection_service.delete_collection(collection.id, current_user)
 
 
-@router.get("/{collection_id}/documents", response_model=list[DocumentResponse])
+@router.get(
+    "/{collection_id}/documents", response_model=list[DocumentResponseTruncated]
+)
 def list_collection_documents(
     collection=Depends(get_collection_or_404),
     document_service: DocumentService = Depends(get_document_service),

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from ..models import enum
 
@@ -80,6 +80,21 @@ class DocumentResponse(DocumentBase):
         from_attributes = True
 
 
+class TruncatedDocumentMixin:
+    @field_validator("document", mode="before")
+    @classmethod
+    def truncate_document(cls, value):
+        if value and len(value) > 1000:
+            return value[:1000] + "..."
+        return value
+
+
+class DocumentResponseTruncated(TruncatedDocumentMixin, DocumentResponse):
+    """Schema for truncated document response."""
+
+    pass
+
+
 class ChunkBase(BaseModel):
     """Base chunk schema."""
 
@@ -142,6 +157,12 @@ class DocumentSearchResponse(DocumentResponse):
     chunk: list[ChunkSearchResponse] = Field(
         default_factory=list, description="List of chunks with search results"
     )
+
+
+class DocumentSearchResponseTruncated(TruncatedDocumentMixin, DocumentSearchResponse):
+    """Schema for truncated searched documents."""
+
+    pass
 
 
 class DocumentRelationBase(BaseModel):

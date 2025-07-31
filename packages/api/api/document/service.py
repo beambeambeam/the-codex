@@ -64,7 +64,7 @@ class DocumentService:
         """Get a document by ID."""
         return self.db.query(Document).filter(Document.id == document_id).first()
 
-    def get_collection_documents(self, collection_id: str) -> list[dict]:
+    def get_collection_documents(self, collection_id: str) -> list[DocumentResponse]:
         """Get all documents in a collection, with created_by and updated_by replaced by usernames."""
         creator_alias = aliased(User)
         updater_alias = aliased(User)
@@ -82,15 +82,15 @@ class DocumentService:
         )
         documents = []
         for doc, creator_username, updater_username in results:
-            doc_dict = DocumentResponse.model_validate(doc).model_dump()
-            doc_dict["created_by"] = creator_username
-            doc_dict["updated_by"] = updater_username
+            doc_dict = DocumentResponse.model_validate(doc)
+            doc_dict.created_by = creator_username
+            doc_dict.updated_by = updater_username
             documents.append(doc_dict)
         return documents
 
     def search_documents_by_name(
         self, collection_id: str, query: str
-    ) -> list[Document]:
+    ) -> list[DocumentResponse]:
         """Search for documents in a collection by name or description."""
         creator_alias = aliased(User)
         updater_alias = aliased(User)
@@ -113,9 +113,9 @@ class DocumentService:
         )
         documents = []
         for doc, creator_username, updater_username in results:
-            doc_dict = DocumentResponse.model_validate(doc).model_dump()
-            doc_dict["created_by"] = creator_username
-            doc_dict["updated_by"] = updater_username
+            doc_dict = DocumentResponse.model_validate(doc)
+            doc_dict.created_by = creator_username
+            doc_dict.updated_by = updater_username
             documents.append(doc_dict)
         return documents
 

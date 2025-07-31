@@ -12,25 +12,29 @@ from api.agentic.agent import rag_agent
 from api.agentic.schemas import AgentResponse, RAGQueryRequest
 from api.auth.schemas import UserResponse
 from api.chat.dependencies import get_chat_or_404
-from api.document.schemas import DocumentCreate, DocumentResponse
+from api.clustering.schemas import ClusteringResponse
+from api.document.schemas import (
+    DocumentCreate,
+    DocumentResponse,
+    DocumentResponseTruncated,
+)
 from api.models.chat import CollectionChat
 from api.storage import storage_service
 
-from .core.clustering.schemas import (
-    ClusteringResult,
-)  # TODO: This is for quick use future will be use with database
+from .agent import rag_agent
 from .core.ingestion.schemas import FileInput
 from .dependencies import (
-    DocumentClusteringService,
     DocumentIngestorService,
     DocumentService,
+    TopicModellingService,
     User,
     get_current_user,
-    get_document_clustering_service,
     get_document_ingestor,
     get_document_service,
     get_rag_agent,
+    get_topic_modelling_service,
 )
+from .schemas import AgentResponse
 from .utils import normalize_file_input
 
 router = APIRouter(prefix="/agentic", tags=["agentic"])
@@ -38,7 +42,7 @@ router = APIRouter(prefix="/agentic", tags=["agentic"])
 
 @router.post(
     "/upload_ingest",
-    response_model=list[DocumentResponse],
+    response_model=list[DocumentResponseTruncated],
     tags=["agentic"],
     status_code=status.HTTP_201_CREATED,
 )
@@ -110,7 +114,7 @@ async def upload_and_ingest_documents(
                 document_ingestor.ingest_file(
                     input_file=input_file_model,
                     document=current_document,
-                    graph_extract=True,
+                    graph_extract=False,
                     user=current_user,
                 )
             )
@@ -125,16 +129,67 @@ async def upload_and_ingest_documents(
 
 
 @router.post(
-    "/cluster_topic",
-    response_model=ClusteringResult,
+    "/graph_extract/{document_id}",
+    response_model=DocumentResponseTruncated,
     tags=["agentic"],
     status_code=status.HTTP_200_OK,
 )
-def cluster_documents(
+async def graph_extract(
+    document_id: str,
+    document_service: DocumentService = Depends(get_document_service),
+    document_ingestor: DocumentIngestorService = Depends(get_document_ingestor),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Extracts a knowledge graph from the documents in a collection.
+    """
+    document = document_service.get_document(document_id)
+    if not document:
+        raise HTTPException(
+            status_code=404, detail=f"Document with ID {document_id} not found"
+        )
+
+    if document.is_graph_extracted:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Knowledge graph already extracted for document {document_id}",
+        )
+
+    # Extract knowledge graph from the document
+    full_text = document.document or ""
+    if not full_text:
+        raise HTTPException(
+            status_code=400, detail="Document content is empty or not available"
+        )
+
+    document = await document_ingestor.extract_and_store_knowledge_graph(
+        full_text=full_text,
+        title=document.title,
+        description=document.description,
+        document_id=document.id,
+        user=current_user,
+    )
+
+    if not document:
+        raise HTTPException(
+            status_code=404, detail=f"Document with ID {document_id} not found"
+        )
+
+    return document
+
+
+@router.post(
+    "/cluster_topic",
+    response_model=ClusteringResponse,
+    tags=["agentic"],
+    status_code=status.HTTP_200_OK,
+)
+async def cluster_documents(
     collection_id: str,
-    document_clustering_service: DocumentClusteringService = Depends(
-        get_document_clustering_service
+    topic_modelling_service: TopicModellingService = Depends(
+        get_topic_modelling_service
     ),
+    user: User = Depends(get_current_user),
 ):
     """
     Clusters document chunks in a collection and generates descriptive topic titles.
@@ -144,8 +199,9 @@ def cluster_documents(
     - cluster_title_top_n_topics: The number of top contributing topics to use for generating a cluster title.
     - cluster_title_top_n_words: The number of keywords to extract from each contributing topic.
     """
-    return document_clustering_service.cluster_documents(
+    return await topic_modelling_service.cluster_and_store_documents(
         collection_id=collection_id,
+        user=user,
         cluster_title_top_n_topics=5,
         cluster_title_top_n_words=50,
         title_generated_methods="by_summaries",
