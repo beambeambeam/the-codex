@@ -20,7 +20,7 @@ from ....clustering.service import (
 )
 from ....document.schemas import ChunkResponse, DocumentResponse
 from ....document.service import DocumentService
-from ...core import call_structured_llm
+from ...core import call_structured_llm_async
 from ..embedding.embedding import TextEmbedder
 from ..prompts import (
     render_keyword_to_topic_extraction,
@@ -88,7 +88,7 @@ class TopicModellingService:
 
         return chunk_embeddings, doc_id_to_doc
 
-    def llm_generate_cluster_title_by_keywords(
+    async def llm_generate_cluster_title_by_keywords(
         self, keywords: list[str]
     ) -> ClusteringDetails:
         """
@@ -103,9 +103,9 @@ class TopicModellingService:
         keywords = ", ".join(keywords)
         prompt = render_keyword_to_topic_extraction(keywords=keywords)
         print(f"/nGenerating cluster title with keywords: {keywords[:50]}")
-        return call_structured_llm(prompt, response_model=ClusteringDetails)
+        return await call_structured_llm_async(prompt, response_model=ClusteringDetails)
 
-    def llm_generate_cluster_title_by_summaries(
+    async def llm_generate_cluster_title_by_summaries(
         self, summaries: list[str]
     ) -> ClusteringDetails:
         """
@@ -120,7 +120,7 @@ class TopicModellingService:
         summaries = "\n\n---\n\n".join(summaries)
         prompt = render_summary_to_topic_extraction(summaries=summaries)
         print(f"/nGenerating cluster title with summaries: {summaries[:50]}")
-        return call_structured_llm(prompt, response_model=ClusteringDetails)
+        return await call_structured_llm_async(prompt, response_model=ClusteringDetails)
 
     def _get_topic_keyword_map(
         self, topic_info_df, top_words: int
@@ -143,7 +143,7 @@ class TopicModellingService:
             keywords.extend(topic_keyword_map.get(topic_id, []))
         return keywords
 
-    def _structure_clustering_result(
+    async def _structure_clustering_result(
         self,
         doc_distributions: dict[str, Counter],
         doc_primary_topic: dict[str, int],
@@ -211,7 +211,7 @@ class TopicModellingService:
         logger.info(f"Clustering complete. Found {len(final_topics)} clusters.")
 
         # Generate a descriptive title for the clustering result
-        clustering_group_detail = self.llm_generate_cluster_title_by_summaries(
+        clustering_group_detail = await self.llm_generate_cluster_title_by_summaries(
             summaries=[doc.description for doc in final_documents if doc.description]
         )
 
@@ -222,7 +222,7 @@ class TopicModellingService:
             documents=final_documents,
         )
 
-    def cluster_documents(
+    async def cluster_documents(
         self,
         collection_id: str,
         cluster_title_top_n_topics: int = 10,
@@ -311,9 +311,10 @@ class TopicModellingService:
                     topic_keyword_map, top_contributing_topics
                 )
                 if keywords:
-                    cluster_titles[topic_id] = (
-                        self.llm_generate_cluster_title_by_keywords(keywords)
+                    details = await self.llm_generate_cluster_title_by_keywords(
+                        keywords
                     )
+                    cluster_titles[topic_id] = details
                     print(
                         f"Generated title for topic {topic_id}: {cluster_titles[topic_id]}"
                     )
@@ -346,7 +347,9 @@ class TopicModellingService:
                     if doc_id in doc_id_to_summary
                 ]
                 if summaries:
-                    details = self.llm_generate_cluster_title_by_summaries(summaries)
+                    details = await self.llm_generate_cluster_title_by_summaries(
+                        summaries
+                    )
                     cluster_titles[topic_id] = details
                     print(
                         f"Generated details for topic {topic_id}: {cluster_titles[topic_id].title} with description {cluster_titles[topic_id].description[:50]}..."
@@ -366,7 +369,7 @@ class TopicModellingService:
             )
 
         # 6. Structure the final output using a helper method
-        return self._structure_clustering_result(
+        return await self._structure_clustering_result(
             doc_distributions=doc_distributions,
             doc_primary_topic=doc_primary_topic,
             doc_id_to_doc=doc_id_to_doc,
@@ -417,7 +420,7 @@ class TopicModellingService:
         logger.info(f"Clustering result stored for collection {collection_id}.")
         return created_clustering
 
-    def cluster_and_store_documents(
+    async def cluster_and_store_documents(
         self,
         collection_id: str,
         user: User,
@@ -430,7 +433,7 @@ class TopicModellingService:
         """
         Clusters documents in a collection and stores the result in the database.
         """
-        clustering_result = self.cluster_documents(
+        clustering_result = await self.cluster_documents(
             collection_id=collection_id,
             cluster_title_top_n_topics=cluster_title_top_n_topics,
             cluster_title_top_n_words=cluster_title_top_n_words,

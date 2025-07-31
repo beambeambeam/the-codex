@@ -182,7 +182,7 @@ async def graph_extract(
     tags=["agentic"],
     status_code=status.HTTP_200_OK,
 )
-def cluster_documents(
+async def cluster_documents(
     collection_id: str,
     topic_modelling_service: TopicModellingService = Depends(
         get_topic_modelling_service
@@ -197,7 +197,7 @@ def cluster_documents(
     - cluster_title_top_n_topics: The number of top contributing topics to use for generating a cluster title.
     - cluster_title_top_n_words: The number of keywords to extract from each contributing topic.
     """
-    return topic_modelling_service.cluster_and_store_documents(
+    return await topic_modelling_service.cluster_and_store_documents(
         collection_id=collection_id,
         user=user,
         cluster_title_top_n_topics=5,
