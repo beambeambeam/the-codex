@@ -19,6 +19,7 @@ from .dependencies import (
     get_collection_service,
     get_collection_with_modify_permission,
 )
+from .permission import router as permission_router
 from .schemas import (
     CollectionCreate,
     CollectionDetailResponse,
@@ -35,6 +36,9 @@ from .schemas import (
 from .service import CollectionService
 
 router = APIRouter(prefix="/collections", tags=["collections"])
+
+# Include permission routes
+router.include_router(permission_router)
 
 
 @router.post(

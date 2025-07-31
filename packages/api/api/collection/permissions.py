@@ -3,8 +3,8 @@
 from enum import Enum
 from typing import Union
 
-from ..models.collection import Collection, CollectionRelation
-from ..models.user import User
+from ...models.collection import Collection, CollectionRelation
+from ...models.user import User
 
 
 class CollectionPermission(str, Enum):

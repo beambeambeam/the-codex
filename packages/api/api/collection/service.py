@@ -13,6 +13,7 @@ from ..models.collection import (
     CollectionRelation,
 )
 from ..models.user import User
+from .permission.service import CollectionPermissionService
 from .schemas import (
     CollectionCreate,
     CollectionEdgeCreate,
@@ -28,6 +29,7 @@ class CollectionService:
     def __init__(self, db: Session):
         """Initialize collection service."""
         self.db = db
+        self.permission_service = CollectionPermissionService(db)
 
     # Collection CRUD operations
     def create_collection(
@@ -100,6 +102,7 @@ class CollectionService:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
             )
 
+        # Check if user has permission to delete
         if not self._can_modify_collection(collection, user):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -115,16 +118,17 @@ class CollectionService:
         self, relation_data: CollectionRelationCreate, user: User
     ) -> CollectionRelation:
         """Create a new collection relation."""
+        # Check if collection exists and user has permission
         collection = self.get_collection(relation_data.collection_id)
         if not collection:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
             )
 
-        if not self._can_access_collection(collection, user):
+        if not self._can_modify_collection(collection, user):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Not authorized to access this collection",
+                detail="Not authorized to modify this collection",
             )
 
         relation = CollectionRelation(
@@ -219,14 +223,19 @@ class CollectionService:
     # Permission helper methods
     def _can_access_collection(self, collection: Collection, user: User) -> bool:
         """Check if user can access a collection."""
-        # For now, only the creator can access
-        # In the future, this could include shared collections
-        return collection.created_by == user.id
+        # Check if user is creator or has explicit permission
+        return (
+            collection.created_by == user.id
+            or self.permission_service.can_edit_collection(collection.id, user.id)
+        )
 
     def _can_modify_collection(self, collection: Collection, user: User) -> bool:
         """Check if user can modify a collection."""
-        # For now, only the creator can modify
-        return collection.created_by == user.id
+        # Check if user is creator or has explicit edit permission
+        return (
+            collection.created_by == user.id
+            or self.permission_service.can_edit_collection(collection.id, user.id)
+        )
 
     def _can_modify_relation(self, relation: CollectionRelation, user: User) -> bool:
         """Check if user can modify a relation."""
