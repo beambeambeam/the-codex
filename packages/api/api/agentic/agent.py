@@ -21,8 +21,8 @@ from .node import (
 from .pocketflow_custom import Flow  # PocketFlow custom components
 from .schemas import (
     INTENT,
-    ChatHistory,
-    ChatMessage,
+    ChatHistoryResponse,
+    ChatMessageResponse,
     SharedStore,  # Adjust relative import
 )
 
@@ -64,14 +64,16 @@ class rag_agent(agentic_base):
         self.shared_data: SharedStore = SharedStore()
         self.flow: Flow = None
 
-    def get_current_chat_history(self, collection_chat_id: str) -> ChatHistory:
+    def get_current_chat_history(self, collection_chat_id: str) -> ChatHistoryResponse:
         """
         Retrieve the current chat history for the given collection chat ID.
         This method fetches the chat history from the chat service.
         """
         chat_history = self.chat_service.list_histories(collection_chat_id)
-        return ChatHistory(
-            messages=[ChatMessage.model_validate(history) for history in chat_history]
+        return ChatHistoryResponse(
+            messages=[
+                ChatMessageResponse.model_validate(history) for history in chat_history
+            ]
         )
 
     def run(
@@ -131,7 +133,7 @@ class rag_agent(agentic_base):
             >> generate_ans_based_on_context_node
             >> save_chat_node
         )
-        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node >> save_chat_node
         (
             get_intent_node - INTENT.SUMMARIZATION
             >> embed_q_node
@@ -167,7 +169,7 @@ class rag_agent(agentic_base):
             >> generate_ans_based_on_context_node
             >> save_chat_node
         )
-        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node
+        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node >> save_chat_node
         (
             get_intent_node - INTENT.SUMMARIZATION
             >> embed_q_node

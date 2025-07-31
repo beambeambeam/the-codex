@@ -4,6 +4,7 @@ from uuid import uuid4
 from sqlalchemy.orm import Session
 
 from ..models.chat import CollectionChat, CollectionChatHistory, CollectionChatReference
+from ..models.enum import ChatStatus
 from ..models.user import User
 from .schemas import (
     CollectionChatCreate,
@@ -30,6 +31,7 @@ class ChatService:
             description=chat_data.description,
             created_by=user.id,
             updated_by=user.id,
+            status=ChatStatus.new_session,
         )
         self.db.add(chat)
         self.db.commit()
@@ -41,18 +43,29 @@ class ChatService:
             self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
         )
 
+    def get_chat_with_history(self, chat_id: str) -> Optional[CollectionChat]:
+        """Get chat with its history by chat ID."""
+        chat = (
+            self.db.query(CollectionChat).filter(CollectionChat.id == chat_id).first()
+        )
+
+        return chat
+
     def list_chats(self, collection_id: str) -> list[CollectionChat]:
-        return (
+        """List all chats in a collection."""
+        chats = (
             self.db.query(CollectionChat)
             .filter(CollectionChat.collection_id == collection_id)
             .all()
         )
 
+        return chats
+
     def search_chats_by_title(
         self, collection_id: str, query: str
     ) -> list[CollectionChat]:
-        """Search for chats in a collection by title."""
-        return (
+        """Search for chats in a collection by title with usernames instead of UUIDs."""
+        chats = (
             self.db.query(CollectionChat)
             .filter(
                 CollectionChat.collection_id == collection_id,
@@ -60,6 +73,8 @@ class ChatService:
             )
             .all()
         )
+
+        return chats
 
     def update_chat(
         self, chat_id: str, update_data: CollectionChatUpdate, user: User
@@ -71,6 +86,8 @@ class ChatService:
             chat.title = update_data.title
         if update_data.description is not None:
             chat.description = update_data.description
+        if update_data.status is not None:
+            chat.status = update_data.status
         chat.updated_by = user.id
         self.db.commit()
         self.db.refresh(chat)
@@ -93,6 +110,7 @@ class ChatService:
             content=history_data.content,
             created_by=user.id,
         )
+
         self.db.add(history)
         self.db.commit()
         self.db.refresh(history)
@@ -106,11 +124,14 @@ class ChatService:
         )
 
     def list_histories(self, chat_id: str) -> list[CollectionChatHistory]:
-        return (
+        """List chat histories for a given chat ID."""
+        histories = (
             self.db.query(CollectionChatHistory)
             .filter(CollectionChatHistory.collection_chat_id == chat_id)
             .all()
         )
+
+        return histories
 
     def update_history(
         self, history_id: str, update_data: CollectionChatHistoryUpdate

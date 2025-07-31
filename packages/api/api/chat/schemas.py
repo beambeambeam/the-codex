@@ -3,7 +3,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
-from ..models.enum import CollectionChatReferenceType, Role
+from ..models.enum import ChatStatus, CollectionChatReferenceType, Role
 
 
 class CollectionChatBase(BaseModel):
@@ -13,20 +13,34 @@ class CollectionChatBase(BaseModel):
 
 
 class CollectionChatCreate(CollectionChatBase):
+    message: str
+    reference: list[str]
     pass
 
 
 class CollectionChatUpdate(BaseModel):
     title: Optional[str] = Field(None, description="Chat title")
     description: Optional[str] = Field(None, description="Chat description")
+    status: Optional[ChatStatus] = Field(None, description="Chat status")
 
 
 class CollectionChatResponse(CollectionChatBase):
     id: str
-    created_by: Optional[str]
+    created_by: Optional[str] = Field(
+        None, description="Username of the user who created the chat"
+    )
     created_at: datetime
-    updated_by: Optional[str]
+    updated_by: Optional[str] = Field(
+        None, description="Username of the user who last updated the chat"
+    )
     updated_at: datetime
+    status: ChatStatus
+
+
+class CollectionChatWithHistoryResponse(CollectionChatResponse):
+    histories: list["CollectionChatHistoryResponse"] = Field(
+        default_factory=list, description="Chat history messages"
+    )
 
     class Config:
         from_attributes = True
@@ -53,7 +67,9 @@ class CollectionChatHistoryUpdate(BaseModel):
 
 class CollectionChatHistoryResponse(CollectionChatHistoryBase):
     id: str
-    created_by: Optional[str]
+    created_by: Optional[str] = Field(
+        None, description="Username of the user who created the message"
+    )
     created_at: datetime
 
     class Config:
@@ -88,3 +104,7 @@ class CollectionChatReferenceResponse(CollectionChatReferenceBase):
 
     class Config:
         from_attributes = True
+
+
+# Update forward references
+CollectionChatWithHistoryResponse.model_rebuild()

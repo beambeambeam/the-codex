@@ -6,7 +6,7 @@ import litellm
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from ..schemas import ChatHistory
+from ..schemas import ChatHistoryResponse
 
 # utils/call_llm.py
 # litellm._turn_on_debug()
@@ -26,7 +26,7 @@ async_client = instructor.from_litellm(
 )
 
 
-def call_llm(prompt: Union[str, ChatHistory], api_key=api_key) -> str:
+def call_llm(prompt: Union[str, ChatHistoryResponse], api_key=api_key) -> str:
     """Calls the LLM with the provided prompt and returns the response."""
     response = litellm.completion(
         model=model,
@@ -44,7 +44,9 @@ def call_llm(prompt: Union[str, ChatHistory], api_key=api_key) -> str:
         return f"Error: Could not extract message content from LLM response. Response: {response}"  # noqa: E501
 
 
-async def call_llm_async(prompt: Union[str, ChatHistory], api_key=api_key) -> str:
+async def call_llm_async(
+    prompt: Union[str, ChatHistoryResponse], api_key=api_key
+) -> str:
     """Asynchronously calls the LLM with the provided prompt and returns the response."""
     response = await litellm.acompletion(
         model=model,
@@ -63,7 +65,9 @@ async def call_llm_async(prompt: Union[str, ChatHistory], api_key=api_key) -> st
 
 
 def call_structured_llm(
-    prompt: Union[str, ChatHistory], response_model: type[T], max_retries: int = 3
+    prompt: Union[str, ChatHistoryResponse],
+    response_model: type[T],
+    max_retries: int = 3,
 ) -> T:
     """Calls the LLM with a structured prompt and returns the response."""
     response = client.chat.completions.create(
@@ -88,7 +92,9 @@ def call_structured_llm(
 
 
 async def call_structured_llm_async(
-    prompt: Union[str, ChatHistory], response_model: type[T], max_retries: int = 3
+    prompt: Union[str, ChatHistoryResponse],
+    response_model: type[T],
+    max_retries: int = 3,
 ) -> T:
     """Asynchronously calls the LLM with a structured prompt and returns the response."""
     response = await async_client.chat.completions.create(
@@ -113,7 +119,7 @@ async def call_structured_llm_async(
 
 
 async def call_vlm_async(
-    prompt_text: Union[str, ChatHistory],
+    prompt_text: Union[str, ChatHistoryResponse],
     image_base64: str,
     api_key: str = os.getenv("TYPHOON_API_KEY"),
     *,

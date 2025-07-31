@@ -21,6 +21,17 @@ def get_chat_or_404(
     return chat
 
 
+def get_chat_with_history_or_404(
+    chat_id: str, chat_service: ChatService = Depends(get_chat_service)
+) -> CollectionChat:
+    chat = chat_service.get_chat_with_history(chat_id)
+    if not chat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Chat not found"
+        )
+    return chat
+
+
 def get_history_or_404(
     history_id: str, chat_service: ChatService = Depends(get_chat_service)
 ) -> CollectionChatHistory:

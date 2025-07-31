@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
+import { EventSourceProvider } from "react-sse-hooks";
 
 import { ClusteringProvider } from "@/app/(protected)/collection/[id]/_components/clustering/context";
 import CollectionIdHeader from "@/app/(protected)/collection/[id]/_components/header";
@@ -43,23 +44,25 @@ export default function CollectionIdLayout({
   }
 
   return (
-    <CollectionIdProvider
-      initialTitle={data?.name}
-      initialDescription={data?.description ?? ""}
-    >
-      <ClusteringProvider collectionId={params.id}>
-        <ChatProvider>
-          <SidebarProvider>
-            <CollectionIdSidebar />
-            <SidebarInset>
-              <main className="flex h-full shrink-0 flex-col items-start justify-start px-3 pt-3">
-                <CollectionIdHeader />
-                {children}
-              </main>
-            </SidebarInset>
-          </SidebarProvider>
-        </ChatProvider>
-      </ClusteringProvider>
-    </CollectionIdProvider>
+    <EventSourceProvider>
+      <CollectionIdProvider
+        initialTitle={data?.name}
+        initialDescription={data?.description ?? ""}
+      >
+        <ClusteringProvider collectionId={params.id}>
+          <ChatProvider>
+            <SidebarProvider>
+              <CollectionIdSidebar />
+              <SidebarInset>
+                <main className="flex h-full shrink-0 flex-col items-start justify-start px-3 pt-3">
+                  <CollectionIdHeader />
+                  {children}
+                </main>
+              </SidebarInset>
+            </SidebarProvider>
+          </ChatProvider>
+        </ClusteringProvider>
+      </CollectionIdProvider>
+    </EventSourceProvider>
   );
 }

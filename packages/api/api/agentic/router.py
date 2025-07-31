@@ -8,6 +8,8 @@ from fastapi import (
     status,
 )
 
+from api.agentic.agent import rag_agent
+from api.agentic.schemas import AgentResponse, RAGQueryRequest
 from api.auth.schemas import UserResponse
 from api.chat.dependencies import get_chat_or_404
 from api.clustering.schemas import ClusteringResponse
@@ -19,7 +21,6 @@ from api.document.schemas import (
 from api.models.chat import CollectionChat
 from api.storage import storage_service
 
-from .agent import rag_agent
 from .core.ingestion.schemas import FileInput
 from .dependencies import (
     DocumentIngestorService,
@@ -32,7 +33,6 @@ from .dependencies import (
     get_rag_agent,
     get_topic_modelling_service,
 )
-from .schemas import AgentResponse
 from .utils import normalize_file_input
 
 router = APIRouter(prefix="/agentic", tags=["agentic"])
@@ -213,27 +213,25 @@ async def cluster_documents(
     status_code=status.HTTP_200_OK,
 )
 async def rag_query(
-    user_question: str,
-    *,
-    references: list[str] = None,
+    request: RAGQueryRequest,
     collection_chat: CollectionChat = Depends(get_chat_or_404),
     rag_agent: rag_agent = Depends(get_rag_agent),
 ):
     """
     Query the RAG agent with a user question and return the answer.
     """
-    if not user_question:
+    if not request.user_question:
         raise HTTPException(status_code=400, detail="User question cannot be empty")
 
-    if references is not None:
+    if request.reference:
         rag_agent.create_flow(flow_type="document")
     else:
         rag_agent.create_flow(flow_type="collection")
 
     shared_store = rag_agent.run(
-        user_question=user_question,
+        user_question=request.user_question,
         collection_chat_id=collection_chat.id,
-        references=references,
+        references=request.reference,
     )
 
     # Clear chunks text to avoid sending large data back

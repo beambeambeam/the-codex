@@ -7,6 +7,8 @@ from sqlalchemy import TIMESTAMP, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
+from api.models.chat import CollectionChat, CollectionChatHistory
+
 from .base import Base
 
 
@@ -31,6 +33,23 @@ class User(Base):
         "Collection", foreign_keys="[Collection.created_by]", back_populates="creator"
     )
     created_documents = relationship("Document", foreign_keys="[Document.created_by]")
+
+    # Chats by the user
+    created_chats: Mapped[list["CollectionChat"]] = relationship(
+        "CollectionChat",
+        back_populates="creator",
+        foreign_keys="[CollectionChat.created_by]",
+    )
+    updated_chats: Mapped[list["CollectionChat"]] = relationship(
+        "CollectionChat",
+        back_populates="updater",
+        foreign_keys="[CollectionChat.updated_by]",
+    )
+    created_chat_histories: Mapped[list["CollectionChatHistory"]] = relationship(
+        "CollectionChatHistory",
+        back_populates="creator",
+        foreign_keys="[CollectionChatHistory.created_by]",
+    )
 
     def __repr__(self) -> str:
         return (

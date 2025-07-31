@@ -771,86 +771,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/queue/stats/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Get Queue Stats
-     * @description Get statistics for a specific queue.
-     */
-    get: operations["get_queue_stats_queue_stats__queue_type__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/queue/purge/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    put?: never;
-    /**
-     * Purge Queue
-     * @description Purge all messages from a queue (admin only).
-     */
-    post: operations["purge_queue_queue_purge__queue_type__post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/queue/debug/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Debug Queue Info
-     * @description Debug endpoint to check queue information (admin only).
-     */
-    get: operations["debug_queue_info_queue_debug__queue_type__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/queue/peek/{queue_type}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Peek Queue Message
-     * @description Peek at a message in the queue (consumes one message for testing).
-     */
-    get: operations["peek_queue_message_queue_peek__queue_type__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/queue/test-publish": {
     parameters: {
       query?: never;
@@ -891,7 +811,7 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/sse/documents/{document_id}": {
+  "/sse/system": {
     parameters: {
       query?: never;
       header?: never;
@@ -899,10 +819,10 @@ export interface paths {
       cookie?: never;
     };
     /**
-     * Stream Document Events
-     * @description Stream SSE events for a specific document.
+     * Stream System Events
+     * @description Stream system events.
      */
-    get: operations["stream_document_events_sse_documents__document_id__get"];
+    get: operations["stream_system_events_sse_system_get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -923,6 +843,26 @@ export interface paths {
      * @description Stream SSE events for a specific collection.
      */
     get: operations["stream_collection_events_sse_collections__collection_id__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/sse/documents/{document_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Stream Document Events
+     * @description Stream SSE events for a specific document.
+     */
+    get: operations["stream_document_events_sse_documents__document_id__get"];
     put?: never;
     post?: never;
     delete?: never;
@@ -961,8 +901,11 @@ export interface paths {
     /** List Chats */
     get: operations["list_chats_chats__get"];
     put?: never;
-    /** Create Chat */
-    post: operations["create_chat_chats__post"];
+    /**
+     * Create Chat With Rag
+     * @description Create a new chat and trigger RAG processing in the background.
+     */
+    post: operations["create_chat_with_rag_chats__post"];
     delete?: never;
     options?: never;
     head?: never;
@@ -1003,62 +946,6 @@ export interface paths {
     post?: never;
     /** Delete Chat */
     delete: operations["delete_chat_chats__chat_id__delete"];
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/{chat_id}/histories": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** List Histories */
-    get: operations["list_histories_chats__chat_id__histories_get"];
-    put?: never;
-    /** Create History */
-    post: operations["create_history_chats__chat_id__histories_post"];
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/{chat_id}/histories/{history_id}": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /** Get History */
-    get: operations["get_history_chats__chat_id__histories__history_id__get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
-  "/chats/{chat_id}/clear": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    get?: never;
-    /**
-     * Clear Chat History
-     * @description Clear all chat history for the specified chat ID.
-     *     This endpoint removes all messages associated with the chat.
-     */
-    put: operations["clear_chat_history_chats__chat_id__clear_put"];
-    post?: never;
-    delete?: never;
     options?: never;
     head?: never;
     patch?: never;
@@ -1248,6 +1135,18 @@ export interface components {
       retrieved_contexts?: components["schemas"]["ChunkSearchResponse"][];
     };
     /**
+     * ChatStatus
+     * @enum {string}
+     */
+    ChatStatus:
+      | "NEW_SESSION"
+      | "AWAITING_USER_INPUT"
+      | "PROCESSING_INPUT"
+      | "RESPONDING"
+      | "RESPONSE_COMPLETE"
+      | "ERROR_STATE"
+      | "SESSION_ENDED";
+    /**
      * ChunkCreate
      * @description Schema for creating a chunk.
      */
@@ -1410,16 +1309,6 @@ export interface components {
     };
     /** ClusteringChildResponse */
     ClusteringChildResponse: {
-      /**
-       * Clustering Topic Id
-       * @description Clustering Topic ID
-       */
-      clustering_topic_id: string;
-      /**
-       * Target
-       * @description Document ID
-       */
-      target: string;
       /** Id */
       id: string;
       /**
@@ -1436,6 +1325,26 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /**
+       * Clustering Topic Id
+       * @description Clustering Topic ID
+       */
+      clustering_topic_id: string;
+      /**
+       * Target
+       * @description Document ID
+       */
+      target: string;
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** ClusteringChildUpdate */
     ClusteringChildUpdate: {
@@ -1470,6 +1379,22 @@ export interface components {
     };
     /** ClusteringResponse */
     ClusteringResponse: {
+      /** Id */
+      id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
       /**
        * Collection Id
        * @description Collection ID
@@ -1490,22 +1415,16 @@ export interface components {
        * @description Clustering description
        */
       description?: string | null;
-      /** Id */
-      id: string;
       /**
-       * Created At
-       * Format: date-time
+       * Created By Username
+       * @description Get the username of the creator.
        */
-      created_at: string;
+      readonly created_by_username: string | null;
       /**
-       * Updated At
-       * Format: date-time
+       * Updated By Username
+       * @description Get the username of the updater.
        */
-      updated_at: string;
-      /** Created By */
-      created_by: string | null;
-      /** Updated By */
-      updated_by: string | null;
+      readonly updated_by_username: string | null;
     };
     /**
      * ClusteringResult
@@ -1537,21 +1456,6 @@ export interface components {
     };
     /** ClusteringTopicResponse */
     ClusteringTopicResponse: {
-      /**
-       * Clustering Id
-       * @description Clustering ID
-       */
-      clustering_id: string;
-      /**
-       * Title
-       * @description Topic title
-       */
-      title: string;
-      /**
-       * Description
-       * @description Topic description
-       */
-      description?: string | null;
       /** Id */
       id: string;
       /**
@@ -1568,6 +1472,31 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /**
+       * Clustering Id
+       * @description Clustering ID
+       */
+      clustering_id: string;
+      /**
+       * Title
+       * @description Topic title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Topic description
+       */
+      description?: string | null;
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** ClusteringTopicUpdate */
     ClusteringTopicUpdate: {
@@ -1587,12 +1516,6 @@ export interface components {
      * @description Topic with documents for enhanced clustering response.
      */
     ClusteringTopicWithDocuments: {
-      /** Clustering Id */
-      clustering_id: string;
-      /** Title */
-      title: string;
-      /** Description */
-      description: string | null;
       /** Id */
       id: string;
       /**
@@ -1609,8 +1532,24 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /** Clustering Id */
+      clustering_id: string;
+      /** Title */
+      title: string;
+      /** Description */
+      description: string | null;
       /** Documents */
       documents: components["schemas"]["DocumentResponse"][];
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** ClusteringUpdate */
     ClusteringUpdate: {
@@ -1647,21 +1586,10 @@ export interface components {
        * @description Chat description
        */
       description?: string | null;
-    };
-    /** CollectionChatHistoryCreate */
-    CollectionChatHistoryCreate: {
-      /**
-       * Collection Chat Id
-       * @description Collection Chat ID
-       */
-      collection_chat_id: string;
-      /** @description Role of the message sender (user/assistant/system) */
-      role: components["schemas"]["Role"];
-      /**
-       * Content
-       * @description Content of the chat message
-       */
-      content: string;
+      /** Message */
+      message: string;
+      /** Reference */
+      reference: string[];
     };
     /** CollectionChatHistoryResponse */
     CollectionChatHistoryResponse: {
@@ -1679,8 +1607,11 @@ export interface components {
       content: string;
       /** Id */
       id: string;
-      /** Created By */
-      created_by: string | null;
+      /**
+       * Created By
+       * @description Username of the user who created the message
+       */
+      created_by?: string | null;
       /**
        * Created At
        * Format: date-time
@@ -1706,20 +1637,27 @@ export interface components {
       description?: string | null;
       /** Id */
       id: string;
-      /** Created By */
-      created_by: string | null;
+      /**
+       * Created By
+       * @description Username of the user who created the chat
+       */
+      created_by?: string | null;
       /**
        * Created At
        * Format: date-time
        */
       created_at: string;
-      /** Updated By */
-      updated_by: string | null;
+      /**
+       * Updated By
+       * @description Username of the user who last updated the chat
+       */
+      updated_by?: string | null;
       /**
        * Updated At
        * Format: date-time
        */
       updated_at: string;
+      status: components["schemas"]["ChatStatus"];
     };
     /** CollectionChatUpdate */
     CollectionChatUpdate: {
@@ -1733,6 +1671,54 @@ export interface components {
        * @description Chat description
        */
       description?: string | null;
+      /** @description Chat status */
+      status?: components["schemas"]["ChatStatus"] | null;
+    };
+    /** CollectionChatWithHistoryResponse */
+    CollectionChatWithHistoryResponse: {
+      /**
+       * Collection Id
+       * @description Collection ID
+       */
+      collection_id: string;
+      /**
+       * Title
+       * @description Chat title
+       */
+      title: string;
+      /**
+       * Description
+       * @description Chat description
+       */
+      description?: string | null;
+      /** Id */
+      id: string;
+      /**
+       * Created By
+       * @description Username of the user who created the chat
+       */
+      created_by?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated By
+       * @description Username of the user who last updated the chat
+       */
+      updated_by?: string | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      status: components["schemas"]["ChatStatus"];
+      /**
+       * Histories
+       * @description Chat history messages
+       */
+      histories?: components["schemas"]["CollectionChatHistoryResponse"][];
     };
     /**
      * CollectionCreate
@@ -2612,14 +2598,6 @@ export interface components {
      * @description Enhanced clustering response with topics and documents.
      */
     EnhancedClusteringResponse: {
-      /** Collection Id */
-      collection_id: string;
-      /** Search Word */
-      search_word: string | null;
-      /** Title */
-      title: string;
-      /** Description */
-      description: string | null;
       /** Id */
       id: string;
       /**
@@ -2636,8 +2614,26 @@ export interface components {
       created_by: string | null;
       /** Updated By */
       updated_by: string | null;
+      /** Collection Id */
+      collection_id: string;
+      /** Search Word */
+      search_word: string | null;
+      /** Title */
+      title: string;
+      /** Description */
+      description: string | null;
       /** Topics */
       topics: components["schemas"]["ClusteringTopicWithDocuments"][];
+      /**
+       * Created By Username
+       * @description Get the username of the creator.
+       */
+      readonly created_by_username: string | null;
+      /**
+       * Updated By Username
+       * @description Get the username of the updater.
+       */
+      readonly updated_by_username: string | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -2660,25 +2656,21 @@ export interface components {
       message: string;
     };
     /**
-     * QueueStatsResponse
-     * @description Queue statistics response.
+     * RAGQueryRequest
+     * @description Schema for RAG query request body.
      */
-    QueueStatsResponse: {
-      /** Queue Name */
-      queue_name: string;
-      /** Message Count */
-      message_count: number;
+    RAGQueryRequest: {
+      /**
+       * User Question
+       * @description The user's question or query for the RAG system
+       */
+      user_question: string;
+      /**
+       * Reference
+       * @description Optional list of document references to use for the query
+       */
+      reference?: string[];
     };
-    /**
-     * QueueType
-     * @description Predefined queue types.
-     * @enum {string}
-     */
-    QueueType:
-      | "document_processing"
-      | "collection_processing"
-      | "chat_notifications"
-      | "system_events";
     /**
      * Role
      * @enum {string}
@@ -4173,7 +4165,6 @@ export interface operations {
   rag_query_agentic_rag_query_post: {
     parameters: {
       query: {
-        user_question: string;
         chat_id: string;
       };
       header?: never;
@@ -4182,9 +4173,9 @@ export interface operations {
         session?: string | null;
       };
     };
-    requestBody?: {
+    requestBody: {
       content: {
-        "application/json": string[];
+        "application/json": components["schemas"]["RAGQueryRequest"];
       };
     };
     responses: {
@@ -4233,138 +4224,6 @@ export interface operations {
       query?: never;
       header?: never;
       path?: never;
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_queue_stats_queue_stats__queue_type__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["QueueStatsResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  purge_queue_queue_purge__queue_type__post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  debug_queue_info_queue_debug__queue_type__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": unknown;
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  peek_queue_message_queue_peek__queue_type__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        queue_type: components["schemas"]["QueueType"];
-      };
       cookie?: {
         session?: string | null;
       };
@@ -4460,14 +4319,11 @@ export interface operations {
       };
     };
   };
-  stream_document_events_sse_documents__document_id__get: {
+  stream_system_events_sse_system_get: {
     parameters: {
       query?: never;
       header?: never;
-      path: {
-        /** @description Document ID to stream events for */
-        document_id: string;
-      };
+      path?: never;
       cookie?: {
         session?: string | null;
       };
@@ -4501,6 +4357,40 @@ export interface operations {
       path: {
         /** @description Collection ID to stream events for */
         collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  stream_document_events_sse_documents__document_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @description Document ID to stream events for */
+        document_id: string;
       };
       cookie?: {
         session?: string | null;
@@ -4593,7 +4483,7 @@ export interface operations {
       };
     };
   };
-  create_chat_chats__post: {
+  create_chat_with_rag_chats__post: {
     parameters: {
       query?: never;
       header?: never;
@@ -4678,7 +4568,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["CollectionChatResponse"];
+          "application/json": components["schemas"]["CollectionChatWithHistoryResponse"];
         };
       };
       /** @description Validation Error */
@@ -4730,135 +4620,6 @@ export interface operations {
     };
   };
   delete_chat_chats__chat_id__delete: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      204: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content?: never;
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  list_histories_chats__chat_id__histories_get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatHistoryResponse"][];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  create_history_chats__chat_id__histories_post: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-      };
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CollectionChatHistoryCreate"];
-      };
-    };
-    responses: {
-      /** @description Successful Response */
-      201: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatHistoryResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  get_history_chats__chat_id__histories__history_id__get: {
-    parameters: {
-      query?: never;
-      header?: never;
-      path: {
-        chat_id: string;
-        history_id: string;
-      };
-      cookie?: never;
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["CollectionChatHistoryResponse"];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
-  clear_chat_history_chats__chat_id__clear_put: {
     parameters: {
       query?: never;
       header?: never;

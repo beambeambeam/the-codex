@@ -1,54 +1,98 @@
 "use client";
 
-import {
-  ChatProvider,
-  useChatContext,
-} from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
+import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+import { ChatProvider } from "@/app/(protected)/collection/[id]/chat/_components/chat-context";
 import ChatForm, {
   ChatFormSchemaType,
 } from "@/app/(protected)/collection/[id]/chat/_components/chat-form";
+import ChatList from "@/app/(protected)/collection/[id]/chat/_components/chat-list";
 import ChatTemplate from "@/app/(protected)/collection/[id]/chat/_components/chat-template";
 import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/header";
+import { $api } from "@/lib/api/client";
+
+interface ChatMessage {
+  collection_chat_id: string;
+  content: string;
+  created_at: string;
+  created_by: string;
+  id: string;
+  role: "user" | "assistant" | "system";
+}
 
 function ChatContent() {
-  const { isLoading, isError } = useChatContext();
+  const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const [msg, setMsg] = useState<ChatMessage[]>([]);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        Loading chats...
-      </div>
-    );
-  }
-  if (isError) {
-    return (
-      <div className="flex h-full w-full items-center justify-center text-red-500">
-        Failed to load chats.
-      </div>
-    );
-  }
+  const { mutate: createChatWithRag, isPending: isCreating } = $api.useMutation(
+    "post",
+    "/chats/",
+    {
+      onSuccess: (data) => {
+        router.push(`/collection/${data.collection_id}/chat/${data.id}`);
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(
+          message || "Failed to create collection chat. Please try again.",
+        );
+      },
+    },
+  );
+
+  const handleSubmit = (values: ChatFormSchemaType) => {
+    setMsg([
+      {
+        collection_chat_id: "",
+        content: values.chat_message,
+        created_at: new Date().toDateString(),
+        created_by: "",
+        id: "",
+        role: "user",
+      },
+    ]);
+    createChatWithRag({
+      body: {
+        collection_id: params.id,
+        title:
+          values.chat_message.length > 50
+            ? values.chat_message.slice(0, 50) + "..."
+            : values.chat_message,
+        description:
+          values.chat_message.length > 100
+            ? values.chat_message.slice(0, 100) + "..."
+            : values.chat_message,
+        message: values.chat_message,
+        reference: values.reference,
+      },
+    });
+  };
 
   return (
-    <>
-      <div className="h-full w-full">
+    <div className="grid h-full grid-cols-[3fr_1fr]">
+      <div className="relative h-full w-full">
         <ChatHeader title="Start a new Conversation" />
-        <ChatTemplate message={[]} />
+        <div className="w-full px-8">
+          <ChatTemplate message={msg} />
+        </div>
+        <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
+          <div className="p-4 px-12">
+            <ChatForm
+              onSubmit={handleSubmit}
+              suggest={true}
+              disabled={isCreating}
+            />
+          </div>
+        </div>
       </div>
-      <div className="absolute right-0 bottom-0 left-0 z-10 flex flex-1 flex-col justify-end p-10 lg:mx-20">
-        <ChatForm
-          onSubmit={function (
-            values: ChatFormSchemaType,
-          ): void | Promise<void> {
-            console.log(values);
-          }}
-          defaultValues={{
-            chat_message: "",
-            reference: [],
-          }}
-          suggest={true}
-        />
-      </div>
-    </>
+      <ChatList />
+    </div>
   );
 }
 
