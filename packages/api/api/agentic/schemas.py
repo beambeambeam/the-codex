@@ -2,7 +2,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from api.chat.schemas import (
     CollectionChatHistoryBase,
@@ -136,6 +136,17 @@ class AgentResponse(BaseModel):
         default_factory=list,
         description="List of retrieved document chunks based on the query embedding",
     )
+
+    # truncate the response to avoid sending large data back
+    @field_validator("retrieved_contexts", mode="before")
+    def truncate_retrieved_contexts(
+        cls, v: list[ChunkSearchResponse]
+    ) -> list[ChunkSearchResponse]:
+        """Truncate the retrieved contexts to avoid sending large data back."""
+        for context in v:
+            if len(context.chunk_text) > 100:
+                context.chunk_text = context.chunk_text[:100] + "..."
+        return v
 
 
 class SharedStore(ShareStoreBase):
