@@ -80,9 +80,6 @@ class DocumentResponse(DocumentBase):
         from_attributes = True
 
 
-class DocumentResponseTruncated(DocumentResponse):
-    """Schema for truncated document response."""
-
 class TruncatedDocumentMixin:
     @field_validator("document", mode="before")
     @classmethod
@@ -91,12 +88,10 @@ class TruncatedDocumentMixin:
             return value[:1000] + "..."
         return value
 
+
 class DocumentResponseTruncated(TruncatedDocumentMixin, DocumentResponse):
     """Schema for truncated document response."""
-    pass
 
-class DocumentSearchResponseTruncated(TruncatedDocumentMixin, DocumentSearchResponse):
-    """Schema for truncated searched documents."""
     pass
 
 
@@ -164,15 +159,10 @@ class DocumentSearchResponse(DocumentResponse):
     )
 
 
-class DocumentSearchResponseTruncated(DocumentSearchResponse):
+class DocumentSearchResponseTruncated(TruncatedDocumentMixin, DocumentSearchResponse):
     """Schema for truncated searched documents."""
 
-    @field_validator("document", mode="before")
-    @classmethod
-    def truncate_document(cls, value):
-        if value and len(value) > 1000:
-            return value[:1000] + "..."
-        return value
+    pass
 
 
 class DocumentRelationBase(BaseModel):
