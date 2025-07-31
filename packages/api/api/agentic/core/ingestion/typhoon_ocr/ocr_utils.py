@@ -2,6 +2,7 @@
 
 import base64
 import io
+import json
 import os
 from dataclasses import dataclass
 from typing import Any, Union
@@ -108,5 +109,12 @@ async def ocr_image_document(
         litellm_params=litellm_params,
     )
 
-    # Return formatted response
+    try:
+        parsed = json.loads(response)
+        if isinstance(parsed, dict) and "natural_text" in parsed:
+            return str(parsed["natural_text"]).strip()
+    except json.JSONDecodeError:
+        pass
+
+    # Fallback: return raw stripped response
     return response.strip()

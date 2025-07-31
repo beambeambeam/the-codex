@@ -149,7 +149,7 @@ class DocumentIngestor:
     async def extract_knowledge_graph(self, full_text: str) -> ExtractedGraph:
         """Extract knowledge graph from file content."""
         if not full_text:
-            print(f"No text content for knowledge graph extraction")
+            print("No text content for knowledge graph extraction")
             return None
 
         kg = await self.kg_extractor.extract(full_text=full_text)
@@ -159,7 +159,7 @@ class DocumentIngestor:
             print(f"Knowledge graph extracted: {node_count} nodes, {edge_count} edges")
             return kg
 
-        print(f"No knowledge graph extracted")
+        print("No knowledge graph extracted")
         return None
 
     async def get_document_summary(

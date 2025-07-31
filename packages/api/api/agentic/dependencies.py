@@ -1,24 +1,24 @@
 from fastapi import Depends
 
-from api.agentic.core.ingestion.summary import SummaryGenerator
 from api.auth.dependencies import get_current_user
 from api.chat.dependencies import get_chat_service
 from api.chat.service import ChatService
+from api.clustering.service import ClusteringService, get_clustering_service
 from api.document.dependencies import get_document_service
 from api.document.service import DocumentService
 from api.models.user import User
-from api.clustering.service import ClusteringService, get_clustering_service
 
 from .agent import rag_agent
 from .core import (
-    TopicModellingService,
     DocumentIngestorService,
     KnowledgeGraphExtractor,
     TextEmbedder,
+    TopicModellingService,
     # call_llm,
     call_llm_async,
 )
 from .core.embedding.embedding import MODEL_BACKEND_MAP
+from .core.ingestion.summary import SummaryGenerator
 from .core.prompts.prompt_manager import (
     render_knowledge_graph_extraction_prompt,
 )

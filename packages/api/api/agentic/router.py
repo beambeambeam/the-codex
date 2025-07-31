@@ -1,7 +1,5 @@
 import asyncio
 
-from api.agentic.core.clustering.service import TopicModellingService
-from api.clustering.schemas import ClusteringResponse
 from fastapi import (
     APIRouter,
     Depends,
@@ -10,29 +8,31 @@ from fastapi import (
     status,
 )
 
-from api.agentic.agent import rag_agent
-from api.agentic.schemas import AgentResponse
 from api.auth.schemas import UserResponse
 from api.chat.dependencies import get_chat_or_404
-from api.document.schemas import DocumentCreate, DocumentResponse
+from api.clustering.schemas import ClusteringResponse
+from api.document.schemas import (
+    DocumentCreate,
+    DocumentResponse,
+    DocumentResponseTruncated,
+)
 from api.models.chat import CollectionChat
 from api.storage import storage_service
 
-from .core.clustering.schemas import (
-    ClusteringResult,
-)  # TODO: This is for quick use future will be use with database
+from .agent import rag_agent
 from .core.ingestion.schemas import FileInput
 from .dependencies import (
-    TopicModellingService,
     DocumentIngestorService,
     DocumentService,
+    TopicModellingService,
     User,
     get_current_user,
-    get_topic_modelling_service,
     get_document_ingestor,
     get_document_service,
     get_rag_agent,
+    get_topic_modelling_service,
 )
+from .schemas import AgentResponse
 from .utils import normalize_file_input
 
 router = APIRouter(prefix="/agentic", tags=["agentic"])
@@ -40,7 +40,7 @@ router = APIRouter(prefix="/agentic", tags=["agentic"])
 
 @router.post(
     "/upload_ingest",
-    response_model=list[DocumentResponse],
+    response_model=list[DocumentResponseTruncated],
     tags=["agentic"],
     status_code=status.HTTP_201_CREATED,
 )
@@ -112,7 +112,7 @@ async def upload_and_ingest_documents(
                 document_ingestor.ingest_file(
                     input_file=input_file_model,
                     document=current_document,
-                    graph_extract=True,
+                    graph_extract=False,
                     user=current_user,
                 )
             )
@@ -128,7 +128,7 @@ async def upload_and_ingest_documents(
 
 @router.post(
     "/graph_extract/{document_id}",
-    response_model=DocumentResponse,
+    response_model=DocumentResponseTruncated,
     tags=["agentic"],
     status_code=status.HTTP_200_OK,
 )
@@ -145,6 +145,12 @@ async def graph_extract(
     if not document:
         raise HTTPException(
             status_code=404, detail=f"Document with ID {document_id} not found"
+        )
+
+    if document.is_graph_extracted:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Knowledge graph already extracted for document {document_id}",
         )
 
     # Extract knowledge graph from the document

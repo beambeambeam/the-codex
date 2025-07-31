@@ -1,7 +1,5 @@
 from collections import Counter, defaultdict
 
-from api.models.clustering import Clustering
-from api.models.user import User
 import numpy as np
 import pandas as pd
 import umap
@@ -11,25 +9,28 @@ from loguru import logger
 from tqdm.auto import tqdm
 from typing_extensions import Literal
 
+from api.models.clustering import Clustering
+from api.models.user import User
+
+from ....clustering.service import (
+    ClusteringChildCreate,
+    ClusteringCreate,
+    ClusteringService,
+    ClusteringTopicCreate,
+)
 from ....document.schemas import ChunkResponse, DocumentResponse
 from ....document.service import DocumentService
-from ....clustering.service import (
-    ClusteringCreate,
-    ClusteringTopicCreate,
-    ClusteringChildCreate,
-)
-from ....clustering.service import ClusteringService
-from ...core import call_llm, call_structured_llm
+from ...core import call_structured_llm
 from ..embedding.embedding import TextEmbedder
 from ..prompts import (
     render_keyword_to_topic_extraction,
     render_summary_to_topic_extraction,
 )
 from .schemas import (
+    ClusteringDetails,
     ClusteringResult,
     DocumentDistribution,
     TopicCluster,
-    ClusteringDetails,
 )
 
 
