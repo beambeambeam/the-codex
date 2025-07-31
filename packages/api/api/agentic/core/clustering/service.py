@@ -398,7 +398,7 @@ class TopicModellingService:
 
         for topic in clustering_result.topics:
             topic_data = ClusteringTopicCreate(
-                clustering_id=collection_id,
+                clustering_id=created_clustering.id,
                 title=topic.title,
                 description=topic.description,
             )
