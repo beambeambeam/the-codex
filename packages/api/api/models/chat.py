@@ -61,7 +61,6 @@ class CollectionChatHistory(Base):
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
-    # create username by user id, user.username
 
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.current_timestamp()
