@@ -29,7 +29,9 @@ from .schemas import (
     DocumentRelationResponse,
     DocumentRelationWithNodes,
     DocumentResponse,
+    DocumentResponseTruncated,
     DocumentSearchResponse,
+    DocumentSearchResponseTruncated,
     DocumentUpdate,
 )
 from .service import DocumentServiceSearch as DocumentService
@@ -37,7 +39,7 @@ from .service import DocumentServiceSearch as DocumentService
 router = APIRouter(prefix="/documents", tags=["documents"])
 
 
-@router.get("/", response_model=list[DocumentResponse])
+@router.get("/", response_model=list[DocumentResponseTruncated])
 def list_user_documents(
     current_user: User = Depends(get_current_user),
     document_service: DocumentService = Depends(get_document_service),
@@ -60,7 +62,7 @@ def get_document(
     return DocumentDetailResponse(**doc_details)
 
 
-@router.put("/{document_id}", response_model=DocumentResponse)
+@router.put("/{document_id}", response_model=DocumentResponseTruncated)
 def update_document(
     update_data: DocumentUpdate,
     document: Document = Depends(get_document_with_modify_permission),
@@ -168,7 +170,7 @@ def search_collection_chunks(
 @router.post(
     "/collection/{collection_id}/documents/search",
     tags=["search"],
-    response_model=list[DocumentSearchResponse],
+    response_model=list[DocumentSearchResponseTruncated],
     status_code=status.HTTP_200_OK,
 )
 def search_collection_documents(
@@ -195,7 +197,7 @@ def search_collection_documents(
 @router.get(
     "/collection/{collection_id}/documents/search",
     tags=["search"],
-    response_model=list[DocumentResponse],
+    response_model=list[DocumentResponseTruncated],
     status_code=status.HTTP_200_OK,
 )
 def search_documents_by_name(
