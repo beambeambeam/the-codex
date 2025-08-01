@@ -30,7 +30,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Scroller } from "@/components/ui/scroller";
 import { fetchClient } from "@/lib/api/client";
 import { components } from "@/lib/api/path";
 import { cn, debounce, getFallbackUsername } from "@/lib/utils";
@@ -193,7 +192,7 @@ export default function ShareForm({
                           <ChevronsUpDown className="opacity-50" />
                         </div>
                       </PopoverTrigger>
-                      <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
                         <Command shouldFilter={false}>
                           <CommandInput
                             placeholder="Search users..."
