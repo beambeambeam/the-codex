@@ -14,6 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Pill, PillAvatar } from "@/components/ui/pill";
 import {
   Popover,
   PopoverContent,
@@ -22,7 +23,7 @@ import {
 import { Scroller } from "@/components/ui/scroller";
 import { fetchClient } from "@/lib/api/client";
 import { components } from "@/lib/api/path";
-import { cn, debounce } from "@/lib/utils";
+import { cn, debounce, getFallbackUsername } from "@/lib/utils";
 
 type User = components["schemas"]["UserSearchResponse"];
 
@@ -112,10 +113,10 @@ function CollectionShare() {
                       <div className="flex flex-wrap gap-2">
                         {selectedUsers.length == 0 && "No user Selected"}
                         {selectedUsers.map((user) => (
-                          <Badge
+                          <Pill
                             key={user.id}
                             variant="secondary"
-                            className="gap-1"
+                            className="hover:bg-secondary/80 cursor-pointer gap-1"
                             onClick={() => {
                               const newValue = value.filter(
                                 (v) => v !== user.id,
@@ -126,9 +127,12 @@ function CollectionShare() {
                               );
                             }}
                           >
+                            <PillAvatar
+                              fallback={getFallbackUsername(user.username)}
+                            />
                             {user.username}
                             <X className="h-3 w-3" />
-                          </Badge>
+                          </Pill>
                         ))}
                       </div>
                       <ChevronsUpDown className="opacity-50" />
