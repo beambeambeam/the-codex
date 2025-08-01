@@ -1,8 +1,6 @@
 from typing import Literal
 
-from api import collection
 from api.chat.service import ChatService
-from api.collection.service import CollectionService
 from api.document.service import DocumentServiceSearch as DocumentService
 from api.models.enum import ChatStatus
 

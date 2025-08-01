@@ -14,7 +14,6 @@ from api.document.schemas import (
     ChunkSearchResponse,
     DocumentResponse,
 )
-from api.models.user import User
 
 from .pocketflow_custom import ShareStoreBase
 
