@@ -47,6 +47,17 @@ class CollectionService:
         self.db.add(collection)
         self.db.commit()
         self.db.refresh(collection)
+
+        # Automatically assign OWNER permission to the creator
+        from ..models.collection import CollectionPermissionLevel
+
+        self.permission_service.grant_permission(
+            collection_id=collection.id,
+            user_id=user.id,
+            permission_level=CollectionPermissionLevel.OWNER,
+            granted_by=user,
+        )
+
         return collection
 
     def get_collection(self, collection_id: str) -> Optional[Collection]:
@@ -54,11 +65,23 @@ class CollectionService:
         return self.db.query(Collection).filter(Collection.id == collection_id).first()
 
     def get_user_collections(self, user_id: str) -> list[Collection]:
-        """Get all collections created by a user."""
+        """Get all collections accessible by a user."""
+        # Get collections where user has OWNER or EDIT permissions
+        from ..models.collection import CollectionPermission, CollectionPermissionLevel
+
         collections = (
             self.db.query(Collection)
             .options(joinedload(Collection.creator), joinedload(Collection.updater))
-            .filter(Collection.created_by == user_id)
+            .join(
+                CollectionPermission,
+                Collection.id == CollectionPermission.collection_id,
+            )
+            .filter(CollectionPermission.user_id == user_id)
+            .filter(
+                CollectionPermission.permission_level.in_(
+                    [CollectionPermissionLevel.OWNER, CollectionPermissionLevel.EDIT]
+                )
+            )
             .order_by(Collection.created_at.desc())
             .all()
         )
@@ -102,8 +125,8 @@ class CollectionService:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Collection not found"
             )
 
-        # Check if user has permission to delete
-        if not self._can_modify_collection(collection, user):
+        # Check if user has permission to delete (only creator or OWNER)
+        if not self._can_delete_collection(collection, user):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorized to delete this collection",
@@ -223,25 +246,28 @@ class CollectionService:
     # Permission helper methods
     def _can_access_collection(self, collection: Collection, user: User) -> bool:
         """Check if user can access a collection."""
-        # Check if user is creator or has explicit permission
-        return (
-            collection.created_by == user.id
-            or self.permission_service.can_edit_collection(collection.id, user.id)
-        )
+        # Check if user has OWNER or EDIT permission
+        return self.permission_service.can_owner_collection(
+            collection.id, user.id
+        ) or self.permission_service.can_edit_collection(collection.id, user.id)
 
     def _can_modify_collection(self, collection: Collection, user: User) -> bool:
         """Check if user can modify a collection."""
-        # Check if user is creator or has explicit edit permission
-        return (
-            collection.created_by == user.id
-            or self.permission_service.can_edit_collection(collection.id, user.id)
-        )
+        # Check if user has OWNER permission or has explicit edit permission
+        return self.permission_service.can_owner_collection(
+            collection.id, user.id
+        ) or self.permission_service.can_edit_collection(collection.id, user.id)
 
     def _can_modify_relation(self, relation: CollectionRelation, user: User) -> bool:
         """Check if user can modify a relation."""
         return relation.created_by == user.id or self._can_modify_collection(
             relation.collection, user
         )
+
+    def _can_delete_collection(self, collection: Collection, user: User) -> bool:
+        """Check if user can delete a collection."""
+        # Only OWNER can delete collections
+        return self.permission_service.can_owner_collection(collection.id, user.id)
 
     def get_collection_with_details(self, collection_id: str) -> Optional[Collection]:
         """Get collection with all related data loaded."""
@@ -274,11 +300,22 @@ class CollectionService:
         # If query is empty, return all collections for the user
         if not query.strip():
             return self.get_user_collections(user.id)
-        # Search by name or description
+        # Search by name or description for collections user has access to
+        from ..models.collection import CollectionPermission, CollectionPermissionLevel
+
         collections = (
             self.db.query(Collection)
             .options(joinedload(Collection.creator), joinedload(Collection.updater))
-            .filter(Collection.created_by == user.id)
+            .join(
+                CollectionPermission,
+                Collection.id == CollectionPermission.collection_id,
+            )
+            .filter(CollectionPermission.user_id == user.id)
+            .filter(
+                CollectionPermission.permission_level.in_(
+                    [CollectionPermissionLevel.OWNER, CollectionPermissionLevel.EDIT]
+                )
+            )
             .filter(
                 Collection.name.ilike(f"%{query}%")
                 | Collection.description.ilike(f"%{query}%")
