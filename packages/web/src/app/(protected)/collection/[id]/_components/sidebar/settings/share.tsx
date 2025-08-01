@@ -117,7 +117,8 @@ function CollectionShare() {
                             key={user.id}
                             variant="secondary"
                             className="hover:bg-secondary/80 cursor-pointer gap-1"
-                            onClick={() => {
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const newValue = value.filter(
                                 (v) => v !== user.id,
                               );
@@ -154,7 +155,7 @@ function CollectionShare() {
                         ) : filteredUsers.length === 0 ? (
                           <CommandEmpty>
                             {search.trim() === ""
-                              ? "No users available"
+                              ? "No users available try to search."
                               : "No users found."}
                           </CommandEmpty>
                         ) : (
