@@ -18,6 +18,7 @@ class CollectionPermissionLevel(str, Enum):
     """Collection permission levels."""
 
     EDIT = "edit"
+    OWNER = "owner"
 
 
 class CollectionPermissionAction(str, Enum):
@@ -89,7 +90,7 @@ class CollectionPermission(Base):
         Text, ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     permission_level: Mapped[CollectionPermissionLevel] = mapped_column(
-        Enum("edit", name="collectionpermissionlevel"), nullable=False
+        Enum("edit", "owner", name="collectionpermissionlevel"), nullable=False
     )
     granted_by: Mapped[str] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=False
@@ -131,7 +132,7 @@ class CollectionPermissionLog(Base):
         Enum("granted", "revoked", name="collectionpermissionaction"), nullable=False
     )
     permission_level: Mapped[CollectionPermissionLevel] = mapped_column(
-        Enum("edit", name="collectionpermissionlevel"), nullable=False
+        Enum("edit", "owner", name="collectionpermissionlevel"), nullable=False
     )
     performed_by: Mapped[str] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=False
