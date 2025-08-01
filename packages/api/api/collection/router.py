@@ -3,7 +3,9 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session, joinedload
 
-from ..auth.dependencies import get_current_user
+from ..auth.dependencies import get_auth_service, get_current_user
+from ..auth.schemas import UserSearchResponse
+from ..auth.service import AuthService
 from ..clustering.schemas import EnhancedClusteringResponse
 from ..clustering.service import ClusteringService, get_clustering_service
 from ..database import get_db
@@ -18,7 +20,10 @@ from .dependencies import (
     get_collection_relation_with_modify_permission,
     get_collection_service,
     get_collection_with_modify_permission,
+    get_permission_service,
 )
+from .permission import router as permission_router
+from .permission.service import CollectionPermissionService
 from .schemas import (
     CollectionCreate,
     CollectionDetailResponse,
@@ -35,6 +40,9 @@ from .schemas import (
 from .service import CollectionService
 
 router = APIRouter(prefix="/collections", tags=["collections"])
+
+# Include permission routes
+router.include_router(permission_router)
 
 
 @router.post(
@@ -221,3 +229,33 @@ def create_collection_edge(
     # Ensure the relation_id in the data matches the URL parameter
     edge_data.collection_relation_id = relation.id
     return collection_service.create_collection_edge(edge_data, current_user)
+
+
+@router.get(
+    "/{collection_id}/search/users",
+    response_model=list[UserSearchResponse],
+    status_code=status.HTTP_200_OK,
+)
+def search_users_for_collection(
+    collection_id: str,
+    query: str = Query(
+        ...,
+        min_length=1,
+        description="Search query for users by username or email",
+    ),
+    current_user: User = Depends(get_current_user),
+    auth_service: AuthService = Depends(get_auth_service),
+    permission_service: CollectionPermissionService = Depends(get_permission_service),
+) -> list[UserSearchResponse]:
+    """Search for users by username or email, excluding those already in the collection."""
+    # Get all users matching the search query
+    users = auth_service.search_users(query)
+
+    # Get users already in the collection
+    existing_permissions = permission_service.get_user_permissions(collection_id)
+    existing_user_ids = {permission.user_id for permission in existing_permissions}
+
+    # Filter out users already in the collection
+    available_users = [user for user in users if user.id not in existing_user_ids]
+
+    return available_users

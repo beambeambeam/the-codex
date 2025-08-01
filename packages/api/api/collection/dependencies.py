@@ -12,12 +12,20 @@ from ..models.collection import (
     CollectionRelation,
 )
 from ..models.user import User
+from .permission.service import CollectionPermissionService
 from .service import CollectionService
 
 
 def get_collection_service(db: Session = Depends(get_db)) -> CollectionService:
     """Get collection service instance."""
     return CollectionService(db)
+
+
+def get_permission_service(
+    db: Session = Depends(get_db),
+) -> CollectionPermissionService:
+    """Get permission service instance."""
+    return CollectionPermissionService(db)
 
 
 def get_collection_or_404(

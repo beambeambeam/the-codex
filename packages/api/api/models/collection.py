@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import TIMESTAMP, ForeignKey, Text
+from sqlalchemy import TIMESTAMP, Enum, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -12,6 +12,20 @@ from .base import Base
 if TYPE_CHECKING:
     from .document import Document
     from .user import User
+
+
+class CollectionPermissionLevel(str, Enum):
+    """Collection permission levels."""
+
+    EDIT = "edit"
+    OWNER = "owner"
+
+
+class CollectionPermissionAction(str, Enum):
+    """Collection permission action types for audit log."""
+
+    GRANTED = "granted"
+    REVOKED = "revoked"
 
 
 class Collection(Base):
@@ -47,11 +61,97 @@ class Collection(Base):
     documents: Mapped[list["Document"]] = relationship(
         "Document", cascade="all, delete-orphan"
     )
+    permissions: Mapped[list["CollectionPermission"]] = relationship(
+        "CollectionPermission",
+        back_populates="collection",
+        cascade="all, delete-orphan",
+    )
+    permission_logs: Mapped[list["CollectionPermissionLog"]] = relationship(
+        "CollectionPermissionLog",
+        back_populates="collection",
+        cascade="all, delete-orphan",
+    )
 
     def __repr__(self) -> str:
         return (
             f"<Collection(id='{self.id}', name='{self.name}', "
             f"created_by='{self.created_by}')>"
+        )
+
+
+class CollectionPermission(Base):
+    __tablename__ = "collection_permission"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True)
+    collection_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("collection.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    permission_level: Mapped[CollectionPermissionLevel] = mapped_column(
+        Enum("edit", "owner", name="collectionpermissionlevel"), nullable=False
+    )
+    granted_by: Mapped[str] = mapped_column(
+        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, nullable=False, server_default=func.current_timestamp()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP,
+        nullable=False,
+        server_default=func.current_timestamp(),
+        onupdate=func.current_timestamp(),
+    )
+
+    collection: Mapped["Collection"] = relationship(
+        "Collection", back_populates="permissions"
+    )
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id])
+    granter: Mapped["User"] = relationship("User", foreign_keys=[granted_by])
+
+    def __repr__(self) -> str:
+        return (
+            f"<CollectionPermission(id='{self.id}', collection_id='{self.collection_id}', "
+            f"user_id='{self.user_id}', permission_level='{self.permission_level}')>"
+        )
+
+
+class CollectionPermissionLog(Base):
+    __tablename__ = "collection_permission_log"
+
+    id: Mapped[str] = mapped_column(Text, primary_key=True)
+    collection_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("collection.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[str] = mapped_column(
+        Text, ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    action: Mapped[CollectionPermissionAction] = mapped_column(
+        Enum("granted", "revoked", name="collectionpermissionaction"), nullable=False
+    )
+    permission_level: Mapped[CollectionPermissionLevel] = mapped_column(
+        Enum("edit", "owner", name="collectionpermissionlevel"), nullable=False
+    )
+    performed_by: Mapped[str] = mapped_column(
+        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, nullable=False, server_default=func.current_timestamp()
+    )
+
+    collection: Mapped["Collection"] = relationship(
+        "Collection", back_populates="permission_logs"
+    )
+    user: Mapped["User"] = relationship("User", foreign_keys=[user_id])
+    performer: Mapped["User"] = relationship("User", foreign_keys=[performed_by])
+
+    def __repr__(self) -> str:
+        return (
+            f"<CollectionPermissionLog(id='{self.id}', collection_id='{self.collection_id}', "
+            f"user_id='{self.user_id}', action='{self.action}', "
+            f"permission_level='{self.permission_level}')>"
         )
 
 

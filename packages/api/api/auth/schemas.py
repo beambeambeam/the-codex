@@ -81,3 +81,16 @@ class EnhancedSessionResponse(BaseModel):
     expires_at: datetime
     remember_me: bool
     issued_at: datetime
+
+
+class UserSearchResponse(BaseModel):
+    """User search response model."""
+
+    id: str
+    username: str
+    email: str
+
+    class Config:
+        """Pydantic config."""
+
+        from_attributes = True
