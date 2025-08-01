@@ -10,8 +10,10 @@ from tqdm.auto import tqdm
 from typing_extensions import Literal
 
 from api.models.clustering import Clustering
+from api.models.enum import ClusteringStatus
 from api.models.user import User
 
+from ....clustering.schemas import ClusteringStatusUpdate, ClusteringUpdate
 from ....clustering.service import (
     ClusteringChildCreate,
     ClusteringCreate,
@@ -433,16 +435,71 @@ class TopicModellingService:
         """
         Clusters documents in a collection and stores the result in the database.
         """
-        clustering_result = await self.cluster_documents(
-            collection_id=collection_id,
-            cluster_title_top_n_topics=cluster_title_top_n_topics,
-            cluster_title_top_n_words=cluster_title_top_n_words,
-            title_generated_methods=title_generated_methods,
+        # Create initial clustering with processing status
+        initial_clustering = self._CLUSTERING_SERVICE.create_clustering(
+            clustering_data=ClusteringCreate(
+                collection_id=collection_id,
+                search_word=None,
+                title="Processing...",
+                description="Clustering in progress",
+                status=ClusteringStatus.processing,
+            ),
+            user=user,
         )
 
-        saved_cluster = self.store_clustering_result(
-            collection_id=collection_id, clustering_result=clustering_result, user=user
-        )
+        try:
+            clustering_result = await self.cluster_documents(
+                collection_id=collection_id,
+                cluster_title_top_n_topics=cluster_title_top_n_topics,
+                cluster_title_top_n_words=cluster_title_top_n_words,
+                title_generated_methods=title_generated_methods,
+            )
 
-        logger.info(f"Clustering and storage complete for collection {collection_id}.")
-        return saved_cluster
+            # Update the clustering with final details
+            updated_clustering = self._CLUSTERING_SERVICE.update_clustering(
+                clustering_id=initial_clustering.id,
+                update_data=ClusteringUpdate(
+                    title=clustering_result.title,
+                    description=clustering_result.description,
+                ),
+                user=user,
+            )
+
+            # Create topics and children for the completed clustering
+            for topic in clustering_result.topics:
+                topic_data = ClusteringTopicCreate(
+                    clustering_id=updated_clustering.id,
+                    title=topic.title,
+                    description=topic.description,
+                )
+                created_topic = self._CLUSTERING_SERVICE.create_clustering_topic(
+                    clustering_id=updated_clustering.id,
+                    topic_data=topic_data,
+                    user=user,
+                )
+
+                for doc in topic.documents:
+                    child_data = ClusteringChildCreate(
+                        clustering_topic_id=created_topic.id,
+                        target=doc.id,
+                    )
+                    self._CLUSTERING_SERVICE.create_clustering_child(
+                        topic_id=created_topic.id, child_data=child_data, user=user
+                    )
+
+            # Finally, update status to idle when everything is complete
+            final_clustering = self._CLUSTERING_SERVICE.update_clustering_status(
+                clustering_id=updated_clustering.id,
+                status_update=ClusteringStatusUpdate(status=ClusteringStatus.idle),
+                user=user,
+            )
+
+            logger.info(
+                f"Clustering and storage complete for collection {collection_id}."
+            )
+            return final_clustering
+
+        except Exception as e:
+            # If clustering fails, delete the initial clustering entry
+            self._CLUSTERING_SERVICE.delete_clustering(initial_clustering.id, user)
+            raise e

@@ -4,6 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, computed_field
 
 from ..document.schemas import DocumentResponse
+from ..models.enum import ClusteringStatus
 
 
 class AuditedResponseBase(BaseModel):
@@ -38,6 +39,9 @@ class ClusteringBase(BaseModel):
     search_word: Optional[str] = Field(None, description="Search word")
     title: str = Field(..., description="Clustering title")
     description: Optional[str] = Field(None, description="Clustering description")
+    status: ClusteringStatus = Field(
+        ClusteringStatus.idle, description="Clustering status"
+    )
 
 
 class ClusteringCreate(ClusteringBase):
@@ -48,6 +52,13 @@ class ClusteringUpdate(BaseModel):
     search_word: Optional[str] = Field(None, description="Search word")
     title: Optional[str] = Field(None, description="Clustering title")
     description: Optional[str] = Field(None, description="Clustering description")
+    status: Optional[ClusteringStatus] = Field(None, description="Clustering status")
+
+
+class ClusteringStatusUpdate(BaseModel):
+    """Schema for updating only the clustering status."""
+
+    status: ClusteringStatus = Field(..., description="Clustering status")
 
 
 class ClusteringResponse(ClusteringBase, AuditedResponseBase):
@@ -107,4 +118,7 @@ class EnhancedClusteringResponse(AuditedResponseBase):
     search_word: Optional[str]
     title: str
     description: Optional[str]
+    status: ClusteringStatus = Field(
+        ClusteringStatus.idle, description="Clustering status"
+    )
     topics: list[ClusteringTopicWithDocuments]

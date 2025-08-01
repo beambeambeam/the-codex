@@ -1,7 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import ChatForm, {
   ChatFormSchemaType,
@@ -12,9 +15,14 @@ import ChatHeader from "@/app/(protected)/collection/[id]/chat/_components/heade
 import ChatIdPageSkeleton from "@/app/(protected)/collection/[id]/chat/[chatId]/skeleton";
 import { Button } from "@/components/ui/button";
 import { $api } from "@/lib/api/client";
+import { components } from "@/lib/api/path";
+
+type ChatMessage = components["schemas"]["CollectionChatHistoryResponse"];
 
 function ChatIdPage() {
   const params = useParams<{ id: string; chatId: string }>();
+  const queryClient = useQueryClient();
+  const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
 
   const { data, isPending, isError } = $api.useQuery(
     "get",
@@ -31,7 +39,39 @@ function ChatIdPage() {
   const { mutate, isPending: isPendingMutate } = $api.useMutation(
     "post",
     "/agentic/rag_query",
+    {
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({
+          queryKey: [
+            "get",
+            "/chats/{chat_id}",
+            { params: { path: { chat_id: params.chatId } } },
+          ],
+        });
+      },
+      onError: (error: unknown) => {
+        setLocalMessages((prev) =>
+          prev.filter(
+            (msg) =>
+              !msg.id.startsWith("temp-") && !msg.id.startsWith("system-"),
+          ),
+        );
+
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(message || "Failed to send message. Please try again.");
+      },
+    },
   );
+
+  // Update local messages when data changes
+  useEffect(() => {
+    if (data?.histories) {
+      setLocalMessages(data.histories);
+    }
+  }, [data?.histories]);
 
   if (isPending) {
     return <ChatIdPageSkeleton />;
@@ -56,6 +96,30 @@ function ChatIdPage() {
   }
 
   const handleSubmit = (values: ChatFormSchemaType) => {
+    const optimisticUserMessage: ChatMessage = {
+      id: `temp-${Date.now()}`,
+      collection_chat_id: params.chatId,
+      role: "user",
+      content: values.chat_message,
+      created_at: new Date().toISOString(),
+      created_by: null,
+    };
+
+    setLocalMessages((prev) => [...prev, optimisticUserMessage]);
+
+    const systemMessage: ChatMessage = {
+      id: `system-${Date.now()}`,
+      collection_chat_id: params.chatId,
+      role: "system",
+      content: "",
+      created_at: new Date().toISOString(),
+      created_by: null,
+    };
+
+    setTimeout(() => {
+      setLocalMessages((prev) => [...prev, systemMessage]);
+    }, 500);
+
     mutate({
       params: {
         query: {
@@ -78,7 +142,7 @@ function ChatIdPage() {
           date={new Date(data.updated_at)}
         />
         <div className="w-full px-8">
-          <ChatTemplate message={data.histories ?? []} />
+          <ChatTemplate message={localMessages} />
         </div>
         <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 absolute right-0 bottom-0 left-0 z-50 backdrop-blur">
           <div className="p-4 px-12">

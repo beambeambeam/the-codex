@@ -10,12 +10,14 @@ import {
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
 import {
+  BadgeQuestionMarkIcon,
   ChevronDownIcon,
   FolderIcon,
   FolderOpenIcon,
   ListCollapseIcon,
   ListTreeIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Item,
@@ -34,16 +36,43 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
 import { Loader } from "@/components/ui/loader";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
+import { $api } from "@/lib/api/client";
 import { getFileIcon } from "@/lib/files";
+import { cn } from "@/lib/utils";
 
 const indent = 20;
 
 function ClusteringTree() {
+  const params = useParams<{ id: string }>();
   const clusterings = useClusterings();
   const selectedClustering = useSelectedClustering();
   const { isPending, isEmpty, isError } = useClusteringState();
+
+  const { fetchClusterings } = useClusteringActions();
+
+  const { mutate, isPending: isGenerating } = $api.useMutation(
+    "post",
+    "/agentic/cluster_topic",
+    {
+      onSuccess: () => {
+        fetchClusterings(params.id).then(() =>
+          toast.success("Clustering generated successfully!"),
+        );
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(
+          message || "Failed to generate clustering. Please try again.",
+        );
+      },
+    },
+  );
 
   if (isPending) {
     return (
@@ -82,15 +111,17 @@ function ClusteringTree() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="flex w-full justify-between text-sm font-medium"
+              className="flex w-full justify-between text-sm font-medium text-wrap"
             >
-              {selectedClustering.title || "Clustering"}
+              <span className="max-w-[200px] truncate">
+                {selectedClustering.title || "Clustering"}
+              </span>
               <ChevronDownIcon className="ml-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
@@ -101,8 +132,56 @@ function ClusteringTree() {
             {clusterings.map((clustering) => (
               <ClusteringMenuItem key={clustering.id} clustering={clustering} />
             ))}
+
+            {clusterings.length <= 2 && (
+              <DropdownMenuItem
+                onClick={() =>
+                  mutate({
+                    params: {
+                      query: {
+                        collection_id: params.id,
+                      },
+                    },
+                  })
+                }
+                disabled={isGenerating}
+              >
+                {isGenerating ? "Generating..." : "AI Generated"}
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      {clusterings.length > 2 && !selectedClustering.id.includes("virtual") && (
+        <Button
+          className="w-fit"
+          size="sm"
+          onClick={() =>
+            mutate({
+              params: {
+                query: {
+                  collection_id: params.id,
+                },
+              },
+            })
+          }
+          disabled={isGenerating}
+        >
+          {isGenerating ? "Generating..." : "Generate Clustering"}
+        </Button>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
+          <Label>
+            <BadgeQuestionMarkIcon size={16} />
+            Description
+          </Label>
+        </div>
+        <div className="border-border w-full rounded border p-2">
+          <p className="text-sm">{selectedClustering.description}</p>
+        </div>
       </div>
       <ClusteringTreeChild
         key={selectedClustering.id}
@@ -119,7 +198,7 @@ function ClusteringMenuItem({ clustering }: { clustering: Clustering }) {
   return (
     <DropdownMenuItem
       onClick={() => setSelectedId(clustering.id)}
-      className={selectedId === clustering.id ? "bg-accent" : ""}
+      className={cn(selectedId === clustering.id ? "bg-accent" : "")}
     >
       {clustering.title}
     </DropdownMenuItem>

@@ -192,7 +192,7 @@ def extract_text_from_pdf_file(
     finally:
         doc.close()
 
-    return full_text.strip()
+    return preprocess_content(full_text.strip())
 
 
 def extract_text_from_text_file(
@@ -210,7 +210,7 @@ def extract_text_from_text_file(
     else:
         raise TypeError("file_input must be a string (path) or bytes.")
 
-    return content.strip()
+    return preprocess_content(content.strip())
 
 
 async def extract_text_from_image_file(
@@ -218,7 +218,7 @@ async def extract_text_from_image_file(
 ) -> str:
     """Extract and chunk text from an image file using OCR."""
     content = await ocr_image_document(file_input, task_type="default")
-    return content.strip()
+    return preprocess_content(content.strip())
 
 
 def extract_chunks_from_text(

@@ -8,6 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
+from .enum import CollectionStatus
 
 if TYPE_CHECKING:
     from .document import Document
@@ -48,6 +49,12 @@ class Collection(Base):
     )
     updated_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    status: Mapped[CollectionStatus] = mapped_column(
+        Enum(CollectionStatus, native_enum=False),
+        nullable=False,
+        default=CollectionStatus.idle,
+        server_default="idle",
     )
 
     creator: Mapped[Optional["User"]] = relationship(

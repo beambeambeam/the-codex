@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CopyIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/ui/loader";
 import {
   Message,
   MessageAction,
@@ -71,47 +72,59 @@ function ChatTemplate(props: ChatTemplateProps) {
       withNavigation
     >
       <div className="flex flex-col gap-8">
-        {props.message.map((msg) =>
-          msg.role === "user" ? (
-            <Message key={msg.id} className="justify-end">
-              <MessageContent>{msg.content}</MessageContent>
-            </Message>
-          ) : (
-            <div key={msg.id} className="grid grid-cols-[2fr_1fr]">
-              <Message className="justify-start">
-                <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
-                <div className="flex w-full flex-col gap-2">
-                  <MessageContent
-                    markdown
-                    className="prose border bg-transparent p-4"
-                  >
-                    {msg.id === latestAiMessage?.id && isMessageRecent
-                      ? displayedText
-                      : msg.content}
-                  </MessageContent>
-
-                  <MessageActions className="self-start">
-                    <MessageAction tooltip="Copy to clipboard">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-full"
-                        onClick={() => handleCopy(msg.content, msg.id)}
-                      >
-                        <CopyIcon
-                          className={cn(
-                            "size-4",
-                            copied === msg.id && "text-green-500",
-                          )}
-                        />
-                      </Button>
-                    </MessageAction>
-                  </MessageActions>
-                </div>
+        {props.message.map((msg) => {
+          if (msg.role === "user") {
+            return (
+              <Message key={msg.id} className="justify-end">
+                <MessageContent>{msg.content}</MessageContent>
               </Message>
-            </div>
-          ),
-        )}
+            );
+          }
+
+          if (msg.role === "assistant") {
+            return (
+              <div key={msg.id} className="grid grid-cols-[2fr_1fr]">
+                <Message className="justify-start">
+                  <MessageAvatar src="/avatars/ai.png" alt="AI" fallback="AI" />
+                  <div className="flex w-full flex-col gap-2">
+                    <MessageContent
+                      markdown
+                      className="prose border bg-transparent p-4"
+                    >
+                      {msg.id === latestAiMessage?.id && isMessageRecent
+                        ? displayedText
+                        : msg.content}
+                    </MessageContent>
+
+                    <MessageActions className="self-start">
+                      <MessageAction tooltip="Copy to clipboard">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 rounded-full"
+                          onClick={() => handleCopy(msg.content, msg.id)}
+                        >
+                          <CopyIcon
+                            className={cn(
+                              "size-4",
+                              copied === msg.id && "text-green-500",
+                            )}
+                          />
+                        </Button>
+                      </MessageAction>
+                    </MessageActions>
+                  </div>
+                </Message>
+              </div>
+            );
+          }
+
+          if (msg.role === "system") {
+            return <Loader variant="typing" key={msg.id} />;
+          }
+
+          return null;
+        })}
       </div>
     </Scroller>
   );
