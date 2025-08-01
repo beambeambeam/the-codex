@@ -11,19 +11,12 @@ from api.models.user import User
 from .core import (
     TextEmbedder,
 )
-from .node import (
-    EmbedQueryNode,
-    GenerateResponseFromContextNode,
-    GetInputAppendHistoryNode,
-    GetLatestContextReferenceNode,
-    GetUserIntentNode,
-    SaveChatHistoryNode,
-    SearchCollectionNode,
-    SearchDocumentNode,
+from .flow import (
+    create_collection_rag_flow,
+    create_document_rag_flow,
 )
 from .pocketflow_custom import Flow  # PocketFlow custom components
 from .schemas import (
-    INTENT,
     ChatHistoryResponse,
     ChatMessageResponse,
     SharedStore,  # Adjust relative import
@@ -137,8 +130,20 @@ class rag_agent(agentic_base):
         Creates and returns a PocketFlow based on the specified flow type.
         """
         if flow_type == "collection":
-            self.flow = self.create_collection_rag_flow()
+            logger.info("Creating collection RAG flow")
+            self.flow = create_collection_rag_flow(
+                document_service=self.document_service,
+                chat_service=self.chat_service,
+                embedding_model=self.embedding_model,
+                debug=True,
+            )
         elif flow_type == "document":
-            self.flow = self.create_document_rag_flow()
+            logger.info("Creating document RAG flow")
+            self.flow = create_document_rag_flow(
+                document_service=self.document_service,
+                chat_service=self.chat_service,
+                embedding_model=self.embedding_model,
+                debug=True,
+            )
         else:
             raise ValueError(f"Unknown flow type: {flow_type}")

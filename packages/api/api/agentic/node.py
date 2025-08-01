@@ -405,9 +405,16 @@ class GenerateResponseFromContextNode(Node):
 
         contexts: list[ChunkSearchResponse] = inputs["contexts"]
 
-        context_str_parts = []
+        context_str_parts: list[str] = []
         for ctx_chunk in contexts:
-            context_str_parts.append(ctx_chunk.chunk_text)
+            context_str_parts.append(
+                f"""
+                Document Title: {ctx_chunk.document_title}
+                Document Description: {ctx_chunk.document_description}
+                Chunk Text:
+                {ctx_chunk.chunk_text}
+                """
+            )
 
         prompt = render_collection_rag_agent_prompt(
             question=inputs["question"],

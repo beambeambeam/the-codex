@@ -148,7 +148,18 @@ class ChunkResponse(ChunkBase):
 class ChunkSearchResponse(ChunkResponse):
     """Schema for searched chunks."""
 
+    document_title: Optional[str] = Field(None, description="Document title")
+    document_description: Optional[str] = Field(
+        None, description="Document description"
+    )
     distance: float = Field(..., description="Distance score for similarity search")
+
+    # Truncate description if too long
+    @field_validator("document_description", mode="before")
+    def truncate_description(cls, value: Optional[str]) -> Optional[str]:
+        if value and len(value) > 50:
+            return value[:50] + "..."
+        return value
 
 
 class DocumentSearchResponse(DocumentResponse):
