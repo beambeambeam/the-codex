@@ -9,8 +9,12 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useUser } from "@/store/userStore";
 
 function HomePage() {
-  const { username } = useUser();
+  const { user } = useUser();
   const { collections, isPending } = useHome();
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="flex h-full w-full flex-col items-start justify-center gap-4">
@@ -18,7 +22,7 @@ function HomePage() {
         <div className="flex items-start gap-2">
           <SidebarTrigger />
           <div className="flex flex-col text-2xl font-semibold">
-            <h1 className="capitalize">Hello {username}!</h1>
+            <h1 className="capitalize">Hello {user.username}!</h1>
             <h1>What are you interest in today?</h1>
           </div>
         </div>
@@ -44,7 +48,7 @@ function HomePage() {
               type: "centerNode",
               position: { x: 0, y: 0 },
               data: {
-                title: username,
+                title: user.username,
                 imageUrl: "",
               },
             },

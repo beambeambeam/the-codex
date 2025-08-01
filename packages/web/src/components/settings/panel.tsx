@@ -1,4 +1,3 @@
-import { useRouter } from "next/navigation";
 import { LogOutIcon, UserIcon, UserPenIcon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,34 +6,27 @@ import { Button } from "@/components/ui/button";
 import { Scroller } from "@/components/ui/scroller";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { $api } from "@/lib/api/client";
-import { useUser, useUserActions } from "@/store/userStore";
+import { useLogout, useUser } from "@/store/userStore";
 
 function SettingPanel() {
-  const router = useRouter();
   const TABS_TRIGGER_CLASSNAME =
     "hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none";
 
-  const { reset } = useUserActions();
-  const { email, username } = useUser();
-  const { mutate: logout, isPending } = $api.useMutation(
-    "post",
-    "/auth/logout",
-    {
-      onSuccess: () => {
-        reset();
-        toast.success("Logged out successfully.");
-        router.push("/sign-in");
-      },
-      onError: (error: unknown) => {
-        const message =
-          typeof error === "object" && error !== null && "detail" in error
-            ? (error as { detail?: string }).detail
-            : undefined;
-        toast.error(message || "Logout failed. Please try again.");
-      },
-    },
-  );
+  const { user, isPending, isError, error } = useUser();
+  const { logout } = useLogout();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Logged out successfully.");
+    } catch {
+      toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Tabs
@@ -63,18 +55,21 @@ function SettingPanel() {
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col gap-2">
-              <h4 className="text-4xl font-bold">{username}</h4>
-              <p className="text-base">{email}</p>
+              <h4 className="text-4xl font-bold">{user.username}</h4>
+              <p className="text-base">{user.email}</p>
             </div>
           </div>
+          {isError && error && (
+            <div className="text-destructive text-sm">Error: {error}</div>
+          )}
           <div className="">
             <Button
               variant="destructive"
-              onClick={() => logout({})}
+              onClick={handleLogout}
               disabled={isPending}
             >
               <LogOutIcon />
-              <span>Logout</span>
+              <span>{isPending ? "Logging out..." : "Logout"}</span>
             </Button>
           </div>
         </Scroller>

@@ -14,34 +14,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { $api } from "@/lib/api/client";
+import { useUserActions } from "@/store/userStore";
 
 function RegisterPage() {
   const router = useRouter();
-  const { mutate, isSuccess, isPending } = $api.useMutation(
-    "post",
-    "/auth/register",
-    {
-      onSuccess() {
-        toast.success("Registration successful! Please sign in to continue.");
-        router.push("/sign-in");
-      },
-      onError(error: unknown) {
-        const message =
-          typeof error === "object" && error !== null && "detail" in error
-            ? (error as { detail?: string }).detail
-            : undefined;
-        toast.error(message || "Registration failed. Please try again.");
-      },
-    },
-  );
+  const { register } = useUserActions();
 
-  const onSubmit = (values: RegisterFormSchemaType) => {
-    mutate({
-      body: {
-        ...values,
-      },
-    });
+  const handleSubmit = async (values: RegisterFormSchemaType) => {
+    try {
+      await register({
+        username: values.username,
+        email: values.email,
+        password: values.password,
+      });
+      toast.success("Registration successful! Please sign in to continue.");
+      router.push("/sign-in");
+    } catch {
+      toast.error("Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -70,9 +60,7 @@ function RegisterPage() {
               password: "",
               confirmPassword: "",
             }}
-            onSubmit={onSubmit}
-            disabled={isSuccess || isPending}
-            isPending={isPending}
+            onSubmit={handleSubmit}
           />
         </Card>
         <p className="text-accent-foreground/60">
