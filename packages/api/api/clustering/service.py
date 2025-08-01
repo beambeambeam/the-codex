@@ -39,7 +39,13 @@ class ClusteringService:
 
     # Clustering CRUD operations
     def delete_clusterings_by_collection(self, collection_id: str, user: User) -> int:
-        """Delete all existing clusterings for a collection."""
+        """Delete all existing clusterings for a collection.
+
+        WARNING: This is a destructive operation that will delete ALL clusterings
+        for the collection, including manually created and completed clusterings.
+        Use with caution and consider using delete_clusterings_by_status_and_search_word
+        for more granular control.
+        """
         existing_clusterings = (
             self.db.query(Clustering)
             .filter(Clustering.collection_id == collection_id)
@@ -58,11 +64,69 @@ class ClusteringService:
 
         return deleted_count
 
+    def delete_clusterings_by_status_and_search_word(
+        self,
+        collection_id: str,
+        user: User,
+        status: ClusteringStatus = None,
+        search_word: str = None,
+    ) -> int:
+        """Delete clusterings for a collection based on status and/or search word."""
+        query = (
+            self.db.query(Clustering)
+            .filter(Clustering.collection_id == collection_id)
+            .filter(Clustering.created_by == user.id)
+        )
+
+        if status is not None:
+            query = query.filter(Clustering.status == status)
+
+        if search_word is not None:
+            query = query.filter(Clustering.search_word == search_word)
+
+        existing_clusterings = query.all()
+
+        deleted_count = 0
+        for clustering in existing_clusterings:
+            if self._can_modify_clustering(clustering, user):
+                self.db.delete(clustering)
+                deleted_count += 1
+
+        if deleted_count > 0:
+            self.db.commit()
+
+        return deleted_count
+
     def create_clustering(
         self, clustering_data: ClusteringCreate, user: User
     ) -> Clustering:
-        """Create a new clustering."""
-        self.delete_clusterings_by_collection(clustering_data.collection_id, user)
+        """Create a new clustering.
+
+        This method will only delete existing clusterings that are:
+        1. In 'processing' status (temporary clusterings being replaced)
+        2. Have the same search_word (replacing similar clustering operations)
+
+        This prevents accidental deletion of manually created or completed clusterings.
+        """
+        existing_clusterings = (
+            self.db.query(Clustering)
+            .filter(Clustering.collection_id == clustering_data.collection_id)
+            .filter(Clustering.created_by == user.id)
+            .filter(
+                (Clustering.status == ClusteringStatus.processing)
+                | (Clustering.search_word == clustering_data.search_word)
+            )
+            .all()
+        )
+
+        deleted_count = 0
+        for clustering in existing_clusterings:
+            if self._can_modify_clustering(clustering, user):
+                self.db.delete(clustering)
+                deleted_count += 1
+
+        if deleted_count > 0:
+            self.db.commit()
 
         clustering = Clustering(
             id=str(uuid4()),
@@ -70,6 +134,7 @@ class ClusteringService:
             search_word=clustering_data.search_word,
             title=clustering_data.title,
             description=clustering_data.description,
+            status=clustering_data.status,
             created_by=user.id,
             updated_by=user.id,
         )
