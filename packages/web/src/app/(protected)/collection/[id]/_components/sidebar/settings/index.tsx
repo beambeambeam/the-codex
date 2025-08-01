@@ -28,7 +28,10 @@ function CollectionIdSidebarSettings() {
         clickOutside={false}
       >
         <DialogHeader className="border-b p-4">
-          <DialogTitle>{title}, Project&apos;s Settings</DialogTitle>
+          <DialogTitle>
+            {title && title.length > 30 ? title.slice(0, 30) + "..." : title}{" "}
+            Project&apos;s Settings
+          </DialogTitle>
           <DialogDescription hidden>
             This is dialog for settings the {title}&apos;s Project settings
           </DialogDescription>
