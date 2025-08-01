@@ -196,6 +196,110 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/auth/users/search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search Users
+     * @description Search for users by username or email.
+     */
+    get: operations["search_users_auth_users_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/collections/{collection_id}/permissions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * List Collection Permissions
+     * @description List all permissions for a collection.
+     */
+    get: operations["list_collection_permissions_collections__collection_id__permissions_get"];
+    put?: never;
+    /**
+     * Grant Permission
+     * @description Grant permission to a user for a collection.
+     */
+    post: operations["grant_permission_collections__collection_id__permissions_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/collections/{collection_id}/permissions/{user_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /**
+     * Revoke Permission
+     * @description Revoke permission from a user for a collection.
+     */
+    delete: operations["revoke_permission_collections__collection_id__permissions__user_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/collections/{collection_id}/permissions/me": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get My Permission
+     * @description Get current user's permission for a collection.
+     */
+    get: operations["get_my_permission_collections__collection_id__permissions_me_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/collections/{collection_id}/permissions/logs": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Get Permission Logs
+     * @description Get permission audit logs for a collection.
+     */
+    get: operations["get_permission_logs_collections__collection_id__permissions_logs_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/collections/": {
     parameters: {
       query?: never;
@@ -402,6 +506,26 @@ export interface paths {
      * @description Create a new collection edge.
      */
     post: operations["create_collection_edge_collections_relations__relation_id__edges_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/collections/{collection_id}/search/users": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /**
+     * Search Users For Collection
+     * @description Search for users by username or email, excluding those already in the collection.
+     */
+    get: operations["search_users_for_collection_collections__collection_id__search_users_get"];
+    put?: never;
+    post?: never;
     delete?: never;
     options?: never;
     head?: never;
@@ -686,6 +810,26 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/agentic/graph_extract/{document_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /**
+     * Graph Extract
+     * @description Extracts a knowledge graph from the documents in a collection.
+     */
+    post: operations["graph_extract_agentic_graph_extract__document_id__post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/agentic/cluster_topic": {
     parameters: {
       query?: never;
@@ -939,7 +1083,10 @@ export interface paths {
       path?: never;
       cookie?: never;
     };
-    /** Get Chat */
+    /**
+     * Get Chat
+     * @description Get chat with its history by chat ID.
+     */
     get: operations["get_chat_chats__chat_id__get"];
     /** Update Chat */
     put: operations["update_chat_chats__chat_id__put"];
@@ -1072,7 +1219,7 @@ export interface components {
      */
     AgentResponse: {
       /** @description Conversation history including user questions and assistant responses */
-      chat_history?: components["schemas"]["ChatHistory"];
+      chat_history?: components["schemas"]["ChatHistoryResponse"];
       /**
        * Retrieved Contexts
        * @description List of retrieved document chunks based on the query embedding
@@ -1101,21 +1248,21 @@ export interface components {
       input_files: File[];
     };
     /**
-     * ChatHistory
+     * ChatHistoryResponse
      * @description Schema for a list of chat messages.
      */
-    ChatHistory: {
+    ChatHistoryResponse: {
       /**
        * Messages
        * @description List of chat messages in the conversation
        */
-      messages?: components["schemas"]["ChatMessage"][];
+      messages?: components["schemas"]["ChatMessageResponse"][];
     };
     /**
-     * ChatMessage
+     * ChatMessageResponse
      * @description Schema for chat messages in the RAG system.
      */
-    ChatMessage: {
+    ChatMessageResponse: {
       /**
        * Collection Chat Id
        * @description Collection Chat ID
@@ -1128,6 +1275,22 @@ export interface components {
        * @description Content of the chat message
        */
       content: string;
+      /**
+       * Id
+       * @description Unique identifier for the chat message
+       */
+      id: string;
+      /**
+       * Created By
+       * @description Username of the user who created the chat message
+       */
+      created_by: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       * @description Timestamp when the chat message was created
+       */
+      created_at: string;
       /**
        * Retrieved Contexts
        * @description List of context references retrieved for the chat message
@@ -1425,16 +1588,6 @@ export interface components {
        * @description Get the username of the updater.
        */
       readonly updated_by_username: string | null;
-    };
-    /**
-     * ClusteringResult
-     * @description Result of the clustering operation.
-     */
-    ClusteringResult: {
-      /** Topics */
-      topics: components["schemas"]["TopicCluster"][];
-      /** Documents */
-      documents: components["schemas"]["DocumentDistribution"][];
     };
     /** ClusteringTopicCreate */
     ClusteringTopicCreate: {
@@ -2140,20 +2293,6 @@ export interface components {
       relations: components["schemas"]["DocumentRelationWithNodes"][];
     };
     /**
-     * DocumentDistribution
-     * @description Represents the distribution of topics for a document.
-     */
-    DocumentDistribution: {
-      /** Document Id */
-      document_id: string;
-      /** Top Topic */
-      top_topic: string;
-      /** Distribution */
-      distribution: {
-        [key: string]: number;
-      };
-    };
-    /**
      * DocumentEdgeCreate
      * @description Schema for creating a document edge.
      */
@@ -2462,10 +2601,79 @@ export interface components {
       minio_file_url?: string | null;
     };
     /**
-     * DocumentSearchResponse
-     * @description Schema for searched documents.
+     * DocumentResponseTruncated
+     * @description Schema for truncated document response.
      */
-    DocumentSearchResponse: {
+    DocumentResponseTruncated: {
+      /**
+       * File Name
+       * @description Document file name
+       */
+      file_name: string;
+      /**
+       * Title
+       * @description Document title
+       */
+      title?: string | null;
+      /**
+       * Document
+       * @description Document content
+       */
+      document?: string | null;
+      /**
+       * Description
+       * @description Document description
+       */
+      description?: string | null;
+      /**
+       * Source File Path
+       * @description Source file path
+       */
+      source_file_path: string;
+      /**
+       * File Type
+       * @description File type (pdf, txt, doc, etc.)
+       */
+      file_type: string;
+      /**
+       * File Size
+       * @description File size in bytes
+       */
+      file_size?: number | null;
+      /** Id */
+      id: string;
+      /** Collection Id */
+      collection_id: string;
+      /** Is Vectorized */
+      is_vectorized: boolean;
+      /** Is Graph Extracted */
+      is_graph_extracted: boolean;
+      status: components["schemas"]["IngestionStatus"];
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+      /** Created By */
+      created_by: string | null;
+      /** Updated By */
+      updated_by: string | null;
+      /**
+       * Minio File Url
+       * @description Presigned MinIO file URL for iframe usage
+       */
+      minio_file_url?: string | null;
+    };
+    /**
+     * DocumentSearchResponseTruncated
+     * @description Schema for truncated searched documents.
+     */
+    DocumentSearchResponseTruncated: {
       /**
        * File Name
        * @description Document file name
@@ -2646,6 +2854,84 @@ export interface components {
      */
     IngestionStatus: "pending" | "processing" | "ready" | "failed";
     /**
+     * PermissionGrantRequest
+     * @description Request schema for granting permission.
+     */
+    PermissionGrantRequest: {
+      /** User Id */
+      user_id: string;
+      /**
+       * Permission Level
+       * @default edit
+       * @enum {string}
+       */
+      permission_level: "edit" | "owner";
+    };
+    /**
+     * PermissionLogWithUserResponse
+     * @description Response schema for permission log with user details.
+     */
+    PermissionLogWithUserResponse: {
+      /** Id */
+      id: string;
+      /** Collection Id */
+      collection_id: string;
+      /** User Id */
+      user_id: string;
+      /** Username */
+      username: string;
+      /** Email */
+      email: string;
+      /**
+       * Action
+       * @enum {string}
+       */
+      action: "granted" | "revoked";
+      /**
+       * Permission Level
+       * @enum {string}
+       */
+      permission_level: "edit" | "owner";
+      /** Performed By */
+      performed_by: string;
+      /** Performer Username */
+      performer_username: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+    };
+    /**
+     * PermissionResponse
+     * @description Response schema for permission.
+     */
+    PermissionResponse: {
+      /** Id */
+      id: string;
+      /** Collection Id */
+      collection_id: string;
+      /** User Id */
+      user_id: string;
+      /**
+       * Permission Level
+       * @enum {string}
+       */
+      permission_level: "edit" | "owner";
+      /** Granted By */
+      granted_by: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /**
      * QueueHealthResponse
      * @description Queue health check response.
      */
@@ -2710,18 +2996,6 @@ export interface components {
       };
     };
     /**
-     * TopicCluster
-     * @description Represents a cluster of topics with associated documents.
-     */
-    TopicCluster: {
-      /** Title */
-      title: string;
-      /** Id */
-      id: number;
-      /** Documents */
-      documents: components["schemas"]["DocumentResponse"][];
-    };
-    /**
      * UserLoginRequest
      * @description User login request.
      */
@@ -2730,6 +3004,41 @@ export interface components {
       username: string;
       /** Password */
       password: string;
+    };
+    /**
+     * UserPermissionResponse
+     * @description Response schema for user permission with user details.
+     */
+    UserPermissionResponse: {
+      /** Id */
+      id: string;
+      /** Collection Id */
+      collection_id: string;
+      /** User Id */
+      user_id: string;
+      /** Username */
+      username: string;
+      /** Email */
+      email: string;
+      /**
+       * Permission Level
+       * @enum {string}
+       */
+      permission_level: "edit" | "owner";
+      /** Granted By */
+      granted_by: string;
+      /** Granter Username */
+      granter_username: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
     };
     /**
      * UserRegisterRequest
@@ -2762,6 +3071,18 @@ export interface components {
        * Format: date-time
        */
       created_at: string;
+    };
+    /**
+     * UserSearchResponse
+     * @description User search response model.
+     */
+    UserSearchResponse: {
+      /** Id */
+      id: string;
+      /** Username */
+      username: string;
+      /** Email */
+      email: string;
     };
     /** ValidationError */
     ValidationError: {
@@ -3100,6 +3421,208 @@ export interface operations {
       };
     };
   };
+  search_users_auth_users_search_get: {
+    parameters: {
+      query: {
+        /** @description Search query for users by username or email */
+        query: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserSearchResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_collection_permissions_collections__collection_id__permissions_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserPermissionResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  grant_permission_collections__collection_id__permissions_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["PermissionGrantRequest"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PermissionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  revoke_permission_collections__collection_id__permissions__user_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        collection_id: string;
+        user_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_my_permission_collections__collection_id__permissions_me_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PermissionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_permission_logs_collections__collection_id__permissions_logs_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["PermissionLogWithUserResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   list_user_collections_collections__get: {
     parameters: {
       query?: never;
@@ -3320,7 +3843,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentResponse"][];
+          "application/json": components["schemas"]["DocumentResponseTruncated"][];
         };
       };
       /** @description Validation Error */
@@ -3542,6 +4065,42 @@ export interface operations {
       };
     };
   };
+  search_users_for_collection_collections__collection_id__search_users_get: {
+    parameters: {
+      query: {
+        /** @description Search query for users by username or email */
+        query: string;
+      };
+      header?: never;
+      path: {
+        collection_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["UserSearchResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   list_user_documents_documents__get: {
     parameters: {
       query?: never;
@@ -3559,7 +4118,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentResponse"][];
+          "application/json": components["schemas"]["DocumentResponseTruncated"][];
         };
       };
       /** @description Validation Error */
@@ -3629,7 +4188,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentResponse"];
+          "application/json": components["schemas"]["DocumentResponseTruncated"];
         };
       };
       /** @description Validation Error */
@@ -3834,7 +4393,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentResponse"][];
+          "application/json": components["schemas"]["DocumentResponseTruncated"][];
         };
       };
       /** @description Validation Error */
@@ -3868,7 +4427,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentSearchResponse"][];
+          "application/json": components["schemas"]["DocumentSearchResponseTruncated"][];
         };
       };
       /** @description Validation Error */
@@ -4117,7 +4676,40 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["DocumentResponse"][];
+          "application/json": components["schemas"]["DocumentResponseTruncated"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  graph_extract_agentic_graph_extract__document_id__post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        document_id: string;
+      };
+      cookie?: {
+        session?: string | null;
+      };
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["DocumentResponseTruncated"];
         };
       };
       /** @description Validation Error */
@@ -4138,7 +4730,9 @@ export interface operations {
       };
       header?: never;
       path?: never;
-      cookie?: never;
+      cookie?: {
+        session?: string | null;
+      };
     };
     requestBody?: never;
     responses: {
@@ -4148,7 +4742,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["ClusteringResult"];
+          "application/json": components["schemas"]["ClusteringResponse"];
         };
       };
       /** @description Validation Error */

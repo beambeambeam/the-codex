@@ -78,7 +78,7 @@ class AuthService:
                 )
 
             return payload
-          
+
         except jwt.ExpiredSignatureError as exc:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED, detail="Session expired"
@@ -283,3 +283,15 @@ class AuthService:
         except HTTPException:
             pass
         return None
+
+    def search_users(self, query: str) -> list[User]:
+        """Search for users by username or email."""
+        # Search for users whose username or email contains the query (case-insensitive)
+        return (
+            self.db.query(User)
+            .filter(
+                (User.username.ilike(f"%{query}%")) | (User.email.ilike(f"%{query}%"))
+            )
+            .limit(10)  # Limit results for performance
+            .all()
+        )
