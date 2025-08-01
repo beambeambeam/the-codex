@@ -194,23 +194,20 @@ def get_permission_logs(
     logs = permission_service.get_permission_logs(collection_id)
 
     # Convert to response with user details
-    response_logs = []
-    for log in logs:
-        user = log.user
-        performer = log.performer
-        response_logs.append(
-            PermissionLogWithUserResponse(
-                id=log.id,
-                collection_id=log.collection_id,
-                user_id=log.user_id,
-                username=user.username,
-                email=user.email,
-                action=log.action,
-                permission_level=log.permission_level,
-                performed_by=log.performed_by,
-                performer_username=performer.username,
-                created_at=log.created_at,
-            )
+    response_logs = [
+        PermissionLogWithUserResponse(
+            id=log.id,
+            collection_id=log.collection_id,
+            user_id=log.user_id,
+            username=log.user.username,
+            email=log.user.email,
+            action=log.action,
+            permission_level=log.permission_level,
+            performed_by=log.performed_by,
+            performer_username=log.performer.username,
+            created_at=log.created_at,
         )
+        for log in logs
+    ]
 
     return response_logs
