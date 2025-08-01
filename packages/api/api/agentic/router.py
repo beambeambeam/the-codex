@@ -48,6 +48,9 @@ async def upload_and_ingest_documents(
     collection_id: str,
     document_ingestor: DocumentIngestorService = Depends(get_document_ingestor),
     document_service: DocumentService = Depends(get_document_service),
+    topic_modelling_service: TopicModellingService = Depends(
+        get_topic_modelling_service
+    ),
     current_user: User = Depends(get_current_user),
     *,
     input_files: list[UploadFile],
@@ -123,6 +126,24 @@ async def upload_and_ingest_documents(
         raise HTTPException(
             status_code=500, detail=f"No documents created. Errors: {errors}"
         )
+
+    async def trigger_clustering():
+        await asyncio.sleep(2)
+        try:
+            await topic_modelling_service.cluster_and_store_documents(
+                collection_id=collection_id,
+                user=current_user,
+                cluster_title_top_n_topics=5,
+                cluster_title_top_n_words=50,
+                title_generated_methods="by_summaries",
+            )
+        except Exception as e:
+            print(
+                f"Automatic clustering failed for collection {collection_id}: {str(e)}"
+            )
+
+    asyncio.create_task(trigger_clustering())
+
     return created_documents
 
 
