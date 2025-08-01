@@ -17,6 +17,7 @@ import {
   ListCollapseIcon,
   ListTreeIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Item,
@@ -50,7 +51,28 @@ function ClusteringTree() {
   const selectedClustering = useSelectedClustering();
   const { isPending, isEmpty, isError } = useClusteringState();
 
-  const { mutate } = $api.useMutation("post", "/agentic/cluster_topic");
+  const { fetchClusterings } = useClusteringActions();
+
+  const { mutate, isPending: isGenerating } = $api.useMutation(
+    "post",
+    "/agentic/cluster_topic",
+    {
+      onSuccess: () => {
+        fetchClusterings(params.id).then(() =>
+          toast.success("Clustering generated successfully!"),
+        );
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(
+          message || "Failed to generate clustering. Please try again.",
+        );
+      },
+    },
+  );
 
   if (isPending) {
     return (
@@ -122,8 +144,9 @@ function ClusteringTree() {
                     },
                   })
                 }
+                disabled={isGenerating}
               >
-                AI Generated
+                {isGenerating ? "Generating..." : "AI Generated"}
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>
@@ -143,8 +166,9 @@ function ClusteringTree() {
               },
             })
           }
+          disabled={isGenerating}
         >
-          Generate Clustering
+          {isGenerating ? "Generating..." : "Generate Clustering"}
         </Button>
       )}
 
