@@ -10,7 +10,7 @@ from typing import Any, Union
 from PIL import Image
 
 from ...call_llm import call_vlm_async
-from ...prompts.prompt_manager import render_ocr_prompt
+from ...prompts import render_ocr_prompt
 
 # -----------------------------
 # OCR Types & Data Structures

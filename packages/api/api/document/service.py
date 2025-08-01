@@ -483,7 +483,12 @@ class DocumentServiceSearch(DocumentService):
                 response.embedding = []
 
             response_list.append(
-                ChunkSearchResponse(**response.model_dump(), distance=float(distance))
+                ChunkSearchResponse(
+                    **response.model_dump(),
+                    document_title=chunk.document.title,
+                    document_description=chunk.document.description,
+                    distance=float(distance),
+                )
             )
 
         return response_list
@@ -506,6 +511,8 @@ class DocumentServiceSearch(DocumentService):
             doc_chunks.setdefault(chunk.document_id, []).append(
                 ChunkSearchResponse(
                     **ChunkResponse.model_validate(chunk).model_dump(),
+                    document_title=chunk.document.title,
+                    document_description=chunk.document.description,
                     distance=float(distance),
                 )
             )
@@ -554,7 +561,12 @@ class DocumentServiceSearch(DocumentService):
                 response.embedding = []
 
             response_list.append(
-                ChunkSearchResponse(**response.model_dump(), distance=float(distance))
+                ChunkSearchResponse(
+                    **response.model_dump(),
+                    document_title=chunk.document.title,
+                    document_description=chunk.document.description,
+                    distance=float(distance),
+                )
             )
 
         return response_list
