@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -30,13 +31,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Scroller } from "@/components/ui/scroller";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { fetchClient } from "@/lib/api/client";
 import { components } from "@/lib/api/path";
 import { cn, debounce, getFallbackUsername } from "@/lib/utils";
@@ -58,9 +52,7 @@ const shareFormSchema = z.object({
 
 export type ShareFormSchemaType = z.infer<typeof shareFormSchema>;
 
-interface ShareFormProps extends FormProps<ShareFormSchemaType> {
-  collectionId: string;
-}
+type ShareFormProps = FormProps<ShareFormSchemaType>;
 
 export default function ShareForm({
   onSubmit,
@@ -68,8 +60,9 @@ export default function ShareForm({
   isError,
   disabled,
   defaultValues,
-  collectionId,
 }: ShareFormProps) {
+  const params = useParams<{ id: string }>();
+
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
@@ -87,7 +80,7 @@ export default function ShareForm({
 
   const searchUsers = useCallback(
     async (searchTerm: string) => {
-      if (!collectionId) {
+      if (!params.id) {
         setFilteredUsers([]);
         setIsSearching(false);
         return;
@@ -101,7 +94,7 @@ export default function ShareForm({
           {
             params: {
               path: {
-                collection_id: collectionId,
+                collection_id: params.id,
               },
               query: {
                 query: searchTerm.trim(),
@@ -122,7 +115,7 @@ export default function ShareForm({
         setIsSearching(false);
       }
     },
-    [collectionId],
+    [params.id],
   );
 
   const debouncedSearch = useMemo(

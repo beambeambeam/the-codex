@@ -8,6 +8,7 @@ from ...database import get_db
 from ...models.collection import Collection
 from ...models.user import User
 from .schemas import (
+    BulkPermissionGrantRequest,
     PermissionGrantRequest,
     PermissionLogWithUserResponse,
     PermissionResponse,
@@ -52,17 +53,17 @@ def get_collection_with_modify_permission_local(
 
 @router.post(
     "/{collection_id}/permissions",
-    response_model=PermissionResponse,
+    response_model=list[PermissionResponse],
     status_code=status.HTTP_201_CREATED,
 )
 def grant_permission(
     collection_id: str,
-    permission_data: PermissionGrantRequest,
+    permission_data: BulkPermissionGrantRequest,
     current_user: User = Depends(get_current_user),
     permission_service: CollectionPermissionService = Depends(get_permission_service),
     collection: Collection = Depends(get_collection_with_modify_permission_local),
 ):
-    """Grant permission to a user for a collection."""
+    """Grant permissions to multiple users for a collection."""
     # Only collection OWNER can grant permissions
     if not permission_service.can_owner_collection(collection_id, current_user.id):
         raise HTTPException(
@@ -70,14 +71,17 @@ def grant_permission(
             detail="Only collection OWNER can grant permissions",
         )
 
-    permission = permission_service.grant_permission(
-        collection_id=collection_id,
-        user_id=permission_data.user_id,
-        permission_level=permission_data.permission_level,
-        granted_by=current_user,
-    )
+    granted_permissions = []
+    for permission_request in permission_data.permissions:
+        permission = permission_service.grant_permission(
+            collection_id=collection_id,
+            user_id=permission_request.user_id,
+            permission_level=permission_request.permission_level,
+            granted_by=current_user,
+        )
+        granted_permissions.append(PermissionResponse.model_validate(permission))
 
-    return PermissionResponse.model_validate(permission)
+    return granted_permissions
 
 
 @router.delete(

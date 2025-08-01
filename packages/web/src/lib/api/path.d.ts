@@ -196,26 +196,6 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
-  "/auth/users/search": {
-    parameters: {
-      query?: never;
-      header?: never;
-      path?: never;
-      cookie?: never;
-    };
-    /**
-     * Search Users
-     * @description Search for users by username or email.
-     */
-    get: operations["search_users_auth_users_search_get"];
-    put?: never;
-    post?: never;
-    delete?: never;
-    options?: never;
-    head?: never;
-    patch?: never;
-    trace?: never;
-  };
   "/collections/{collection_id}/permissions": {
     parameters: {
       query?: never;
@@ -231,7 +211,7 @@ export interface paths {
     put?: never;
     /**
      * Grant Permission
-     * @description Grant permission to a user for a collection.
+     * @description Grant permissions to multiple users for a collection.
      */
     post: operations["grant_permission_collections__collection_id__permissions_post"];
     delete?: never;
@@ -1246,6 +1226,14 @@ export interface components {
     Body_upload_and_ingest_documents_agentic_upload_ingest_post: {
       /** Input Files */
       input_files: File[];
+    };
+    /**
+     * BulkPermissionGrantRequest
+     * @description Request schema for granting multiple permissions at once.
+     */
+    BulkPermissionGrantRequest: {
+      /** Permissions */
+      permissions: components["schemas"]["PermissionGrantRequest"][];
     };
     /**
      * ChatHistoryResponse
@@ -3421,40 +3409,6 @@ export interface operations {
       };
     };
   };
-  search_users_auth_users_search_get: {
-    parameters: {
-      query: {
-        /** @description Search query for users by username or email */
-        query: string;
-      };
-      header?: never;
-      path?: never;
-      cookie?: {
-        session?: string | null;
-      };
-    };
-    requestBody?: never;
-    responses: {
-      /** @description Successful Response */
-      200: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["UserSearchResponse"][];
-        };
-      };
-      /** @description Validation Error */
-      422: {
-        headers: {
-          [name: string]: unknown;
-        };
-        content: {
-          "application/json": components["schemas"]["HTTPValidationError"];
-        };
-      };
-    };
-  };
   list_collection_permissions_collections__collection_id__permissions_get: {
     parameters: {
       query?: never;
@@ -3501,7 +3455,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["PermissionGrantRequest"];
+        "application/json": components["schemas"]["BulkPermissionGrantRequest"];
       };
     };
     responses: {
@@ -3511,7 +3465,7 @@ export interface operations {
           [name: string]: unknown;
         };
         content: {
-          "application/json": components["schemas"]["PermissionResponse"];
+          "application/json": components["schemas"]["PermissionResponse"][];
         };
       };
       /** @description Validation Error */

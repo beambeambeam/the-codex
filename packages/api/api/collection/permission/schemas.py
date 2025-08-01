@@ -13,6 +13,12 @@ class PermissionGrantRequest(BaseModel):
     permission_level: Literal["edit", "owner"] = "edit"
 
 
+class BulkPermissionGrantRequest(BaseModel):
+    """Request schema for granting multiple permissions at once."""
+
+    permissions: list[PermissionGrantRequest]
+
+
 class PermissionResponse(BaseModel):
     """Response schema for permission."""
 

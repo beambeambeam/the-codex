@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
@@ -9,7 +10,7 @@ import ShareForm, { ShareFormSchemaType } from "./form";
 
 function CollectionShare() {
   const params = useParams<{ id: string }>();
-  const collectionId = params.id;
+  const formResetRef = useRef<(() => void) | null>(null);
 
   const {
     mutate: grantPermission,
@@ -18,6 +19,9 @@ function CollectionShare() {
   } = $api.useMutation("post", "/collections/{collection_id}/permissions", {
     onSuccess: () => {
       toast.success("Permission granted successfully!");
+      if (formResetRef.current) {
+        formResetRef.current();
+      }
     },
     onError: (error: unknown) => {
       const message =
@@ -29,20 +33,18 @@ function CollectionShare() {
   });
 
   const handleSubmit = (values: ShareFormSchemaType) => {
-    if (!collectionId) return;
-
-    values.selectedUsers.forEach((user) => {
-      grantPermission({
-        params: {
-          path: {
-            collection_id: collectionId,
-          },
+    grantPermission({
+      params: {
+        path: {
+          collection_id: params.id,
         },
-        body: {
+      },
+      body: {
+        permissions: values.selectedUsers.map((user) => ({
           user_id: user.id,
-          permission_level: "edit",
-        },
-      });
+          permission_level: "edit" as const,
+        })),
+      },
     });
   };
 
@@ -51,7 +53,6 @@ function CollectionShare() {
       onSubmit={handleSubmit}
       isPending={isGranting}
       isError={isGrantError}
-      collectionId={collectionId}
     />
   );
 }
