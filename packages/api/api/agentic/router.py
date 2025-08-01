@@ -58,7 +58,7 @@ async def upload_and_ingest_documents(
     """
     Ingest multiple documents into the system.
     This endpoint allows users to upload multiple documents for processing and storage.
-    Returns as soon as document records are created; ingestion continues in the background.
+    Returns after all documents have been ingested and clustering has been completed.
     """
     created_documents = []
     errors = []
@@ -110,14 +110,12 @@ async def upload_and_ingest_documents(
             current_user = UserResponse.model_validate(current_user)
             current_document = DocumentResponse.model_validate(document)
 
-            # Schedule ingestion concurrently using asyncio
-            asyncio.create_task(
-                document_ingestor.ingest_file(
-                    input_file=input_file_model,
-                    document=current_document,
-                    graph_extract=False,
-                    user=current_user,
-                )
+            # Ingest the document
+            await document_ingestor.ingest_file(
+                input_file=input_file_model,
+                document=current_document,
+                graph_extract=False,
+                user=current_user,
             )
             created_documents.append(document)
         except Exception as e:
@@ -127,22 +125,18 @@ async def upload_and_ingest_documents(
             status_code=500, detail=f"No documents created. Errors: {errors}"
         )
 
-    async def trigger_clustering():
-        await asyncio.sleep(2)
-        try:
-            await topic_modelling_service.cluster_and_store_documents(
-                collection_id=collection_id,
-                user=current_user,
-                cluster_title_top_n_topics=5,
-                cluster_title_top_n_words=50,
-                title_generated_methods="by_summaries",
-            )
-        except Exception as e:
-            print(
-                f"Automatic clustering failed for collection {collection_id}: {str(e)}"
-            )
-
-    asyncio.create_task(trigger_clustering())
+    # Trigger clustering after a short delay
+    await asyncio.sleep(2)
+    try:
+        await topic_modelling_service.cluster_and_store_documents(
+            collection_id=collection_id,
+            user=current_user,
+            cluster_title_top_n_topics=5,
+            cluster_title_top_n_words=50,
+            title_generated_methods="by_summaries",
+        )
+    except Exception as e:
+        print(f"Automatic clustering failed for collection {collection_id}: {str(e)}")
 
     return created_documents
 
