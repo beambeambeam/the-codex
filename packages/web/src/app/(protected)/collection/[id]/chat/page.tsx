@@ -49,12 +49,20 @@ function ChatContent() {
   const handleSubmit = (values: ChatFormSchemaType) => {
     setMsg([
       {
-        collection_chat_id: "",
+        collection_chat_id: "user queue",
         content: values.chat_message,
         created_at: new Date().toDateString(),
         created_by: "",
         id: "",
         role: "user",
+      },
+      {
+        collection_chat_id: "typing",
+        content: "",
+        created_at: new Date().toDateString(),
+        created_by: "",
+        id: "",
+        role: "system",
       },
     ]);
     createChatWithRag({
