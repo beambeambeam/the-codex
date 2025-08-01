@@ -233,17 +233,13 @@ class CollectionService:
     # Permission helper methods
     def _can_access_collection(self, collection: Collection, user: User) -> bool:
         """Check if user can access a collection."""
-        # Check if user has OWNER or EDIT permission
-        return self.permission_service.can_owner_collection(
-            collection.id, user.id
-        ) or self.permission_service.can_edit_collection(collection.id, user.id)
+        # Check if user has EDIT permission (includes OWNER)
+        return self.permission_service.can_edit_collection(collection.id, user.id)
 
     def _can_modify_collection(self, collection: Collection, user: User) -> bool:
         """Check if user can modify a collection."""
-        # Check if user has OWNER permission or has explicit edit permission
-        return self.permission_service.can_owner_collection(
-            collection.id, user.id
-        ) or self.permission_service.can_edit_collection(collection.id, user.id)
+        # Check if user has EDIT permission (includes OWNER)
+        return self.permission_service.can_edit_collection(collection.id, user.id)
 
     def _can_modify_relation(self, relation: CollectionRelation, user: User) -> bool:
         """Check if user can modify a relation."""
