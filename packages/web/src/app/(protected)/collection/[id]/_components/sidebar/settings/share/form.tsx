@@ -146,8 +146,7 @@ export default function ShareForm({
   };
 
   return (
-    <Scroller className="flex h-full flex-col gap-y-4">
-      <h1 className="text-lg font-bold">Share this library</h1>
+    <div className="flex h-fit flex-col gap-y-4">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -276,6 +275,6 @@ export default function ShareForm({
           </div>
         </form>
       </Form>
-    </Scroller>
+    </div>
   );
 }

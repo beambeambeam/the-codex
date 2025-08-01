@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 
+import ShareList from "@/app/(protected)/collection/[id]/_components/sidebar/settings/share/list";
 import { $api } from "@/lib/api/client";
 
 import ShareForm, { ShareFormSchemaType } from "./form";
@@ -49,11 +50,16 @@ function CollectionShare() {
   };
 
   return (
-    <ShareForm
-      onSubmit={handleSubmit}
-      isPending={isGranting}
-      isError={isGrantError}
-    />
+    <div className="flex h-full flex-col gap-1">
+      <h1 className="text-lg font-bold">Share this collection</h1>
+      <ShareForm
+        onSubmit={handleSubmit}
+        isPending={isGranting}
+        isError={isGrantError}
+      />
+      <h1 className="pt-6 text-lg font-bold">Share list of this collection</h1>
+      <ShareList />
+    </div>
   );
 }
 
