@@ -1,7 +1,6 @@
 """Collection permission service."""
 
-from datetime import datetime
-from typing import List, Optional
+from typing import Optional
 from uuid import uuid4
 
 from fastapi import HTTPException, status
@@ -110,6 +109,13 @@ class CollectionPermissionService:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Permission not found"
             )
 
+        # Prevent OWNER permissions from being revoked
+        if permission.permission_level == CollectionPermissionLevel.OWNER:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="OWNER permissions cannot be revoked",
+            )
+
         # Create audit log before deleting
         log_entry = CollectionPermissionLog(
             id=str(uuid4()),
@@ -124,7 +130,7 @@ class CollectionPermissionService:
         self.db.delete(permission)
         self.db.commit()
 
-    def get_user_permissions(self, collection_id: str) -> List[CollectionPermission]:
+    def get_user_permissions(self, collection_id: str) -> list[CollectionPermission]:
         """Get all permissions for a collection."""
         return (
             self.db.query(CollectionPermission)
@@ -152,17 +158,18 @@ class CollectionPermissionService:
         required_level: CollectionPermissionLevel,
     ) -> bool:
         """Check if a user has the required permission level for a collection."""
-        # First check if user is the creator (has full access)
-        collection = (
-            self.db.query(Collection).filter(Collection.id == collection_id).first()
-        )
-        if collection and collection.created_by == user_id:
-            return True
-
         # Check explicit permissions
         permission = self.get_user_permission(collection_id, user_id)
         if not permission:
             return False
+
+        # OWNER permissions grant all access
+        if permission.permission_level == CollectionPermissionLevel.OWNER:
+            return True
+
+        # For EDIT permissions, check if required level is EDIT
+        if permission.permission_level == CollectionPermissionLevel.EDIT:
+            return required_level == CollectionPermissionLevel.EDIT
 
         return permission.permission_level == required_level
 
@@ -172,7 +179,13 @@ class CollectionPermissionService:
             collection_id, user_id, CollectionPermissionLevel.EDIT
         )
 
-    def get_permission_logs(self, collection_id: str) -> List[CollectionPermissionLog]:
+    def can_owner_collection(self, collection_id: str, user_id: str) -> bool:
+        """Check if user has OWNER permission for a collection."""
+        return self.check_user_permission(
+            collection_id, user_id, CollectionPermissionLevel.OWNER
+        )
+
+    def get_permission_logs(self, collection_id: str) -> list[CollectionPermissionLog]:
         """Get all permission logs for a collection."""
         return (
             self.db.query(CollectionPermissionLog)
@@ -181,7 +194,7 @@ class CollectionPermissionService:
             .all()
         )
 
-    def get_user_permission_logs(self, user_id: str) -> List[CollectionPermissionLog]:
+    def get_user_permission_logs(self, user_id: str) -> list[CollectionPermissionLog]:
         """Get all permission logs for a user."""
         return (
             self.db.query(CollectionPermissionLog)
