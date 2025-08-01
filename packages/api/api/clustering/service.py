@@ -38,10 +38,32 @@ class ClusteringService:
         self.db = db
 
     # Clustering CRUD operations
+    def delete_clusterings_by_collection(self, collection_id: str, user: User) -> int:
+        """Delete all existing clusterings for a collection."""
+        existing_clusterings = (
+            self.db.query(Clustering)
+            .filter(Clustering.collection_id == collection_id)
+            .filter(Clustering.created_by == user.id)
+            .all()
+        )
+
+        deleted_count = 0
+        for clustering in existing_clusterings:
+            if self._can_modify_clustering(clustering, user):
+                self.db.delete(clustering)
+                deleted_count += 1
+
+        if deleted_count > 0:
+            self.db.commit()
+
+        return deleted_count
+
     def create_clustering(
         self, clustering_data: ClusteringCreate, user: User
     ) -> Clustering:
         """Create a new clustering."""
+        self.delete_clusterings_by_collection(clustering_data.collection_id, user)
+
         clustering = Clustering(
             id=str(uuid4()),
             collection_id=clustering_data.collection_id,
