@@ -1,9 +1,23 @@
 import { useParams } from "next/navigation";
-import { AlertCircle, Crown, Shield, UserIcon } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, Crown, Shield, Trash2, UserIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Scroller } from "@/components/ui/scroller";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,7 +26,55 @@ import { components } from "@/lib/api/path";
 
 type UserPermission = components["schemas"]["UserPermissionResponse"];
 
+// Custom hook for revoking permissions
+function useRevokePermission() {
+  const params = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
+
+  const { mutate, isPending } = $api.useMutation(
+    "delete",
+    "/collections/{collection_id}/permissions/{user_id}",
+    {
+      onSuccess: () => {
+        toast.success("Permission revoked successfully!");
+        // Invalidate the permissions query to refresh the list
+        queryClient.invalidateQueries({
+          queryKey: [
+            "get",
+            "/collections/{collection_id}/permissions",
+            { params: { path: { collection_id: params.id } } },
+          ],
+        });
+      },
+      onError: (error: unknown) => {
+        const message =
+          typeof error === "object" && error !== null && "detail" in error
+            ? (error as { detail?: string }).detail
+            : undefined;
+        toast.error(
+          message || "Failed to revoke permission. Please try again.",
+        );
+      },
+    },
+  );
+
+  const revoke = (userId: string) => {
+    mutate({
+      params: {
+        path: {
+          collection_id: params.id,
+          user_id: userId,
+        },
+      },
+    });
+  };
+
+  return { revoke, isPending };
+}
+
 function PermissionItem({ permission }: { permission: UserPermission }) {
+  const { revoke, isPending } = useRevokePermission();
+
   const getPermissionIcon = (level: UserPermission["permission_level"]) => {
     switch (level) {
       case "owner":
@@ -57,13 +119,50 @@ function PermissionItem({ permission }: { permission: UserPermission }) {
             Granted by {permission.granter_username}
           </p>
         </div>
-        <Badge
-          variant={getPermissionVariant(permission.permission_level)}
-          className="flex items-center gap-1"
-        >
-          {getPermissionIcon(permission.permission_level)}
-          {permission.permission_level}
-        </Badge>
+        <div className="flex items-center gap-2">
+          <Badge
+            variant={getPermissionVariant(permission.permission_level)}
+            className="flex items-center gap-1"
+          >
+            {getPermissionIcon(permission.permission_level)}
+            {permission.permission_level}
+          </Badge>
+          {permission.permission_level !== "owner" && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-destructive h-8 w-8"
+                  disabled={isPending}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Revoke permission</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Revoke access?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will remove {permission.username}&apos;s access to this
+                    collection. They will no longer be able to view or edit the
+                    collection.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => revoke(permission.user_id)}
+                    disabled={isPending}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {isPending ? "Revoking..." : "Revoke Access"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </CardContent>
     </Card>
   );
