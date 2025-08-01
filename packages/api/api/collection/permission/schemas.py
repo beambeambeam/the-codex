@@ -10,7 +10,7 @@ class PermissionGrantRequest(BaseModel):
     """Request schema for granting permission."""
 
     user_id: str
-    permission_level: Literal["edit"] = "edit"
+    permission_level: Literal["edit", "owner"] = "edit"
 
 
 class PermissionResponse(BaseModel):
@@ -21,7 +21,7 @@ class PermissionResponse(BaseModel):
     id: str
     collection_id: str
     user_id: str
-    permission_level: Literal["edit"]
+    permission_level: Literal["edit", "owner"]
     granted_by: str
     created_at: datetime
     updated_at: datetime
@@ -36,7 +36,7 @@ class PermissionLogResponse(BaseModel):
     collection_id: str
     user_id: str
     action: Literal["granted", "revoked"]
-    permission_level: Literal["edit"]
+    permission_level: Literal["edit", "owner"]
     performed_by: str
     created_at: datetime
 
@@ -51,7 +51,7 @@ class UserPermissionResponse(BaseModel):
     user_id: str
     username: str
     email: str
-    permission_level: Literal["edit"]
+    permission_level: Literal["edit", "owner"]
     granted_by: str
     granter_username: str
     created_at: datetime
@@ -69,7 +69,7 @@ class PermissionLogWithUserResponse(BaseModel):
     username: str
     email: str
     action: Literal["granted", "revoked"]
-    permission_level: Literal["edit"]
+    permission_level: Literal["edit", "owner"]
     performed_by: str
     performer_username: str
     created_at: datetime
