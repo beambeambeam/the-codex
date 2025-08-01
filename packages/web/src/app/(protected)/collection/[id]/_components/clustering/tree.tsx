@@ -86,12 +86,18 @@ function ClusteringTree() {
       <div className="flex items-center justify-between">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full text-sm font-medium">
+            <Button
+              variant="outline"
+              className="flex w-full justify-between text-sm font-medium"
+            >
               {selectedClustering.title || "Clustering"}
               <ChevronDownIcon className="ml-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48">
+          <DropdownMenuContent
+            align="start"
+            className="w-[var(--radix-select-trigger-width)]"
+          >
             {clusterings.map((clustering) => (
               <ClusteringMenuItem key={clustering.id} clustering={clustering} />
             ))}
