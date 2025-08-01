@@ -93,7 +93,7 @@ class CollectionPermission(Base):
         Enum("edit", "owner", name="collectionpermissionlevel"), nullable=False
     )
     granted_by: Mapped[str] = mapped_column(
-        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=False
+        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.current_timestamp()
@@ -135,7 +135,7 @@ class CollectionPermissionLog(Base):
         Enum("edit", "owner", name="collectionpermissionlevel"), nullable=False
     )
     performed_by: Mapped[str] = mapped_column(
-        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=False
+        Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP, nullable=False, server_default=func.current_timestamp()
