@@ -63,11 +63,11 @@ def grant_permission(
     collection: Collection = Depends(get_collection_with_modify_permission_local),
 ):
     """Grant permission to a user for a collection."""
-    # Only collection creator can grant permissions
-    if collection.created_by != current_user.id:
+    # Only collection OWNER can grant permissions
+    if not permission_service.can_owner_collection(collection_id, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only collection creator can grant permissions",
+            detail="Only collection OWNER can grant permissions",
         )
 
     permission = permission_service.grant_permission(
@@ -92,11 +92,11 @@ def revoke_permission(
     collection: Collection = Depends(get_collection_with_modify_permission_local),
 ):
     """Revoke permission from a user for a collection."""
-    # Only collection creator can revoke permissions
-    if collection.created_by != current_user.id:
+    # Only collection OWNER can revoke permissions
+    if not permission_service.can_owner_collection(collection_id, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only collection creator can revoke permissions",
+            detail="Only collection OWNER can revoke permissions",
         )
 
     permission_service.revoke_permission(
@@ -117,11 +117,10 @@ def list_collection_permissions(
     collection: Collection = Depends(get_collection_with_modify_permission_local),
 ):
     """List all permissions for a collection."""
-    # Only collection creator can view permissions
-    if collection.created_by != current_user.id:
+    if not permission_service.can_owner_collection(collection_id, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only collection creator can view permissions",
+            detail="Only collection OWNER can view permissions",
         )
 
     permissions = permission_service.get_user_permissions(collection_id)
@@ -182,11 +181,11 @@ def get_permission_logs(
     collection: Collection = Depends(get_collection_with_modify_permission_local),
 ):
     """Get permission audit logs for a collection."""
-    # Only collection creator can view permission logs
-    if collection.created_by != current_user.id:
+    # Only collection OWNER can view permission logs
+    if not permission_service.can_owner_collection(collection_id, current_user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only collection creator can view permission logs",
+            detail="Only collection OWNER can view permission logs",
         )
 
     logs = permission_service.get_permission_logs(collection_id)
