@@ -9,7 +9,6 @@ from ...models.collection import Collection
 from ...models.user import User
 from .schemas import (
     BulkPermissionGrantRequest,
-    PermissionGrantRequest,
     PermissionLogWithUserResponse,
     PermissionResponse,
     UserPermissionResponse,
