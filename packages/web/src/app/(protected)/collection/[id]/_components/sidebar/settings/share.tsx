@@ -2,36 +2,36 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronsUpDown, X } from "lucide-react";
 
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import {
-  Combobox,
-  ComboboxAnchor,
-  ComboboxBadgeItem,
-  ComboboxBadgeList,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxItem,
-  ComboboxLabel,
-  ComboboxLoading,
-  ComboboxTrigger,
-} from "@/components/ui/combobox";
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Scroller } from "@/components/ui/scroller";
 import { fetchClient } from "@/lib/api/client";
-import { debounce } from "@/lib/utils";
+import { components } from "@/lib/api/path";
+import { cn, debounce } from "@/lib/utils";
 
-interface User {
-  id: string;
-  username: string;
-  email: string;
-}
+type User = components["schemas"]["UserSearchResponse"];
 
 function CollectionShare() {
   const params = useParams<{ id: string }>();
   const collectionId = params.id;
 
   const [value, setValue] = useState<string[]>([]);
+  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -90,68 +90,120 @@ function CollectionShare() {
     [debouncedSearch],
   );
 
-  const onValueChange = useCallback(
-    (selectedValues: string[]) => {
-      setValue(selectedValues);
-      const allAvailableUsers = [...selectedUsers, ...filteredUsers];
-      const uniqueUsers = allAvailableUsers.filter(
-        (user, index, self) =>
-          index === self.findIndex((u) => u.id === user.id),
-      );
-      const newSelectedUsers = uniqueUsers.filter((user) =>
-        selectedValues.includes(user.id),
-      );
-      setSelectedUsers(newSelectedUsers);
-    },
-    [filteredUsers, selectedUsers],
-  );
-
   return (
     <Scroller className="flex h-full flex-col gap-y-4">
       <h1 className="text-lg font-bold">Share this library</h1>
       <div className="*:not-first:mt-2">
         <div className="flex flex-col gap-4">
           <div className="space-y-2">
-            <Combobox
-              value={value}
-              onValueChange={onValueChange}
-              inputValue={search}
-              onInputValueChange={onInputValueChange}
-              manualFiltering
-              multiple
-            >
-              <ComboboxLabel>Search Users</ComboboxLabel>
-              <ComboboxAnchor>
-                <ComboboxBadgeList>
-                  {selectedUsers.map((user) => (
-                    <ComboboxBadgeItem key={user.id} value={user.id}>
-                      {user.username}
-                    </ComboboxBadgeItem>
-                  ))}
-                </ComboboxBadgeList>
-                <ComboboxInput placeholder="Type to search for users..." />
-                <ComboboxTrigger>
-                  <ChevronDown className="h-4 w-4" />
-                </ComboboxTrigger>
-              </ComboboxAnchor>
-              <ComboboxContent>
-                {isSearching ? (
-                  <ComboboxLoading value={0} label="Searching users..." />
-                ) : filteredUsers.length === 0 ? (
-                  <ComboboxEmpty>
-                    {search.trim() === ""
-                      ? "No users available"
-                      : "No users found."}
-                  </ComboboxEmpty>
-                ) : (
-                  filteredUsers.map((user) => (
-                    <ComboboxItem key={user.id} value={user.id} outset>
-                      {user.username}
-                    </ComboboxItem>
-                  ))
-                )}
-              </ComboboxContent>
-            </Combobox>
+            <div>
+              <h2 className="mb-2 text-sm font-semibold">Search Users:</h2>
+              <div className="space-y-2">
+                <Popover open={open} onOpenChange={setOpen}>
+                  <PopoverTrigger asChild>
+                    <div
+                      className={cn(
+                        buttonVariants({
+                          variant: "outline",
+                        }),
+                        "flex w-full justify-between bg-transparent hover:bg-transparent dark:bg-transparent dark:hover:bg-transparent",
+                      )}
+                    >
+                      <div className="flex flex-wrap gap-2">
+                        {selectedUsers.length == 0 && "No user Selected"}
+                        {selectedUsers.map((user) => (
+                          <Badge
+                            key={user.id}
+                            variant="secondary"
+                            className="gap-1"
+                            onClick={() => {
+                              const newValue = value.filter(
+                                (v) => v !== user.id,
+                              );
+                              setValue(newValue);
+                              setSelectedUsers((prev) =>
+                                prev.filter((u) => u.id !== user.id),
+                              );
+                            }}
+                          >
+                            {user.username}
+                            <X className="h-3 w-3" />
+                          </Badge>
+                        ))}
+                      </div>
+                      <ChevronsUpDown className="opacity-50" />
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-(--radix-popover-trigger-width) p-0">
+                    <Command shouldFilter={false}>
+                      <CommandInput
+                        placeholder="Search users..."
+                        className="h-9"
+                        value={search}
+                        onValueChange={onInputValueChange}
+                      />
+                      <CommandList>
+                        {isSearching ? (
+                          <div className="py-6 text-center text-sm">
+                            Searching users...
+                          </div>
+                        ) : filteredUsers.length === 0 ? (
+                          <CommandEmpty>
+                            {search.trim() === ""
+                              ? "No users available"
+                              : "No users found."}
+                          </CommandEmpty>
+                        ) : (
+                          <CommandGroup>
+                            <CommandEmpty>
+                              {search.trim() === ""
+                                ? "No users available"
+                                : "No users found or All matching users are already selected."}
+                            </CommandEmpty>
+                            {filteredUsers
+                              .filter((user) => !value.includes(user.id))
+                              .map((user) => (
+                                <CommandItem
+                                  key={user.id}
+                                  value={user.id}
+                                  onSelect={(currentValue) => {
+                                    if (
+                                      currentValue &&
+                                      !value.includes(currentValue)
+                                    ) {
+                                      const newValue = [...value, currentValue];
+                                      setValue(newValue);
+                                      const selectedUser = filteredUsers.find(
+                                        (u) => u.id === currentValue,
+                                      );
+                                      if (selectedUser) {
+                                        setSelectedUsers((prev) => [
+                                          ...prev,
+                                          selectedUser,
+                                        ]);
+                                      }
+                                    }
+                                  }}
+                                >
+                                  {user.username}
+                                  <Check
+                                    className={cn(
+                                      "ml-auto",
+                                      value.includes(user.id)
+                                        ? "opacity-100"
+                                        : "opacity-0",
+                                    )}
+                                  />
+                                </CommandItem>
+                              ))}
+                          </CommandGroup>
+                        )}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </div>
         </div>
       </div>
