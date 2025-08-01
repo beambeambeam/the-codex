@@ -1527,6 +1527,11 @@ export interface components {
        * @description Clustering description
        */
       description?: string | null;
+      /**
+       * @description Clustering status
+       * @default idle
+       */
+      status: components["schemas"]["ClusteringStatus"];
     };
     /** ClusteringResponse */
     ClusteringResponse: {
@@ -1567,6 +1572,11 @@ export interface components {
        */
       description?: string | null;
       /**
+       * @description Clustering status
+       * @default idle
+       */
+      status: components["schemas"]["ClusteringStatus"];
+      /**
        * Created By Username
        * @description Get the username of the creator.
        */
@@ -1577,6 +1587,11 @@ export interface components {
        */
       readonly updated_by_username: string | null;
     };
+    /**
+     * ClusteringStatus
+     * @enum {string}
+     */
+    ClusteringStatus: "idle" | "processing";
     /** ClusteringTopicCreate */
     ClusteringTopicCreate: {
       /**
@@ -1709,6 +1724,8 @@ export interface components {
        * @description Clustering description
        */
       description?: string | null;
+      /** @description Clustering status */
+      status?: components["schemas"]["ClusteringStatus"] | null;
     };
     /** CollectionChatCreate */
     CollectionChatCreate: {
@@ -2818,6 +2835,11 @@ export interface components {
       title: string;
       /** Description */
       description: string | null;
+      /**
+       * @description Clustering status
+       * @default idle
+       */
+      status: components["schemas"]["ClusteringStatus"];
       /** Topics */
       topics: components["schemas"]["ClusteringTopicWithDocuments"][];
       /**

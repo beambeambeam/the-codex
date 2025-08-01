@@ -3,11 +3,12 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import TIMESTAMP, ForeignKey, Text
+from sqlalchemy import TIMESTAMP, Enum, ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from .base import Base
+from .enum import ClusteringStatus
 
 if TYPE_CHECKING:
     from .collection import Collection
@@ -38,6 +39,12 @@ class Clustering(Base):
     )
     updated_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    status: Mapped[ClusteringStatus] = mapped_column(
+        Enum(ClusteringStatus, native_enum=False),
+        nullable=False,
+        default=ClusteringStatus.idle,
+        server_default="idle",
     )
 
     collection: Mapped["Collection"] = relationship("Collection")

@@ -12,6 +12,7 @@ from ..database import get_db
 from ..document.schemas import DocumentResponse
 from ..models.clustering import Clustering, ClusteringChild, ClusteringTopic
 from ..models.document import Document
+from ..models.enum import ClusteringStatus
 from ..models.user import User
 from .schemas import (
     ClusteringChildCreate,
@@ -19,6 +20,7 @@ from .schemas import (
     ClusteringChildUpdate,
     ClusteringCreate,
     ClusteringResponse,
+    ClusteringStatusUpdate,
     ClusteringTopicCreate,
     ClusteringTopicResponse,
     ClusteringTopicUpdate,
@@ -219,6 +221,7 @@ class ClusteringService:
             search_word="by_file_type",
             title="Documents by File Type",
             description="Documents grouped by file type",
+            status=ClusteringStatus.idle,
             id="virtual_file_type_clustering",
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -279,6 +282,7 @@ class ClusteringService:
             search_word="by_date",
             title="Documents by Creation Date",
             description="Documents grouped by creation date",
+            status=ClusteringStatus.idle,
             id="virtual_date_clustering",
             created_at=datetime.now(),
             updated_at=datetime.now(),
@@ -312,6 +316,8 @@ class ClusteringService:
             clustering.title = update_data.title
         if update_data.description is not None:
             clustering.description = update_data.description
+        if update_data.status is not None:
+            clustering.status = update_data.status
 
         clustering.updated_by = user.id
 
@@ -332,6 +338,27 @@ class ClusteringService:
         self.db.delete(clustering)
         self.db.commit()
         return True
+
+    def update_clustering_status(
+        self, clustering_id: str, status_update: ClusteringStatusUpdate, user: User
+    ) -> Clustering:
+        """Update only the clustering status."""
+        clustering = self.get_clustering(clustering_id, user)
+
+        # Check if user has permission to update
+        if not self._can_modify_clustering(clustering, user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to update this clustering",
+            )
+
+        # Update only the status
+        clustering.status = status_update.status
+        clustering.updated_by = user.id
+
+        self.db.commit()
+        self.db.refresh(clustering)
+        return clustering
 
     # ClusteringTopic CRUD operations
     def create_clustering_topic(
