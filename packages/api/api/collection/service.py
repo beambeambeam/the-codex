@@ -67,21 +67,8 @@ class CollectionService:
     def get_user_collections(self, user_id: str) -> list[Collection]:
         """Get all collections accessible by a user."""
         # Get collections where user has OWNER or EDIT permissions
-        from ..models.collection import CollectionPermission, CollectionPermissionLevel
-
         collections = (
-            self.db.query(Collection)
-            .options(joinedload(Collection.creator), joinedload(Collection.updater))
-            .join(
-                CollectionPermission,
-                Collection.id == CollectionPermission.collection_id,
-            )
-            .filter(CollectionPermission.user_id == user_id)
-            .filter(
-                CollectionPermission.permission_level.in_(
-                    [CollectionPermissionLevel.OWNER, CollectionPermissionLevel.EDIT]
-                )
-            )
+            self._get_accessible_collections_query(user_id)
             .order_by(Collection.created_at.desc())
             .all()
         )
@@ -301,21 +288,8 @@ class CollectionService:
         if not query.strip():
             return self.get_user_collections(user.id)
         # Search by name or description for collections user has access to
-        from ..models.collection import CollectionPermission, CollectionPermissionLevel
-
         collections = (
-            self.db.query(Collection)
-            .options(joinedload(Collection.creator), joinedload(Collection.updater))
-            .join(
-                CollectionPermission,
-                Collection.id == CollectionPermission.collection_id,
-            )
-            .filter(CollectionPermission.user_id == user.id)
-            .filter(
-                CollectionPermission.permission_level.in_(
-                    [CollectionPermissionLevel.OWNER, CollectionPermissionLevel.EDIT]
-                )
-            )
+            self._get_accessible_collections_query(user.id)
             .filter(
                 Collection.name.ilike(f"%{query}%")
                 | Collection.description.ilike(f"%{query}%")
@@ -326,3 +300,22 @@ class CollectionService:
         )
         self._populate_collection_usernames(collections)
         return collections
+
+    def _get_accessible_collections_query(self, user_id: str):
+        """Return base query for collections accessible by a user (OWNER or EDIT)."""
+        from ..models.collection import CollectionPermission, CollectionPermissionLevel
+
+        return (
+            self.db.query(Collection)
+            .options(joinedload(Collection.creator), joinedload(Collection.updater))
+            .join(
+                CollectionPermission,
+                Collection.id == CollectionPermission.collection_id,
+            )
+            .filter(CollectionPermission.user_id == user_id)
+            .filter(
+                CollectionPermission.permission_level.in_(
+                    [CollectionPermissionLevel.OWNER, CollectionPermissionLevel.EDIT]
+                )
+            )
+        )
