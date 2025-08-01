@@ -13,45 +13,40 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { $api } from "@/lib/api/client";
-import { useUserActions } from "@/store/userStore";
+import { useLogin } from "@/store/userStore";
 
 function SignInPage() {
-  const { setUser } = useUserActions();
-  const { mutate, isSuccess, isPending } = $api.useMutation(
-    "post",
-    "/auth/login",
-    {
-      onSuccess(data) {
-        toast.success("Sign-in successful! Welcome back.");
-        setUser(data.user);
-        window.location.href = "/home";
-      },
-      onError(error: unknown) {
-        const message =
-          typeof error === "object" && error !== null && "detail" in error
-            ? (error as { detail?: string }).detail
-            : undefined;
-        toast.error(message || "Sign-in failed. Please try again.");
-      },
-    },
-  );
+  const { login } = useLogin();
+
+  const handleSubmit = async (values: SignInFormSchemaType) => {
+    try {
+      await login({
+        username: values.username,
+        password: values.password,
+      });
+      toast.success("Sign-in successful! Welcome back.");
+    } catch {
+      toast.error("Login failed. Please try again.");
+    }
+  };
 
   return (
     <div className="grid h-screen grid-cols-1 lg:grid-cols-2">
       <div className="hidden h-full flex-col items-center justify-center lg:flex">
         <div>
           <Logo size={250} />
-          <h1 className="text-3xl">Make every data, Askable</h1>
+          <h1 className="text-3xl">Your&apos;s Agentic Ai Librarians</h1>
         </div>
       </div>
       <div className="flex h-full flex-col items-center justify-center gap-2.5">
-        <Card className="w-full max-w-sm">
+        <Card className="w-full max-w-md">
           <CardHeader>
-            <CardTitle className="text-2xl">🤗 Welcome back.</CardTitle>
+            <CardTitle className="text-2xl">
+              🤗 Welcome back to TheCodex
+            </CardTitle>
             <CardDescription className="text-sm">
-              Welcome to TheCodex, Your not so Library that help you managed the
-              data.
+              Sign in to your account and continue managing your data with
+              TheCodex, your intelligent library assistant.
             </CardDescription>
           </CardHeader>
           <SignInForm
@@ -59,21 +54,13 @@ function SignInPage() {
               username: "",
               password: "",
             }}
-            onSubmit={(values: SignInFormSchemaType) =>
-              mutate({
-                body: {
-                  ...values,
-                },
-              })
-            }
-            disabled={isSuccess || isPending}
-            isPending={isPending}
+            onSubmit={handleSubmit}
           />
         </Card>
         <p className="text-accent-foreground/60">
-          Don’t have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/register">
-            <b>Sign up!</b>
+            <b>Register now!</b>
           </Link>
         </p>
       </div>

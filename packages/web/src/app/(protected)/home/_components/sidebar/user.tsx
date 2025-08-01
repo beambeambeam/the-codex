@@ -7,7 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useUser } from "@/store/userStore";
 
 function HomeSidebarUser() {
-  const user = useUser();
+  const { user } = useUser();
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Card className="py-5">
