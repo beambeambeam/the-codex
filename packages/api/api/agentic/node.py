@@ -1,10 +1,15 @@
 from typing import Any, Literal, Optional
 
-from api.chat.schemas import CollectionChatHistoryCreate, CollectionChatReferenceCreate
+from api.chat.schemas import (
+    CollectionChatHistoryCreate,
+    CollectionChatReferenceCreate,
+    CollectionChatUpdate,
+)
 from api.chat.service import ChatService
 from api.document.schemas import ChunkSearchResponse
 from api.document.service import DocumentServiceSearch as DocumentService
 from api.models.chat import CollectionChatReference
+from api.models.enum import ChatStatus
 from api.models.user import User
 
 from .core import TextEmbedder, call_llm, call_structured_llm
@@ -19,7 +24,44 @@ from .schemas import (
     UserIntent,
 )
 
-# Order: EmbedQueryNode -> SearchPgvectorNode -> GenerateResponseNode
+
+class SaveStatusNode(Node):
+    """
+    Extended Node class with additional functionality.
+    """
+
+    def __init__(
+        self,
+        chat_service: ChatService,
+        status: ChatStatus,
+        name="",
+        max_retries=1,
+        wait=0,
+    ):
+        super().__init__(name, max_retries, wait)
+        self.chat_service = chat_service
+        self.status = status
+
+    def save_status(self, chat_id: str, status: ChatStatus, user: User):
+        update_data = CollectionChatUpdate(
+            status=status,
+        )
+        return self.chat_service.update_chat(chat_id, update_data, user)
+
+    def prep(self, shared: SharedStore) -> Optional[str]:
+        return {
+            "chat_id": shared.chat_session.id,
+            "status": self.status,
+            "current_user": shared.current_user,
+        }
+
+    def exec(self, inputs: dict[str, Any]) -> None:
+        return self.save_status(
+            inputs["chat_id"], inputs["status"], inputs["current_user"]
+        )
+
+    def post(self, shared: SharedStore, prep_res: Any, exec_res: None):
+        return NodeStatus.DEFAULT.value
 
 
 class CollectionNode(Node):
