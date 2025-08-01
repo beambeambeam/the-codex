@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import ShareList from "@/app/(protected)/collection/[id]/_components/sidebar/settings/share/list";
@@ -12,6 +13,7 @@ import ShareForm, { ShareFormSchemaType } from "./form";
 function CollectionShare() {
   const params = useParams<{ id: string }>();
   const formResetRef = useRef<(() => void) | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     mutate: grantPermission,
@@ -23,6 +25,13 @@ function CollectionShare() {
       if (formResetRef.current) {
         formResetRef.current();
       }
+      queryClient.invalidateQueries({
+        queryKey: [
+          "get",
+          "/collections/{collection_id}/permissions",
+          { params: { path: { collection_id: params.id } } },
+        ],
+      });
     },
     onError: (error: unknown) => {
       const message =
