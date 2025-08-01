@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import ChatForm, {
   ChatFormSchemaType,
@@ -40,7 +41,6 @@ function ChatIdPage() {
     "/agentic/rag_query",
     {
       onSuccess: (data) => {
-        console.log(data);
         queryClient.invalidateQueries({
           queryKey: [
             "get",
@@ -51,14 +51,17 @@ function ChatIdPage() {
       },
       onError: (error: unknown) => {
         setLocalMessages((prev) =>
-          prev.filter((msg) => !msg.id.startsWith("temp-")),
+          prev.filter(
+            (msg) =>
+              !msg.id.startsWith("temp-") && !msg.id.startsWith("system-"),
+          ),
         );
 
         const message =
           typeof error === "object" && error !== null && "detail" in error
             ? (error as { detail?: string }).detail
             : undefined;
-        console.error("Failed to send message:", message || "Unknown error");
+        toast.error(message || "Failed to send message. Please try again.");
       },
     },
   );
