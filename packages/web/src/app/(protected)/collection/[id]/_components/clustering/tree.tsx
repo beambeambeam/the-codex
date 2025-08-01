@@ -36,14 +36,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Loader } from "@/components/ui/loader";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
+import { $api } from "@/lib/api/client";
 import { getFileIcon } from "@/lib/files";
+import { cn } from "@/lib/utils";
 
 const indent = 20;
 
 function ClusteringTree() {
+  const params = useParams<{ id: string }>();
   const clusterings = useClusterings();
   const selectedClustering = useSelectedClustering();
   const { isPending, isEmpty, isError } = useClusteringState();
+
+  const { mutate } = $api.useMutation("post", "/agentic/cluster_topic");
 
   if (isPending) {
     return (
@@ -88,9 +93,11 @@ function ClusteringTree() {
           <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              className="flex w-full justify-between text-sm font-medium"
+              className="flex w-full justify-between text-sm font-medium text-wrap"
             >
-              {selectedClustering.title || "Clustering"}
+              <span className="max-w-[200px] truncate">
+                {selectedClustering.title || "Clustering"}
+              </span>
               <ChevronDownIcon className="ml-1 h-3 w-3" />
             </Button>
           </DropdownMenuTrigger>
@@ -101,6 +108,21 @@ function ClusteringTree() {
             {clusterings.map((clustering) => (
               <ClusteringMenuItem key={clustering.id} clustering={clustering} />
             ))}
+            {clusterings.length <= 2 && (
+              <DropdownMenuItem
+                onClick={() =>
+                  mutate({
+                    params: {
+                      query: {
+                        collection_id: params.id,
+                      },
+                    },
+                  })
+                }
+              >
+                AI Generated
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -119,7 +141,7 @@ function ClusteringMenuItem({ clustering }: { clustering: Clustering }) {
   return (
     <DropdownMenuItem
       onClick={() => setSelectedId(clustering.id)}
-      className={selectedId === clustering.id ? "bg-accent" : ""}
+      className={cn(selectedId === clustering.id ? "bg-accent" : "")}
     >
       {clustering.title}
     </DropdownMenuItem>
