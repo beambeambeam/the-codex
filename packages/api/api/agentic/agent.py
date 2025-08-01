@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Literal
 
+from loguru import logger
+
 from api.chat.service import ChatService
+from api.collection.service import CollectionService
 from api.document.service import DocumentServiceSearch as DocumentService
 from api.models.user import User
 
@@ -11,8 +14,8 @@ from .core import (
 from .node import (
     EmbedQueryNode,
     GenerateResponseFromContextNode,
-    GenerateResponseNode,
     GetInputAppendHistoryNode,
+    GetLatestContextReferenceNode,
     GetUserIntentNode,
     SaveChatHistoryNode,
     SearchCollectionNode,
@@ -50,12 +53,14 @@ class rag_agent(agentic_base):
 
     def __init__(
         self,
+        collection_service: CollectionService,
         document_service: DocumentService,
         chat_service: ChatService,
         embedding_model: TextEmbedder,
         current_user: User,
     ):
         # Initialize Services
+        self.collection_service = collection_service
         self.document_service = document_service
         self.chat_service = chat_service
         self.embedding_model = embedding_model
@@ -93,10 +98,26 @@ class rag_agent(agentic_base):
 
         self.shared_data.user_question = user_question
         self.shared_data.chat_session = self.chat_service.get_chat(collection_chat_id)
+
+        # get current information of asking collection
         self.shared_data.chat_history = self.get_current_chat_history(
             collection_chat_id
         )
+        self.shared_data.current_collection = self.collection_service.get_collection(
+            self.shared_data.chat_session.collection_id
+        )
+        self.shared_data.current_documents = (
+            self.document_service.get_collection_documents(
+                collection_id=self.shared_data.current_collection.id
+            )
+        )
         self.shared_data.document_references_id = references
+
+        logger.info(
+            f"Running RAG agent for user: {self.current_user.username}, "
+            f"collection: {self.shared_data.current_collection.name}, "
+            f"question: {user_question}"
+        )
 
         self.flow.run(shared=self.shared_data)
 
@@ -119,7 +140,9 @@ class rag_agent(agentic_base):
         search_collection_node = SearchCollectionNode(
             document_service=self.document_service
         )
-        generate_ans_node = GenerateResponseNode()
+        get_latest_reference_node = GetLatestContextReferenceNode(
+            chat_service=self.chat_service,
+        )
         generate_ans_based_on_context_node = GenerateResponseFromContextNode()
         save_chat_node = SaveChatHistoryNode(
             chat_service=self.chat_service,
@@ -127,13 +150,23 @@ class rag_agent(agentic_base):
 
         input_node >> get_intent_node
         (
-            get_intent_node - INTENT.DOCUMENT_QA
+            get_intent_node - INTENT.FETCH_DOCUMENT_QA
             >> embed_q_node
             >> search_collection_node
             >> generate_ans_based_on_context_node
             >> save_chat_node
         )
-        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node >> save_chat_node
+        (
+            get_intent_node - INTENT.LAST_DOCUMENT_QA
+            >> get_latest_reference_node
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
+        (
+            get_intent_node - INTENT.GENERIC_QA
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
         (
             get_intent_node - INTENT.SUMMARIZATION
             >> embed_q_node
@@ -155,7 +188,6 @@ class rag_agent(agentic_base):
         search_document_node = SearchDocumentNode(
             document_service=self.document_service
         )
-        generate_ans_node = GenerateResponseNode()
         generate_ans_based_on_context_node = GenerateResponseFromContextNode()
         save_chat_node = SaveChatHistoryNode(
             chat_service=self.chat_service,
@@ -169,7 +201,11 @@ class rag_agent(agentic_base):
             >> generate_ans_based_on_context_node
             >> save_chat_node
         )
-        get_intent_node - INTENT.GENERIC_QA >> generate_ans_node >> save_chat_node
+        (
+            get_intent_node - INTENT.GENERIC_QA
+            >> generate_ans_based_on_context_node
+            >> save_chat_node
+        )
         (
             get_intent_node - INTENT.SUMMARIZATION
             >> embed_q_node

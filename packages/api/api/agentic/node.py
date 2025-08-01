@@ -8,7 +8,7 @@ from api.models.chat import CollectionChatReference
 from api.models.user import User
 
 from .core import TextEmbedder, call_llm, call_structured_llm
-from .core.prompts import render_collection_rag_agent_prompt
+from .core.prompts import RenderTreeRequest, render_collection_rag_agent_prompt
 from .pocketflow_custom import Node
 from .schemas import (
     ChatHistoryCreate,
@@ -240,6 +240,43 @@ class SearchCollectionNode(Node):
         return NodeStatus.DEFAULT.value
 
 
+class GetLatestContextReferenceNode(Node):
+    """
+    Node to get the latest context reference for a chat history.
+    This node retrieves the most recent context reference for a given chat history ID.
+    """
+
+    def __init__(self, chat_service: ChatService, name="", max_retries=1, wait=0):
+        super().__init__(name, max_retries, wait)
+        self.chat_service = chat_service
+
+    def prep(self, shared: SharedStore) -> Optional[str]:
+        if not shared.chat_history:
+            print(
+                "GetLatestContextReferenceNode: No chat history found in shared store."
+            )
+            return None
+        return shared.chat_session.id
+
+    def exec(self, chat_history_id: str) -> Optional[CollectionChatReference]:
+        return self.chat_service.get_latest_reference(chat_history_id)
+
+    def post(
+        self,
+        shared: SharedStore,
+        prep_res: Any,
+        exec_res: Optional[CollectionChatReference],
+    ):
+        if exec_res:
+            shared.document_references_id.append(exec_res.id)
+            print(
+                f"GetLatestContextReferenceNode: Retrieved reference ID {exec_res.id}"
+            )
+        else:
+            print("GetLatestContextReferenceNode: No reference found.")
+        return NodeStatus.DEFAULT.value
+
+
 class SearchDocumentNode(Node):
     """
     Node to search for documents in a collection based on the user's query.
@@ -304,44 +341,20 @@ class SearchDocumentNode(Node):
         return NodeStatus.DEFAULT.value
 
 
-class GenerateResponseNode(Node):
-    """
-    Node to generate a generic answer based on the user's question.
-    This node can be used to provide a response when no specific intent is identified.
-    """
-
-    def prep(self, shared: SharedStore) -> Optional[str]:
-        chat_history = shared.chat_history
-        if not chat_history:
-            print("GenericAnswerNode: No user question found in shared store.")
-            return None
-        return chat_history
-
-    def exec(self, chat_history: ChatHistoryResponse) -> str:
-        return call_llm(chat_history)
-
-    def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
-        shared.llm_answer = exec_res
-        print(f"GenericAnswerNode: Generated answer: {exec_res[:50]}...")
-
-        new_message = ChatMessageCreate(
-            collection_chat_id=shared.chat_session.id,
-            role="assistant",
-            content=exec_res,
-        )
-        shared.new_chat_history.messages.append(new_message)
-        shared.chat_history.messages.append(new_message)
-
-        return NodeStatus.DEFAULT.value
-
-
 class GenerateResponseFromContextNode(Node):
     def prep(self, shared: SharedStore) -> Optional[dict[str, Any]]:
+        # print check render_tree_request params
+
         return {
             "contexts": shared.retrieved_contexts,
             "chat_history": shared.chat_history.model_copy(deep=True),
             "question": shared.user_question,
             "collection_chat_id": shared.chat_session.id,
+            "render_tree_request": RenderTreeRequest(
+                collection=shared.current_collection,
+                documents=shared.current_documents,
+                username=shared.current_user.username,
+            ),
         }
 
     def exec(self, inputs: dict[str, Any]) -> str:
@@ -357,7 +370,9 @@ class GenerateResponseFromContextNode(Node):
         prompt = render_collection_rag_agent_prompt(
             question=inputs["question"],
             contexts=context_str_parts,
+            render_tree=inputs.get("render_tree_request"),
         )
+        print(f"GenerateResponseNode: Rendered prompt: {prompt[:2000]}...")
 
         # Temporarily append the user question to the chat history
         chat_history: ChatHistoryResponse = inputs["chat_history"]
@@ -379,7 +394,6 @@ class GenerateResponseFromContextNode(Node):
             return "I encountered an error trying to generate a response."
 
     def post(self, shared: SharedStore, prep_res: Any, exec_res: str):
-        shared.llm_answer = exec_res
         print(f"GenerateResponseNode: LLM response generated: {exec_res[:1000]}...")
 
         new_message = ChatMessageCreate(
@@ -389,6 +403,7 @@ class GenerateResponseFromContextNode(Node):
             retrieved_contexts=shared.retrieved_contexts,
         )
         shared.new_chat_history.messages.append(new_message)
+        shared.chat_history.messages.append(new_message)
 
         return NodeStatus.DEFAULT.value
 

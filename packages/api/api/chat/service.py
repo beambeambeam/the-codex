@@ -188,6 +188,16 @@ class ChatService:
             .first()
         )
 
+    def get_latest_reference(
+        self, history_id: str
+    ) -> Optional[CollectionChatReference]:
+        return (
+            self.db.query(CollectionChatReference)
+            .filter(CollectionChatReference.collection_chat_history_id == history_id)
+            .order_by(CollectionChatReference.history.created_at.desc())
+            .first()
+        )
+
     def list_references(self, history_id: str) -> list[CollectionChatReference]:
         return (
             self.db.query(CollectionChatReference)

@@ -1,7 +1,7 @@
 from typing import Literal
 
 from ..call_llm import call_structured_llm_async
-from ..prompts.prompt_manager import render_summary_generate_prompt
+from ..prompts import render_summary_generate_prompt
 from .schemas import document_details
 
 

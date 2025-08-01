@@ -4,6 +4,8 @@ from api.auth.dependencies import get_current_user
 from api.chat.dependencies import get_chat_service
 from api.chat.service import ChatService
 from api.clustering.service import ClusteringService, get_clustering_service
+from api.collection.dependencies import get_collection_service
+from api.collection.service import CollectionService
 from api.document.dependencies import get_document_service
 from api.document.service import DocumentService
 from api.models.user import User
@@ -19,7 +21,7 @@ from .core import (
 )
 from .core.embedding.embedding import MODEL_BACKEND_MAP
 from .core.ingestion.summary import SummaryGenerator
-from .core.prompts.prompt_manager import (
+from .core.prompts import (
     render_knowledge_graph_extraction_prompt,
 )
 
@@ -97,6 +99,7 @@ def get_topic_modelling_service(
 
 def get_rag_agent(
     user: User = Depends(get_current_user),
+    collection_service: CollectionService = Depends(get_collection_service),
     document_service: DocumentService = Depends(get_document_service),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
     chat_service: ChatService = Depends(get_chat_service),
@@ -106,6 +109,7 @@ def get_rag_agent(
     """
     return rag_agent(
         current_user=user,
+        collection_service=collection_service,
         document_service=document_service,
         chat_service=chat_service,
         embedding_model=text_embedder,
