@@ -1,6 +1,11 @@
 import enum
 
 
+class CollectionStatus(str, enum.Enum):
+    idle = "idle"
+    processing = "processing"
+
+
 class Role(str, enum.Enum):
     user = "user"
     assistant = "assistant"
