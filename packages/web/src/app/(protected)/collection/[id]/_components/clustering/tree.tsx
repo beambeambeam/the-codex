@@ -10,6 +10,7 @@ import {
 } from "@headless-tree/core";
 import { useTree } from "@headless-tree/react";
 import {
+  BadgeQuestionMarkIcon,
   ChevronDownIcon,
   FolderIcon,
   FolderOpenIcon,
@@ -34,6 +35,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from "@/components/ui/label";
 import { Loader } from "@/components/ui/loader";
 import { Tree, TreeItem, TreeItemLabel } from "@/components/ui/tree";
 import { $api } from "@/lib/api/client";
@@ -87,7 +89,7 @@ function ClusteringTree() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -108,6 +110,7 @@ function ClusteringTree() {
             {clusterings.map((clustering) => (
               <ClusteringMenuItem key={clustering.id} clustering={clustering} />
             ))}
+
             {clusterings.length <= 2 && (
               <DropdownMenuItem
                 onClick={() =>
@@ -125,6 +128,36 @@ function ClusteringTree() {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+      </div>
+
+      {clusterings.length > 2 && !selectedClustering.id.includes("virtual") && (
+        <Button
+          className="w-fit"
+          size="sm"
+          onClick={() =>
+            mutate({
+              params: {
+                query: {
+                  collection_id: params.id,
+                },
+              },
+            })
+          }
+        >
+          Generate Clustering
+        </Button>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
+          <Label>
+            <BadgeQuestionMarkIcon size={16} />
+            Description
+          </Label>
+        </div>
+        <div className="border-border w-full rounded border p-2">
+          <p className="text-sm">{selectedClustering.description}</p>
+        </div>
       </div>
       <ClusteringTreeChild
         key={selectedClustering.id}
