@@ -61,7 +61,7 @@ export default function CreateLibraryForm(
               <FormControl>
                 <TextareaAutosize
                   id="description"
-                  placeholder="Enter desciortion"
+                  placeholder="Enter description"
                   {...field}
                   className="max-w-full resize-none"
                   minRows={2}

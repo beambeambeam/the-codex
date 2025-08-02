@@ -421,7 +421,7 @@ class GenerateResponseFromContextNode(Node):
             contexts=context_str_parts,
             render_tree=inputs.get("render_tree_request"),
         )
-        print(f"GenerateResponseNode: Rendered prompt: {prompt[:2000]}...")
+        # print(f"GenerateResponseNode: Rendered prompt: {prompt[:2000]}...")
 
         # Temporarily append the user question to the chat history
         chat_history: ChatHistoryResponse = inputs["chat_history"]

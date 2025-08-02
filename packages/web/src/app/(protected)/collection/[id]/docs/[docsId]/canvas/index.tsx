@@ -3,6 +3,7 @@ import {
   BackgroundVariant,
   Controls,
   Edge,
+  EdgeLabelRenderer,
   MiniMap,
   Node,
   ReactFlow,
@@ -11,6 +12,7 @@ import {
 } from "@xyflow/react";
 
 import CustomEdge from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/edge";
+import CustomNode from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/node";
 
 interface DocCanvasProps {
   nodes: Node[];
@@ -30,10 +32,42 @@ function DocCanvas(props: DocCanvasProps) {
         onEdgesChange={onEdgesChange}
         fitView
         edgeTypes={{ docCustomEdge: CustomEdge }}
+        nodeTypes={{ custom: CustomNode }}
       >
         <Controls />
         <MiniMap />
         <Background variant={BackgroundVariant.Dots} />
+        <EdgeLabelRenderer>
+          {edges.map((edge) => {
+            const sourceNode = nodes.find((n) => n.id === edge.source);
+            const targetNode = nodes.find((n) => n.id === edge.target);
+
+            if (!sourceNode || !targetNode) {
+              return null;
+            }
+
+            const x = (sourceNode.position.x + targetNode.position.x) / 2;
+            const y = (sourceNode.position.y + targetNode.position.y) / 2;
+
+            return (
+              <div
+                key={edge.id}
+                style={{
+                  position: "absolute",
+                  transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
+                  pointerEvents: "all",
+                  background: "white",
+                  padding: "5px",
+                  borderRadius: "3px",
+                  fontSize: "12px",
+                }}
+                className="nodrag nopan"
+              >
+                {edge.label}
+              </div>
+            );
+          })}
+        </EdgeLabelRenderer>
       </ReactFlow>
     </div>
   );

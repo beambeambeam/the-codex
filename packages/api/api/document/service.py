@@ -106,6 +106,7 @@ class DocumentService:
             .filter(
                 Document.file_name.ilike(f"%{query}%")
                 | Document.description.ilike(f"%{query}%")
+                | Document.title.ilike(f"%{query}%")
             )
             .order_by(Document.created_at.desc())
             .limit(10)

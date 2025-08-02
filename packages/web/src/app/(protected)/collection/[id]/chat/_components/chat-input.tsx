@@ -244,7 +244,10 @@ export function ChatInputWithMentions({
                     </Avatar>
                     <div className="flex flex-col">
                       <span className="text-sm font-medium">
-                        {document.file_name}
+                        {document.title}{" "}
+                        <span className="text-muted-foreground">
+                          ({document.file_name})
+                        </span>
                       </span>
                       {document.description && (
                         <span className="text-muted-foreground text-xs">

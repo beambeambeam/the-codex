@@ -219,6 +219,7 @@ class DocumentRelationResponse(DocumentRelationBase):
 class DocumentNodeBase(BaseModel):
     """Base document node schema."""
 
+    id: str = Field(..., description="Node ID")
     title: str = Field(..., min_length=1, max_length=255, description="Node title")
     description: Optional[str] = Field(
         None, max_length=1000, description="Node description"

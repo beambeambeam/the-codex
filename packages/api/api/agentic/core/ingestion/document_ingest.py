@@ -246,23 +246,31 @@ class DocumentIngestorService(DocumentIngestor):
         )
 
         if relation:
-            # Create nodes and edges from the knowledge graph
+            # Mapping from old node ID to new node ID
+            id_map = {}
+
+            # Create nodes and map their new IDs
             for node in kg.nodes:
                 node_data = DocumentNodeCreate(
+                    id=node.id,
                     title=node.title,
                     description=node.description,
                     type=node.type,
                     label=node.label,
                     document_relation_id=relation.id,
                 )
-                self.document_service.create_document_node(
+                new_node = self.document_service.create_document_node(
                     node_data=node_data, user=user
                 )
+                # Assume create_document_node returns the created node object with its new ID
+                id_map[node.id] = new_node.id
+
+            # Create edges using the new node IDs
             for edge in kg.edges:
                 edge_data = DocumentEdgeCreate(
                     label=edge.label,
-                    source=edge.source,
-                    target=edge.target,
+                    source=id_map[edge.source],  # Map old source ID to new ID
+                    target=id_map[edge.target],  # Map old target ID to new ID
                     document_relation_id=relation.id,
                 )
                 self.document_service.create_document_edge(

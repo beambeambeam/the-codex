@@ -164,6 +164,14 @@ class DocumentNode(Base):
     creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
     updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
 
+    # Reverse relationship to edges (optional)
+    outgoing_edges = relationship(
+        "DocumentEdge", back_populates="source_node", foreign_keys="DocumentEdge.source"
+    )
+    incoming_edges = relationship(
+        "DocumentEdge", back_populates="target_node", foreign_keys="DocumentEdge.target"
+    )
+
 
 class DocumentEdge(Base):
     __tablename__ = "document_edge"
@@ -173,8 +181,12 @@ class DocumentEdge(Base):
         Text, ForeignKey("document_relation.id", ondelete="CASCADE")
     )
     label: Mapped[str] = mapped_column(Text)
-    source: Mapped[str] = mapped_column(Text)
-    target: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(
+        Text, ForeignKey("document_node.id", ondelete="CASCADE")
+    )
+    target: Mapped[str] = mapped_column(
+        Text, ForeignKey("document_node.id", ondelete="CASCADE")
+    )
     created_by: Mapped[Optional[str]] = mapped_column(
         Text, ForeignKey("user.id", ondelete="SET NULL")
     )
@@ -194,3 +206,15 @@ class DocumentEdge(Base):
 
     creator: Mapped[Optional["User"]] = relationship("User", foreign_keys=[created_by])
     updater: Mapped[Optional["User"]] = relationship("User", foreign_keys=[updated_by])
+
+    # Relationships to nodes
+    source_node = relationship(
+        "DocumentNode",
+        foreign_keys=[source],
+        back_populates="outgoing_edges",
+    )
+    target_node = relationship(
+        "DocumentNode",
+        foreign_keys=[target],
+        back_populates="incoming_edges",
+    )

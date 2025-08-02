@@ -11,6 +11,7 @@ export async function middleware(request: NextRequest) {
 
   try {
     const { data: user } = await fetchServer.GET("/auth/me");
+    console.log("User data:", user);
 
     if (AUTH_ROUTES.includes(pathname)) {
       return user
