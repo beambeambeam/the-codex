@@ -120,7 +120,7 @@ function ChatTemplate(props: ChatTemplateProps) {
           }
 
           if (msg.role === "system") {
-            return <Loader variant="typing" key={msg.id} />;
+            return <Loader variant="typing" key={msg.id + "system"} />;
           }
 
           return null;
