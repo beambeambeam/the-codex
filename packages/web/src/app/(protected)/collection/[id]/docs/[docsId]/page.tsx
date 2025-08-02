@@ -1,11 +1,14 @@
 "use client";
 
+import { useMemo } from "react";
 import { useParams } from "next/navigation";
+import { type Edge, type Node } from "@xyflow/react";
 import {
   BadgeQuestionMarkIcon,
   CheckCircleIcon,
   GitCompareArrowsIcon,
   HouseIcon,
+  Loader2,
   PanelsTopLeftIcon,
   XCircleIcon,
 } from "lucide-react";
@@ -13,6 +16,7 @@ import { parseAsString, useQueryState } from "nuqs";
 
 import DocCanvasLayout from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/layout";
 import FilePreviwer from "@/components/file-previwer";
+import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
   Pill,
@@ -27,6 +31,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatBytes } from "@/hooks/use-file-upload";
 import { $api } from "@/lib/api/client";
@@ -52,6 +57,47 @@ function DocIdPage() {
       },
     },
   });
+
+  const {
+    data: relations,
+    isPending: isRelationsPending,
+    error: relationsError,
+  } = $api.useQuery("get", "/documents/{document_id}/relations", {
+    params: {
+      path: {
+        document_id: params.docsId,
+      },
+    },
+  });
+
+  const {
+    mutate: extractGraph,
+    isPending: isExtractingGraph,
+    error: extractGraphError,
+  } = $api.useMutation("post", "/agentic/graph_extract/{document_id}");
+
+  const { graphNodes, graphEdges } = useMemo(() => {
+    if (!relations || !relations[0] || relations[0].nodes.length === 0) {
+      return { graphNodes: [], graphEdges: [] };
+    }
+
+    const nodeIds = new Set(relations[0].nodes.map((n) => n.id));
+
+    const nodes: Node[] = relations[0].nodes.map((n) => ({
+      id: n.id,
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { ...n },
+      type: "custom",
+    }));
+
+    const edges: Edge[] = relations[0].edges
+      .filter((e) => nodeIds.has(e.source) && nodeIds.has(e.target))
+      .map((e) => ({
+        ...e,
+      }));
+
+    return { graphNodes: nodes, graphEdges: edges };
+  }, [relations]);
 
   if (!data) {
     return null;
@@ -203,14 +249,55 @@ function DocIdPage() {
                     <GitCompareArrowsIcon size={16} />
                     <p className="text-md font-bold">Knowledge Graph</p>
                   </div>
-                  <Pill className="h-fit">
-                    <PillStatus>
-                      <PillIndicator variant="success" />
-                      Latest Update
-                    </PillStatus>
-                    <RelativeTimeCard date="2025-07-16T00:00:00.000Z" />
-                  </Pill>
-                  <DocCanvasLayout nodes={[]} edges={[]} />
+                  {isRelationsPending ? (
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-8 w-48" />
+                      <Skeleton className="h-64 w-full" />
+                    </div>
+                  ) : relationsError ? (
+                    <div className="text-red-500">
+                      Failed to load knowledge graph.
+                    </div>
+                  ) : relations &&
+                    relations[0] &&
+                    relations[0].nodes.length > 0 ? (
+                    <>
+                      <Pill className="h-fit">
+                        <PillStatus>
+                          <PillIndicator variant="success" />
+                          Latest Update
+                        </PillStatus>
+                        <RelativeTimeCard date="2025-07-16T00:00:00.000Z" />
+                      </Pill>
+                      <DocCanvasLayout nodes={graphNodes} edges={graphEdges} />
+                    </>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-gray-300 p-8 text-center">
+                      <p className="text-muted-foreground">
+                        No knowledge graph found for this document.
+                      </p>
+                      <Button
+                        onClick={() =>
+                          extractGraph({
+                            params: {
+                              path: { document_id: params.docsId },
+                            },
+                          })
+                        }
+                        disabled={isExtractingGraph}
+                      >
+                        {isExtractingGraph && (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        )}
+                        Extract Knowledge Graph
+                      </Button>
+                      {extractGraphError && (
+                        <p className="text-red-500">
+                          Failed to extract graph. Please try again.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>
