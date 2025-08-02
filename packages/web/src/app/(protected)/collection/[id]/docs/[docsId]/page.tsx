@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { type Edge, type Node } from "@xyflow/react";
 import {
   BadgeQuestionMarkIcon,
@@ -13,6 +14,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import { parseAsString, useQueryState } from "nuqs";
+import { toast } from "sonner";
 
 import DocCanvasLayout from "@/app/(protected)/collection/[id]/docs/[docsId]/canvas/layout";
 import FilePreviwer from "@/components/file-previwer";
@@ -40,6 +42,7 @@ import { getFallbackUsername } from "@/lib/utils";
 
 function DocIdPage() {
   const params = useParams<{ docsId: string }>();
+  const queryClient = useQueryClient();
 
   const [tab, setTab] = useQueryState(
     "tab",
@@ -74,7 +77,21 @@ function DocIdPage() {
     mutate: extractGraph,
     isPending: isExtractingGraph,
     error: extractGraphError,
-  } = $api.useMutation("post", "/agentic/graph_extract/{document_id}");
+  } = $api.useMutation("post", "/agentic/graph_extract/{document_id}", {
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          "get",
+          "/documents/{document_id}/relations",
+          { params: { path: { document_id: params.docsId } } },
+        ],
+      });
+    },
+    onError: (error: unknown) => {
+      toast.error("Failed to extract knowledge graph. Please try again.");
+      console.error("Graph extraction error:", error);
+    },
+  });
 
   const { graphNodes, graphEdges } = useMemo(() => {
     if (!relations || !relations[0] || relations[0].nodes.length === 0) {
