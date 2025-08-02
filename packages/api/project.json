@@ -77,7 +77,7 @@
     "dev": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "uvicorn api.main:app --reload"
+        "command": "uv run uvicorn api.main:app --reload"
       }
     }
   },
