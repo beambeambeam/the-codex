@@ -124,7 +124,7 @@ def create_get_user_intent_flow(chat_service: ChatService):
     """
     Creates a flow for getting the user's intent.
     """
-    get_user_intent_node = GetUserIntentNode(chat_service=chat_service)
+    get_user_intent_node = GetUserIntentNode()
 
     flow = Flow(start=get_user_intent_node, name="get_user_intent_flow")
     return flow
