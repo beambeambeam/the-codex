@@ -86,18 +86,22 @@ def get_summary_generator() -> SummaryGenerator:
 
 def get_document_ingestor(
     user: User = Depends(get_current_user),
+    collection_service: CollectionService = Depends(get_collection_service),
     document_service: DocumentService = Depends(get_document_service),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
-    graph_extractor: KnowledgeGraphExtractor = Depends(get_knowledge_graph_extractor),
+    kg_extractor: KnowledgeGraphExtractor = Depends(get_knowledge_graph_extractor),
+    kg_merger: KnowledgeGraphMerger = Depends(get_knowledge_graph_merger),
     summary_generator: SummaryGenerator = Depends(get_summary_generator),
 ) -> DocumentIngestorService:
     """
     Returns an instance of DocumentIngestor with the necessary dependencies.
     """
     return DocumentIngestorService(
+        collection_service=collection_service,
         document_service=document_service,
         text_embedder=text_embedder,
-        kg_extractor=graph_extractor,
+        kg_extractor=kg_extractor,
+        kg_merger=kg_merger,
         summary_generator=summary_generator,
     )
 

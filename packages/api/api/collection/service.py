@@ -155,6 +155,46 @@ class CollectionService:
         self.db.refresh(relation)
         return relation
 
+    def get_collection_relations(self, collection_id: str) -> list[CollectionRelation]:
+        """Get all relations for a collection."""
+        return (
+            self.db.query(CollectionRelation)
+            .filter(CollectionRelation.collection_id == collection_id)
+            .order_by(CollectionRelation.created_at.desc())
+            .all()
+        )
+
+    def get_collection_relation(self, relation_id: str) -> Optional[CollectionRelation]:
+        """Get a collection relation by ID."""
+        return (
+            self.db.query(CollectionRelation)
+            .options(
+                joinedload(CollectionRelation.nodes),
+                joinedload(CollectionRelation.edges),
+            )
+            .filter(CollectionRelation.id == relation_id)
+            .first()
+        )
+
+    def delete_collection_relation(self, relation_id: str, user: User) -> bool:
+        """Delete a collection relation."""
+        relation = self.get_collection_relation(relation_id)
+        if not relation:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Relation not found"
+            )
+
+        # Check if user has permission to delete
+        if not self._can_modify_relation(relation, user):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to delete this relation",
+            )
+
+        self.db.delete(relation)
+        self.db.commit()
+        return True
+
     # Collection Node operations
     def create_collection_node(
         self, node_data: CollectionNodeCreate, user: User
