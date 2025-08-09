@@ -59,7 +59,10 @@ class TextEmbedder:
         return model
 
     def get_embedding(
-        self, text: Union[str, list[str]], normalize: bool = True
+        self,
+        text: Union[str, list[str]],
+        normalize: bool = True,
+        show_progress: bool = False,
     ) -> np.ndarray:
         """Encodes the given text(s) into embedding vector(s)."""
         if self.model is None:
@@ -67,7 +70,9 @@ class TextEmbedder:
             return None
 
         try:
-            embeddings = self.model.encode(text, normalize_embeddings=normalize)
+            embeddings = self.model.encode(
+                text, normalize_embeddings=normalize, show_progress_bar=show_progress
+            )
             return embeddings
 
         except Exception as e:
