@@ -175,11 +175,17 @@ async def graph_extract(
             status_code=400, detail="Document content is empty or not available"
         )
 
-    document = await document_ingestor.extract_and_store_knowledge_graph(
+    kg = await document_ingestor._extract_and_store_knowledge_graph(
         full_text=full_text,
         title=document.title,
         description=document.description,
         document_id=document.id,
+        user=current_user,
+    )
+
+    document_ingestor._merge_and_store_collection_knowledge_graph(
+        kg=kg,
+        collection_id=document.collection_id,
         user=current_user,
     )
 

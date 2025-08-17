@@ -1,5 +1,6 @@
 from fastapi import Depends
 
+from api.agentic.core.graph.graph_merge import KnowledgeGraphMerger
 from api.auth.dependencies import get_current_user
 from api.chat.dependencies import get_chat_service
 from api.chat.service import ChatService
@@ -25,27 +26,7 @@ from .core.prompts import (
     render_knowledge_graph_extraction_prompt,
 )
 
-
-def get_knowledge_graph_extractor() -> KnowledgeGraphExtractor:
-    """
-    Returns an instance of KnowledgeGraphExtractor with the necessary dependencies.
-    """
-    llm_caller = call_llm_async
-    prompt_renderer = render_knowledge_graph_extraction_prompt
-
-    return KnowledgeGraphExtractor(
-        llm_caller=llm_caller, prompt_renderer=prompt_renderer
-    )
-
-
-def get_summary_generator() -> SummaryGenerator:
-    """
-    Returns an instance of SummaryGenerator with the necessary dependencies.
-    """
-
-    return SummaryGenerator(
-        text_limit=15000,  # Default text limit
-    )
+# === Utility Functions ===
 
 
 def get_text_embedder() -> TextEmbedder:
@@ -64,22 +45,68 @@ def get_text_embedder() -> TextEmbedder:
     )
 
 
+# === Knowledge Graphs ===
+
+
+def get_knowledge_graph_extractor() -> KnowledgeGraphExtractor:
+    """
+    Returns an instance of KnowledgeGraphExtractor with the necessary dependencies.
+    """
+    llm_caller = call_llm_async
+    prompt_renderer = render_knowledge_graph_extraction_prompt
+
+    return KnowledgeGraphExtractor(
+        llm_caller=llm_caller, prompt_renderer=prompt_renderer
+    )
+
+
+def get_knowledge_graph_merger(
+    text_embedder: TextEmbedder = Depends(get_text_embedder),
+) -> KnowledgeGraphMerger:
+    """
+    Returns an instance of KnowledgeGraphMerger with the necessary dependencies.
+    """
+    return KnowledgeGraphMerger(
+        encoder=text_embedder,
+    )
+
+
+# === Document Ingestion ===
+
+
+def get_summary_generator() -> SummaryGenerator:
+    """
+    Returns an instance of SummaryGenerator with the necessary dependencies.
+    """
+
+    return SummaryGenerator(
+        text_limit=15000,  # Default text limit
+    )
+
+
 def get_document_ingestor(
     user: User = Depends(get_current_user),
+    collection_service: CollectionService = Depends(get_collection_service),
     document_service: DocumentService = Depends(get_document_service),
     text_embedder: TextEmbedder = Depends(get_text_embedder),
-    graph_extractor: KnowledgeGraphExtractor = Depends(get_knowledge_graph_extractor),
+    kg_extractor: KnowledgeGraphExtractor = Depends(get_knowledge_graph_extractor),
+    kg_merger: KnowledgeGraphMerger = Depends(get_knowledge_graph_merger),
     summary_generator: SummaryGenerator = Depends(get_summary_generator),
 ) -> DocumentIngestorService:
     """
     Returns an instance of DocumentIngestor with the necessary dependencies.
     """
     return DocumentIngestorService(
+        collection_service=collection_service,
         document_service=document_service,
         text_embedder=text_embedder,
-        kg_extractor=graph_extractor,
+        kg_extractor=kg_extractor,
+        kg_merger=kg_merger,
         summary_generator=summary_generator,
     )
+
+
+# === Topic Modelling ===
 
 
 def get_topic_modelling_service(
@@ -95,6 +122,9 @@ def get_topic_modelling_service(
         clustering_service=clustering_service,
         embedding_model=text_embedder,
     )
+
+
+# === Agentic AI ===
 
 
 def get_rag_agent(

@@ -1,9 +1,19 @@
 import traceback
 from typing import Literal, Union
 
+from api.models.document import DocumentRelation
+
+from ....collection.schemas import (
+    CollectionEdgeCreate,
+    CollectionNodeCreate,
+    CollectionRelationCreate,
+)
+from ....collection.service import CollectionService
 from ....document.schemas import (
     ChunkCreate,
+    DocumentEdgeBase,
     DocumentEdgeCreate,
+    DocumentNodeBase,
     DocumentNodeCreate,
     DocumentRelationCreate,
     DocumentUpdate,
@@ -11,7 +21,7 @@ from ....document.schemas import (
 from ....document.service import DocumentService
 from ....models import Document, User, enum
 from ..embedding.embedding import TextEmbedder
-from ..graph.graph_extract import ExtractedGraph, KnowledgeGraphExtractor
+from ..graph import ExtractedGraph, KnowledgeGraphExtractor, KnowledgeGraphMerger
 from .ingest_methods import (
     extract_chunks_from_pdf,
     extract_chunks_from_text,
@@ -31,9 +41,11 @@ class DocumentIngestor:
 
     def __init__(
         self,
+        collection_service: CollectionService,
         document_service: DocumentService,
         text_embedder: TextEmbedder,
         kg_extractor: KnowledgeGraphExtractor,
+        kg_merger: KnowledgeGraphMerger,
         summary_generator: SummaryGenerator,
         chunk_size: int = 512,
         min_characters_per_chunk: int = 24,
@@ -45,10 +57,12 @@ class DocumentIngestor:
         self.min_characters_per_chunk: int = min_characters_per_chunk
 
         # services
-        self.document_service: DocumentService = document_service
-        self.text_embedder: TextEmbedder = text_embedder
-        self.kg_extractor: KnowledgeGraphExtractor = kg_extractor
-        self.summary_generator: SummaryGenerator = summary_generator
+        self.collection_service = collection_service
+        self.document_service = document_service
+        self.text_embedder = text_embedder
+        self.kg_extractor = kg_extractor
+        self.kg_merger = kg_merger
+        self.summary_generator = summary_generator
 
     async def extract_full_text(self, file_input: FileInput) -> str:
         """Extract full text from file input."""
@@ -181,30 +195,118 @@ class DocumentIngestorService(DocumentIngestor):
 
     def __init__(
         self,
+        collection_service,
         document_service,
         text_embedder,
         kg_extractor,
+        kg_merger,
         summary_generator,
         chunk_size=512,
         min_characters_per_chunk=24,
     ):
         super().__init__(
+            collection_service,
             document_service,
             text_embedder,
             kg_extractor,
+            kg_merger,
             summary_generator,
             chunk_size,
             min_characters_per_chunk,
         )
 
-    async def extract_and_store_knowledge_graph(
+    def _relation_to_graph(self, relation: DocumentRelation) -> ExtractedGraph:
+        """Convert a DocumentRelation to an ExtractedGraph."""
+        return ExtractedGraph(
+            nodes=[
+                DocumentNodeBase.model_validate(node, from_attributes=True)
+                for node in relation.nodes
+            ],
+            edges=[
+                DocumentEdgeBase.model_validate(edge, from_attributes=True)
+                for edge in relation.edges
+            ],
+        )
+
+    def _merge_and_store_collection_knowledge_graph(
+        self,
+        kg: ExtractedGraph,
+        collection_id: str,
+        user: User,
+    ) -> ExtractedGraph:
+        """Merge and store knowledge graph into the collection."""
+        relations = self.collection_service.get_collection_relations(
+            collection_id=collection_id
+        )
+
+        # If somehow multiple relations exist, keep the first and remove extras (enforce invariant)
+        if relations and len(relations) > 1:
+            to_keep = relations[0]
+            for r in relations[1:]:
+                self.collection_service.delete_collection_relation(
+                    relation_id=r.id, user=user
+                )
+            relations = [to_keep]
+
+        if relations:
+            # Load existing relation fully (with nodes & edges)
+            old_rel = self.collection_service.get_collection_relation(
+                relation_id=relations[0].id
+            )
+            existing_kg = self._relation_to_graph(old_rel)
+
+            # Merge existing with incoming
+            merged_kg = self.kg_merger.merge_kgs([existing_kg, kg])
+
+            # Replace old relation (delete & create new one)
+            self.collection_service.delete_collection_relation(
+                relation_id=old_rel.id, user=user
+            )
+            new_rel = self.collection_service.create_collection_relation(
+                relation_data=CollectionRelationCreate(
+                    title=f"Relation for {collection_id}",
+                    description="Auto-generated relation (merged)",
+                    collection_id=collection_id,
+                ),
+                user=user,
+            )
+
+            self.collection_map_create_nodes_edges(
+                relation=new_rel,
+                kg=merged_kg,
+                collection_id=collection_id,
+                user=user,
+            )
+
+            return merged_kg
+        else:
+            # No relation yet → create one and store incoming KG
+            new_rel = self.collection_service.create_collection_relation(
+                relation_data=CollectionRelationCreate(
+                    title=f"Relation for {collection_id}",
+                    description="Auto-generated relation",
+                    collection_id=collection_id,
+                ),
+                user=user,
+            )
+
+            self.collection_map_create_nodes_edges(
+                relation=new_rel,
+                kg=kg,
+                collection_id=collection_id,
+                user=user,
+            )
+
+            return kg
+
+    async def _extract_and_store_knowledge_graph(
         self,
         full_text: str,
         title: str,
         description: str,
         document_id: str,
         user: User,
-    ) -> Document:
+    ) -> ExtractedGraph:
         """Extract and store knowledge graph from file input into the document system."""
         # Extract knowledge graph from file input
         kg = await self.extract_knowledge_graph(full_text)
@@ -213,7 +315,7 @@ class DocumentIngestorService(DocumentIngestor):
             return None
 
         # Store the knowledge graph in the document system
-        document = await self.store_knowledge_graph(
+        document = self.store_document_knowledge_graph(
             title=title,
             description=description,
             kg=kg,
@@ -224,9 +326,92 @@ class DocumentIngestorService(DocumentIngestor):
         if not document:
             print(f"Failed to store knowledge graph for {title}")
 
+        return kg
+
+    def document_map_create_nodes_edges(
+        self,
+        relation: DocumentRelation,
+        kg: ExtractedGraph,
+        document_id: str,
+        user: User,
+    ) -> Document:
+        """Store the knowledge graph extracted from a file into the document system."""
+        # Mapping from old node ID to new node ID
+        id_map = {}
+
+        # Create nodes and map their new IDs
+        for node in kg.nodes:
+            node_data = DocumentNodeCreate(
+                id=node.id,
+                title=node.title,
+                description=node.description,
+                type=node.type,
+                label=node.label,
+                document_relation_id=relation.id,
+            )
+            new_node = self.document_service.create_document_node(
+                node_data=node_data, user=user
+            )
+            # Assume create_document_node returns the created node object with its new ID
+            id_map[node.id] = new_node.id
+
+        # Create edges using the new node IDs
+        for edge in kg.edges:
+            edge_data = DocumentEdgeCreate(
+                label=edge.label,
+                source=id_map[edge.source],  # Map old source ID to new ID
+                target=id_map[edge.target],  # Map old target ID to new ID
+                document_relation_id=relation.id,
+            )
+            self.document_service.create_document_edge(edge_data=edge_data, user=user)
+
+        document = self.document_service.update_document(
+            document_id=document_id,
+            update_data=DocumentUpdate(is_graph_extracted=True),
+            user=user,
+        )
         return document
 
-    async def store_knowledge_graph(
+    def collection_map_create_nodes_edges(
+        self,
+        relation: DocumentRelation,
+        kg: ExtractedGraph,
+        collection_id: str,
+        user: User,
+    ) -> None:
+        """Store the knowledge graph extracted from a file into the collection system."""
+        # Mapping from old node ID to new node ID
+        id_map = {}
+
+        # Create nodes and map their new IDs
+        for node in kg.nodes:
+            node_data = CollectionNodeCreate(
+                id=node.id,
+                title=node.title,
+                description=node.description,
+                type=node.type,
+                label=node.label,
+                collection_relation_id=relation.id,
+            )
+            new_node = self.collection_service.create_collection_node(
+                node_data=node_data, user=user
+            )
+            # Assume create_collection_node returns the created node object with its new ID
+            id_map[node.id] = new_node.id
+
+        # Create edges using the new node IDs
+        for edge in kg.edges:
+            edge_data = CollectionEdgeCreate(
+                label=edge.label,
+                source=id_map[edge.source],  # Map old source ID to new ID
+                target=id_map[edge.target],  # Map old target ID to new ID
+                collection_relation_id=relation.id,
+            )
+            self.collection_service.create_collection_edge(
+                edge_data=edge_data, user=user
+            )
+
+    def store_document_knowledge_graph(
         self,
         title: str,
         description: str,
@@ -235,7 +420,6 @@ class DocumentIngestorService(DocumentIngestor):
         user: User,
     ) -> Document:
         """Store the knowledge graph extracted from a file into the document system."""
-        # update_document_with_graph(db_session, document.id, kg)
         relation = self.document_service.create_document_relation(
             relation_data=DocumentRelationCreate(
                 title=title,
@@ -246,44 +430,11 @@ class DocumentIngestorService(DocumentIngestor):
         )
 
         if relation:
-            # Mapping from old node ID to new node ID
-            id_map = {}
-
-            # Create nodes and map their new IDs
-            for node in kg.nodes:
-                node_data = DocumentNodeCreate(
-                    id=node.id,
-                    title=node.title,
-                    description=node.description,
-                    type=node.type,
-                    label=node.label,
-                    document_relation_id=relation.id,
-                )
-                new_node = self.document_service.create_document_node(
-                    node_data=node_data, user=user
-                )
-                # Assume create_document_node returns the created node object with its new ID
-                id_map[node.id] = new_node.id
-
-            # Create edges using the new node IDs
-            for edge in kg.edges:
-                edge_data = DocumentEdgeCreate(
-                    label=edge.label,
-                    source=id_map[edge.source],  # Map old source ID to new ID
-                    target=id_map[edge.target],  # Map old target ID to new ID
-                    document_relation_id=relation.id,
-                )
-                self.document_service.create_document_edge(
-                    edge_data=edge_data, user=user
-                )
-
-            document = self.document_service.update_document(
-                document_id=document_id,
-                update_data=DocumentUpdate(is_graph_extracted=True),
-                user=user,
+            self.document_map_create_nodes_edges(
+                relation=relation, kg=kg, document_id=document_id, user=user
             )
 
-        return document
+        return relation
 
     async def ingest_file(
         self,
@@ -355,15 +506,21 @@ class DocumentIngestorService(DocumentIngestor):
 
             # Extract knowledge graph if not already done (Optional)
             if not document.is_graph_extracted and graph_extract:
-                document = await self.extract_and_store_knowledge_graph(
+                kg = await self._extract_and_store_knowledge_graph(
                     full_text=input_file.full_text,
                     title=input_file.name,
                     description=input_file.full_text[:200],
                     document_id=document.id,
                     user=user,
                 )
-                if not document:
+                if not kg:
                     print(f"Failed to extract knowledge graph for {input_file.name}")
+
+                self._merge_and_store_collection_knowledge_graph(
+                    kg=kg,
+                    collection_id=document.collection_id,
+                    user=user,
+                )
 
             print(f"Finished processing {input_file.name}")
 
