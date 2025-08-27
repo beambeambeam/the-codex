@@ -19,5 +19,6 @@
     "**/node_modules/**": true,
     "**/.venv/**": true
     // "env*": true
-  }
+  },
+  "nxConsole.generateAiAgentRules": true
 }

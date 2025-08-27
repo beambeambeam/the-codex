@@ -114,7 +114,7 @@ async def upload_and_ingest_documents(
             await document_ingestor.ingest_file(
                 input_file=input_file_model,
                 document=current_document,
-                graph_extract=False,
+                graph_extract=True,
                 user=current_user,
             )
             created_documents.append(document)

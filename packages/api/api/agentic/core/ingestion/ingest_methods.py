@@ -81,8 +81,8 @@ def preprocess_content(
     content: str,
 ):
     """Preprocess content by removing control characters."""
-    content = re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", content)
-    return content
+    # Remove control characters but keep tabs, newlines, and carriage returns
+    return re.sub(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]", "", content)
 
 
 def extract_chunks_from_pdf(
